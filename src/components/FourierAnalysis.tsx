@@ -6,13 +6,160 @@
 import React, { useState, useMemo } from 'react';
 import { parseCoord, makeKey, Coord4D, GrowingR4Model } from '../model/toyModel';
 import { Activity, Layers, HelpCircle, Sparkles, Scale, Info } from 'lucide-react';
+import { Language } from '../i18n';
 
 interface FourierAnalysisProps {
   model: GrowingR4Model;
+  lang?: Language;
 }
 
-export default function FourierAnalysis({ model }: FourierAnalysisProps) {
+const dict = {
+  hu: {
+    title: 'Fourier Spektrum & Térbeli Frekvenciaanalízis',
+    desc: 'Matematikai Fourier-transzformáció (DFT) a 4D tágulás 2D síkmetszetére vetítve. Vizsgálja meg a megmaradó zárt formák és hullámok spektrális ujjlenyomatát.',
+    axesTitle: 'Síkvetítési Tengelyek',
+    xAxis: 'X-Tengely (Vízszintes):',
+    yAxis: 'Y-Tengely (Függőleges):',
+    fixedDims: 'Rögzített Dimenziók',
+    sliceLabel: 'szelet',
+    sliceValue: 'érték:',
+    sliceRange: 'Tartomány:',
+    metricsTitle: 'Spektrális Mutatók',
+    metricEntropy: 'Spektrális Entrópia:',
+    metricWavelength: 'Domináns hullámhossz:',
+    wavelengthVal: 'rács',
+    wavelengthDC: '0 (DC mód)',
+    metricFlatness: 'Spektrális Laposság:',
+    spectrumTitle: '2D DFT Spektrum (|F(u, v)|)',
+    dcLabel: 'DC (középen)',
+    radialTitle: 'Szerkezeti Tényező S(k)',
+    radialDesc: 'Sugárirányú átlag',
+    tooltipK: 'Frekvencia-mód',
+    tooltipAmp: 'Amplitúdó:',
+    tooltipDC: ' (Egyenáramú / Átlagos potenciál összetevő)',
+    radialXLabel: 'Szerkezeti térbeli hullámszám (k)',
+    radialTooltip: 'Hullámszám k:',
+    analysisTitle: 'Matematikai Visszafejtés & Spektrális Következtetések',
+    analysisWavesTitle: '3D Hiperfelületi Hullámok & Klaszterek:',
+    analysisStabilityTitle: 'Rendszer-Stabilizáció és Szerveződés:',
+    infoTitle: 'Hogyan kell olvasni?',
+    infoText: 'A Fourier Spektrum a térbeli formákat frekvencia-összetevőkre bontja. Ha a spektrum elmosódott és sima (magas entrópia), a tér kiegyenlítődik és homogenizálódik (termikus egyensúly felé halad). Ha határozott, éles pontok láthatóak (alacsony entrópia), akkor a térben megmaradó, stabilan lüktető hullámfront-gátak, egyedi klaszterek és zárt formák konzerválódtak az aszimmetrikus indításból!',
+    noPoints: 'Nincs elegendő rácspont a Fourier-analízis elvégzéséhez. Indítsa el vagy növessze a szimulációt.',
+    emptyPoints: 'Nem elegendő rácspont',
+    solitonWidthLabel: 'rács',
+    noSoliton: 'Nincs stabil csúcs',
+    posLabel: 'Pozíció',
+    fieldTensionLabel: 'Térerő feszültség:',
+    dotLabel: 'db',
+    qtyLabel: 'Stk',
+    pointsLabel: 'pont',
+    waveInf: 'Homogén, egyenletes energiaeloszlás. Nincsenek periodikus hullámok vagy kiemelkedő mintázatok a síkban.',
+    waveLarge: 'Nagy méretű, globális hullámvölgyek és dombok (hullámhossz: ~{val} rácsegység). Ez a belső gömb belső magjának lassan terjedő tágulását tükrözi.',
+    waveMed: 'Közepes méretű, jól kivehető, zárt klasztereződések és domborzatok (hullámhossz: ~{val} rácsegység). Ezek stabil, elszigetelt alakzatokat alkotnak a 3D hiperfelületen.',
+    waveFine: 'Nagyon finom, magas térbeli frekvenciájú fodrozódások és apró feszültséggócok (hullámhossz: ~{val} rácsegység). Ez lokális interferenciára vagy erős kaotikus tágulásra utal.',
+    stabHigh: 'Rendkívül magasan szervezett, stabil és koherens formák jellemzik a teret. Az energia néhány domináns rezonáns frekvenciamódusban koncentrálódik, ami arra utal, hogy a perturbáció által keltett zárt formák tartósan rögzültek.',
+    stabMed: 'Közepesen strukturált tér. Jól kivehető a gömbszimmetrikus alapáramlás (alacsony frekvenciák), de emellett markánsan jelen vannak a perturbáció által keltett szigetelt csomópontok.',
+    stabLow: 'Magas entrópiájú, szétterjedő vagy homogén állapot. Az energia egyenletesen eloszlik a térbeli frekvenciák között. Ez arra utal, hogy a rendszer belső magja már nagyrészt kiegyenlítődött és homogénné vált, vagy a csillapítás és az áramlás elmosta a korábbi éles határokat.'
+  },
+  en: {
+    title: 'Fourier Spectrum & Spatial Frequency Analysis',
+    desc: 'Mathematical Fourier Transform (DFT) projected onto a 2D plane slice of the 4D expansion. Examine the spectral fingerprint of the remaining closed shapes and waves.',
+    axesTitle: 'Plane Projection Axes',
+    xAxis: 'X-Axis (Horizontal):',
+    yAxis: 'Y-Axis (Vertical):',
+    fixedDims: 'Fixed Dimensions',
+    sliceLabel: 'slice',
+    sliceValue: 'value:',
+    sliceRange: 'Range:',
+    metricsTitle: 'Spectral Metrics',
+    metricEntropy: 'Spectral Entropy:',
+    metricWavelength: 'Dominant Wavelength:',
+    wavelengthVal: 'lattice units',
+    wavelengthDC: '0 (DC mode)',
+    metricFlatness: 'Spectral Flatness:',
+    spectrumTitle: '2D DFT Spectrum (|F(u, v)|)',
+    dcLabel: 'DC (center)',
+    radialTitle: 'Structure Factor S(k)',
+    radialDesc: 'Radial average',
+    tooltipK: 'Frequency mode',
+    tooltipAmp: 'Amplitude:',
+    tooltipDC: ' (DC component / Average potential)',
+    radialXLabel: 'Structural Spatial Wavenumber (k)',
+    radialTooltip: 'Wavenumber k:',
+    analysisTitle: 'Mathematical Decryption & Spectral Inference',
+    analysisWavesTitle: '3D Hypersurface Waves & Clusters:',
+    analysisStabilityTitle: 'System Stabilization and Organization:',
+    infoTitle: 'How to read this?',
+    infoText: 'The Fourier Spectrum breaks down spatial shapes into frequency components. If the spectrum is blurred and smooth (high entropy), the space is equalizing and homogenizing (moving towards thermal equilibrium). If distinct, sharp points are visible (low entropy), then the remaining, stably pulsing wavefront barriers, unique clusters, and closed shapes in space have been preserved from the asymmetric initialization!',
+    noPoints: 'Not enough grid points to perform Fourier analysis. Please start or grow the simulation.',
+    emptyPoints: 'Not enough grid points',
+    solitonWidthLabel: 'lattice',
+    noSoliton: 'No stable peak',
+    posLabel: 'Position',
+    fieldTensionLabel: 'Field tension:',
+    dotLabel: 'pcs',
+    qtyLabel: 'qty',
+    pointsLabel: 'points',
+    waveInf: 'Homogeneous, uniform energy distribution. No periodic waves or outstanding patterns in the plane.',
+    waveLarge: 'Large-scale global wavefront hills and valleys (wavelength: ~{val} lattice units). This reflects the slow, steady propagation of the inner core of the sphere.',
+    waveMed: 'Medium-sized, well-defined, closed clusters and topography (wavelength: ~{val} lattice units). These form stable, isolated structures on the 3D hypersurface.',
+    waveFine: 'Very fine, high spatial frequency ripples and small tension focal points (wavelength: ~{val} lattice units). This indicates local interference or strong chaotic expansion.',
+    stabHigh: 'Highly organized, stable, and coherent shapes characterize the space. Energy is concentrated in a few dominant resonant frequency modes, indicating that the closed shapes induced by perturbation are permanently fixed.',
+    stabMed: 'Moderately structured space. The spherically symmetric basic flow (low frequencies) is clearly visible, but the isolated nodes created by the perturbation are also prominently present.',
+    stabLow: 'High-entropy, spreading or homogeneous state. Energy is evenly distributed among spatial frequencies. This suggests that the system\'s inner core is largely equalized and homogeneous, or that damping and flow have washed away the previously sharp boundaries.'
+  },
+  de: {
+    title: 'Fourier-Spektrum & räumliche Frequenzanalyse',
+    desc: 'Mathematische Fourier-Transformation (DFT) projiziert auf einen 2D-Ebenenschnitt der 4D-Expansion. Untersuchen Sie den spektralen Fingerabdruck der verbleibenden geschlossenen Formen und Wellen.',
+    axesTitle: 'Ebenenprojektionsachsen',
+    xAxis: 'X-Achse (Horizontal):',
+    yAxis: 'Y-Achse (Vertikal):',
+    fixedDims: 'Feste Dimensionen',
+    sliceLabel: 'Schnitt',
+    sliceValue: 'Wert:',
+    sliceRange: 'Bereich:',
+    metricsTitle: 'Spektrale Metriken',
+    metricEntropy: 'Spektrale Entropie:',
+    metricWavelength: 'Dominante Wellenlänge:',
+    wavelengthVal: 'Gittereinheiten',
+    wavelengthDC: '0 (DC-Modus)',
+    metricFlatness: 'Spektrale Flachheit:',
+    spectrumTitle: '2D DFT-Spektrum (|F(u, v)|)',
+    dcLabel: 'DC (Mitte)',
+    radialTitle: 'Strukturfaktor S(k)',
+    radialDesc: 'Radialer Durchschnitt',
+    tooltipK: 'Frequenzmodus',
+    tooltipAmp: 'Amplitude:',
+    tooltipDC: ' (DC-Komponente / Durchschnittliches Potenzial)',
+    radialXLabel: 'Strukturelle räumliche Wellenzahl (k)',
+    radialTooltip: 'Wellenzahl k:',
+    analysisTitle: 'Mathematische Entschlüsselung & spektrale Schlussfolgerungen',
+    analysisWavesTitle: '3D-Hyperflächenwellen & Cluster:',
+    analysisStabilityTitle: 'Systemstabilisierung und Organisation:',
+    infoTitle: 'Wie ist das zu lesen?',
+    infoText: 'Das Fourier-Spektrum zerlegt räumliche Formen in Frequenzkomponenten. Ist das Spektrum verschwommen und glatt (hohe Entropie), gleicht sich der Raum aus und homogenisiert sich (Bewegung in Richtung thermisches Gleichgewicht). Sind deutliche, scharfe Punkte sichtbar (geringe Entropie), dann wurden die verbleibenden, stabil pulsierenden Wellenfrontbarrieren, einzigartigen Cluster und geschlossenen Formen im Raum aus der asymmetrischen Initialisierung erhalten!',
+    noPoints: 'Nicht genügend Gitterpunkte vorhanden, um eine Fourier-Analyse durchzuführen. Bitte starten oder vergrößern Sie die Simulation.',
+    emptyPoints: 'Nicht genügend Gitterpunkte',
+    solitonWidthLabel: 'Gitter',
+    noSoliton: 'Kein stabiler Peak',
+    posLabel: 'Position',
+    fieldTensionLabel: 'Feldspannung:',
+    dotLabel: 'Stk',
+    qtyLabel: 'Stk',
+    pointsLabel: 'Punkte',
+    waveInf: 'Homogene, gleichmäßige Energieverteilung. Keine periodischen Wellen oder auffälligen Muster in der Ebene.',
+    waveLarge: 'Großflächige globale Wellenfronten und Täler (Wellenlänge: ~{val} Gittereinheiten). Dies spiegelt die langsame, gleichmäßige Ausbreitung des inneren Kerns der Kugel wider.',
+    waveMed: 'Mittlere, gut definierte, geschlossene Cluster und Topographie (Wellenlänge: ~{val} Gittereinheiten). Diese bilden stabile, isolierte Strukturen auf der 3D-Hyperfläche.',
+    waveFine: 'Sehr feine Rippeln mit hoher räumlicher Frequenz und kleine Spannungsbrennpunkte (Wellenlänge: ~{val} Gittereinheiten). Dies deutet auf lokale Interferenz oder starke chaotische Expansion hin.',
+    stabHigh: 'Sehr gut organisierte, stabile und kohärente Formen charakterisieren den Raum. Die Energie konzentriert sich in einigen wenigen dominanten Resonanzfrequenzmodi, was darauf hindeutet, dass die durch Störungen induzierten geschlossenen Formen dauerhaft fixiert sind.',
+    stabMed: 'Mäßig strukturierter Raum. Die kugelsymmetrische Grundströmung (tiefe Frequenzen) ist deutlich sichtbar, aber die durch die Störung erzeugten isolierten Knoten sind ebenfalls prominent vorhanden.',
+    stabLow: 'Zustand mit hoher Entropie, ausbreitend oder homogen. Die Energie ist gleichmäßig auf die räumlichen Frequenzen verteilt. Dies deutet darauf hin, dass der innere Kern des Systems weitgehend ausgeglichen und homogen ist oder dass Dämpfung und Strömung die zuvor scharfen Grenzen verwischt haben.'
+  }
+};
+
+export default function FourierAnalysis({ model, lang = 'hu' }: FourierAnalysisProps) {
   const V = model.V;
+  const t = dict[lang] || dict.hu;
 
   // Slicing dimensions state (identical to SliceView for perfect alignment)
   const [xAxisDim, setXAxisDim] = useState<number>(0);
@@ -283,28 +430,28 @@ export default function FourierAnalysis({ model }: FourierAnalysisProps) {
     if (val === 0) return 'rgba(15, 23, 42, 0.4)';
     const ratio = Math.pow(val / maxVal, 0.4); // logarithmic expansion to see small frequencies
     if (ratio < 0.25) {
-      const t = ratio / 0.25;
-      const r = Math.round(15 + t * (99 - 15));
-      const g = Math.round(23 + t * (102 - 23));
-      const b = Math.round(42 + t * (241 - 42));
+      const tCol = ratio / 0.25;
+      const r = Math.round(15 + tCol * (99 - 15));
+      const g = Math.round(23 + tCol * (102 - 23));
+      const b = Math.round(42 + tCol * (241 - 42));
       return `rgb(${r}, ${g}, ${b})`;
     } else if (ratio < 0.6) {
-      const t = (ratio - 0.25) / 0.35;
-      const r = Math.round(99 + t * (236 - 99));
-      const g = Math.round(102 + t * (72 - 102));
-      const b = Math.round(241 + t * (153 - 241));
+      const tCol = (ratio - 0.25) / 0.35;
+      const r = Math.round(99 + tCol * (236 - 99));
+      const g = Math.round(102 + tCol * (72 - 102));
+      const b = Math.round(241 + tCol * (153 - 241));
       return `rgb(${r}, ${g}, ${b})`;
     } else if (ratio < 0.85) {
-      const t = (ratio - 0.6) / 0.25;
-      const r = Math.round(236 + t * (244 - 236));
-      const g = Math.round(72 + t * (63 - 72));
-      const b = Math.round(153 + t * (94 - 153));
+      const tCol = (ratio - 0.6) / 0.25;
+      const r = Math.round(236 + tCol * (244 - 236));
+      const g = Math.round(72 + tCol * (63 - 72));
+      const b = Math.round(153 + tCol * (94 - 153));
       return `rgb(${r}, ${g}, ${b})`;
     } else {
-      const t = (ratio - 0.85) / 0.15;
-      const r = Math.round(244 + t * (255 - 244));
-      const g = Math.round(63 + t * (255 - 63));
-      const b = Math.round(94 + t * (255 - 94));
+      const tCol = (ratio - 0.85) / 0.15;
+      const r = Math.round(244 + tCol * (255 - 244));
+      const g = Math.round(63 + tCol * (255 - 63));
+      const b = Math.round(94 + tCol * (255 - 94));
       return `rgb(${r}, ${g}, ${b})`;
     }
   };
@@ -394,7 +541,7 @@ export default function FourierAnalysis({ model }: FourierAnalysisProps) {
             cy={scaleY(d.amplitude)}
             r="4"
             className="fill-rose-400 stroke-slate-950 stroke-2 hover:r-6 cursor-pointer transition-all"
-            title={`Hullámszám k: ${d.wavenumber.toFixed(2)}, Amplitúdó: ${d.amplitude.toFixed(2)}`}
+            title={`${t.radialTooltip} ${d.wavenumber.toFixed(2)}, ${t.tooltipAmp} ${d.amplitude.toFixed(2)}`}
           />
         ))}
 
@@ -437,7 +584,7 @@ export default function FourierAnalysis({ model }: FourierAnalysisProps) {
           textAnchor="middle"
           fontWeight="bold"
         >
-          Szerkezeti térbeli hullámszám (k)
+          {t.radialXLabel}
         </text>
 
         {/* Gradient Definition */}
@@ -454,11 +601,10 @@ export default function FourierAnalysis({ model }: FourierAnalysisProps) {
   // Interpretation generator based on Fourier results
   const getFourierInterpretation = () => {
     const entropy = dftResult.spectralEntropy;
-    const flatness = dftResult.flatness;
     const wavelength = dftResult.dominantWavelength;
 
     if (colsCount <= 1 || rowsCount <= 1) {
-      return 'Nincs elegendő rácspont a Fourier-analízis elvégzéséhez. Indítsa el vagy növessze a szimulációt.';
+      return t.noPoints;
     }
 
     let structuresDesc = '';
@@ -466,22 +612,22 @@ export default function FourierAnalysis({ model }: FourierAnalysisProps) {
 
     // Wavelength evaluation
     if (wavelength === Infinity || isNaN(wavelength)) {
-      structuresDesc = 'Homogén, egyenletes energiaeloszlás. Nincsenek periodikus hullámok vagy kiemelkedő mintázatok a síkban.';
+      structuresDesc = t.waveInf;
     } else if (wavelength > 6) {
-      structuresDesc = `Nagy méretű, globális hullámvölgyek és dombok (hullámhossz: ~${wavelength.toFixed(1)} rácsegység). Ez a belső gömb belső magjának lassú, egyenletes terjedését tükrözi.`;
+      structuresDesc = t.waveLarge.replace('{val}', wavelength.toFixed(1));
     } else if (wavelength > 2.5) {
-      structuresDesc = `Közepes méretű, jól kivehető, zárt klasztereződések és domborzatok (hullámhossz: ~${wavelength.toFixed(1)} rácsegység). Ezek stabil, elszigetelt alakzatokat alkotnak a 3D hiperfelületen.`;
+      structuresDesc = t.waveMed.replace('{val}', wavelength.toFixed(1));
     } else {
-      structuresDesc = `Nagyon finom, magas térbeli frekvenciájú fodrozódások és apró feszültséggócok (hullámhossz: ~${wavelength.toFixed(1)} rácsegység). Ez lokális interferenciára vagy erős kaotikus tágulásra utal.`;
+      structuresDesc = t.waveFine.replace('{val}', wavelength.toFixed(1));
     }
 
     // Entropy & Flatness evaluation (Organisation index)
     if (entropy < 0.35) {
-      stabilityDesc = 'Rendkívül magasan szervezett, stabil és koherens formák jellemzik a teret. Az energia néhány domináns rezonáns frekvenciamódusban koncentrálódik, ami arra utal, hogy a perturbáció által keltett zárt formák tartósan rögzültek.';
+      stabilityDesc = t.stabHigh;
     } else if (entropy < 0.6) {
-      stabilityDesc = 'Közepesen strukturált tér. Jól kivehető a gömbszimmetrikus alapáramlás (alacsony frekvenciák), de emellett markánsan jelen vannak a perturbáció által keltett szigetelt csomópontok.';
+      stabilityDesc = t.stabMed;
     } else {
-      stabilityDesc = 'Magas entrópiájú, szétterjedő vagy homogén állapot. Az energia egyenletesen eloszlik a térbeli frekvenciák között. Ez arra utal, hogy a rendszer belső magja már nagyrészt kiegyenlítődött és homogénné vált, vagy a csillapítás és az áramlás elmosta a korábbi éles határokat.';
+      stabilityDesc = t.stabLow;
     }
 
     return { structuresDesc, stabilityDesc };
@@ -495,10 +641,10 @@ export default function FourierAnalysis({ model }: FourierAnalysisProps) {
         <div>
           <h2 className="text-md font-semibold text-slate-100 flex items-center gap-2">
             <Activity className="h-4 w-4 text-rose-400" />
-            Fourier Spektrum & Térbeli Frekvenciaanalízis
+            {t.title}
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Matematikai Fourier-transzformáció (DFT) a 4D tágulás 2D síkmetszetére vetítve. Vizsgálja meg a megmaradó zárt formák és hullámok spektrális ujjlenyomatát.
+            {t.desc}
           </p>
         </div>
       </div>
@@ -510,12 +656,12 @@ export default function FourierAnalysis({ model }: FourierAnalysisProps) {
           <div className="rounded-xl bg-slate-950/60 p-4 border border-slate-800/80">
             <h3 className="font-semibold text-slate-200 text-xs mb-3 flex items-center gap-1.5 uppercase tracking-wider">
               <Layers className="h-3.5 w-3.5 text-rose-400" />
-              Síkvetítési Tengelyek
+              {t.axesTitle}
             </h3>
 
             <div className="flex flex-col gap-3 text-xs">
               <div>
-                <label className="text-slate-400 block mb-1 font-mono">X-Tengely (Vízszintes):</label>
+                <label className="text-slate-400 block mb-1 font-mono">{t.xAxis}</label>
                 <div className="grid grid-cols-4 gap-1 font-mono">
                   {[0, 1, 2, 3].map((d) => (
                     <button
@@ -534,7 +680,7 @@ export default function FourierAnalysis({ model }: FourierAnalysisProps) {
               </div>
 
               <div>
-                <label className="text-slate-400 block mb-1 font-mono">Y-Tengely (Függőleges):</label>
+                <label className="text-slate-400 block mb-1 font-mono">{t.yAxis}</label>
                 <div className="grid grid-cols-4 gap-1 font-mono">
                   {[0, 1, 2, 3].map((d) => (
                     <button
@@ -557,7 +703,7 @@ export default function FourierAnalysis({ model }: FourierAnalysisProps) {
           {/* Slices Controls */}
           <div className="rounded-xl bg-slate-950/60 p-4 border border-slate-800/80">
             <h3 className="font-semibold text-slate-200 text-xs mb-3 flex items-center gap-1.5 uppercase tracking-wider">
-              <span>Rögzített Dimenziók</span>
+              <span>{t.fixedDims}</span>
             </h3>
 
             <div className="flex flex-col gap-3 font-mono text-xs">
@@ -569,8 +715,8 @@ export default function FourierAnalysis({ model }: FourierAnalysisProps) {
                 return (
                   <div key={dim} className="bg-slate-900/60 p-2.5 rounded border border-slate-800">
                     <div className="flex justify-between items-center mb-1.5">
-                      <span className="text-slate-300 font-bold">X{dim} szelet</span>
-                      <span className="text-rose-400 font-bold">érték: {currentVal}</span>
+                      <span className="text-slate-300 font-bold">X{dim} {t.sliceLabel}</span>
+                      <span className="text-rose-400 font-bold">{t.sliceValue} {currentVal}</span>
                     </div>
 
                     <div className="flex items-center gap-2 justify-between">
@@ -582,7 +728,7 @@ export default function FourierAnalysis({ model }: FourierAnalysisProps) {
                         -
                       </button>
                       <span className="text-[10px] text-slate-500">
-                        Tartomány: {min} .. {max}
+                        {t.sliceRange} {min} .. {max}
                       </span>
                       <button
                         disabled={currentVal >= max}
@@ -602,24 +748,24 @@ export default function FourierAnalysis({ model }: FourierAnalysisProps) {
           <div className="rounded-xl bg-slate-950/60 p-4 border border-slate-800/80 flex flex-col gap-3.5 text-xs">
             <h3 className="font-semibold text-slate-200 text-xs flex items-center gap-1.5 uppercase tracking-wider">
               <Scale className="h-3.5 w-3.5 text-rose-400" />
-              Spektrális Mutatók
+              {t.metricsTitle}
             </h3>
 
             <div className="flex flex-col gap-2.5">
               <div className="flex justify-between items-center border-b border-slate-850 pb-1.5">
-                <span className="text-slate-400">Spektrális Entrópia:</span>
+                <span className="text-slate-400">{t.metricEntropy}</span>
                 <span className="font-mono font-bold text-rose-400">
                   {typeof dftResult.spectralEntropy === 'number' ? dftResult.spectralEntropy.toFixed(4) : '0.0000'}
                 </span>
               </div>
               <div className="flex justify-between items-center border-b border-slate-850 pb-1.5">
-                <span className="text-slate-400">Domináns frekvenciak:</span>
+                <span className="text-slate-400">{t.metricWavelength}</span>
                 <span className="font-mono font-bold text-sky-400">
-                  {dftResult.dominantWavelength === Infinity ? '0 (DC mód)' : `${dftResult.dominantWavelength.toFixed(2)} rács`}
+                  {dftResult.dominantWavelength === Infinity ? t.wavelengthDC : `${dftResult.dominantWavelength.toFixed(2)} ${t.wavelengthVal}`}
                 </span>
               </div>
               <div className="flex justify-between items-center pb-0.5">
-                <span className="text-slate-400">Spektrális Laposság:</span>
+                <span className="text-slate-400">{t.metricFlatness}</span>
                 <span className="font-mono font-bold text-emerald-400">
                   {typeof dftResult.flatness === 'number' ? dftResult.flatness.toFixed(4) : '0.0000'}
                 </span>
@@ -636,14 +782,14 @@ export default function FourierAnalysis({ model }: FourierAnalysisProps) {
               <div className="flex justify-between items-center mb-3">
                 <span className="text-xs font-semibold text-slate-200 uppercase tracking-wider font-mono flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
-                  2D DFT Spektrum (|F(u, v)|)
+                  {t.spectrumTitle}
                 </span>
-                <span className="text-[9px] font-mono text-slate-500">DC (középen)</span>
+                <span className="text-[9px] font-mono text-slate-500">{t.dcLabel}</span>
               </div>
 
               {colsCount <= 1 || rowsCount <= 1 ? (
                 <div className="flex-1 flex items-center justify-center text-slate-500 text-xs">
-                  Nem elegendő rácspont
+                  {t.emptyPoints}
                 </div>
               ) : (
                 <div className="flex-1 flex items-center justify-center p-2">
@@ -672,8 +818,8 @@ export default function FourierAnalysis({ model }: FourierAnalysisProps) {
                               isDC ? 'border-amber-400 scale-105 z-10' : 'border-slate-800/40'
                             }`}
                             style={{ backgroundColor: bg }}
-                            title={`Frekvencia-mód u: ${freqU}, v: ${freqV}\nAmplitúdó: ${val.toFixed(2)}${
-                              isDC ? ' (Egyenáramú / Átlagos potenciál összetevő)' : ''
+                            title={`${t.tooltipK} u: ${freqU}, v: ${freqV}\n${t.tooltipAmp} ${val.toFixed(2)}${
+                              isDC ? t.tooltipDC : ''
                             }`}
                           >
                             {isDC && <span className="text-slate-950 font-black text-[6px]">DC</span>}
@@ -694,9 +840,9 @@ export default function FourierAnalysis({ model }: FourierAnalysisProps) {
               <div className="flex justify-between items-center mb-3">
                 <span className="text-xs font-semibold text-slate-200 uppercase tracking-wider font-mono flex items-center gap-1.5">
                   <Activity className="h-3.5 w-3.5 text-rose-500" />
-                  Szerkezeti Tényező S(k)
+                  {t.radialTitle}
                 </span>
-                <span className="text-[9px] font-mono text-slate-500">Sugárirányú átlag</span>
+                <span className="text-[9px] font-mono text-slate-500">{t.radialDesc}</span>
               </div>
 
               <div className="flex-1 flex items-center justify-center">
@@ -709,13 +855,13 @@ export default function FourierAnalysis({ model }: FourierAnalysisProps) {
           <div className="rounded-xl border border-slate-800/60 bg-slate-950/60 p-4 flex flex-col gap-2.5">
             <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
               <Sparkles className="h-4 w-4 text-amber-400" />
-              Matematikai Visszafejtés & Spektrális Következtetések
+              {t.analysisTitle}
             </h4>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs leading-relaxed">
               <div className="bg-slate-900/30 p-3 rounded-lg border border-slate-800/40">
                 <div className="font-bold text-rose-400 mb-1 flex items-center gap-1">
-                  <span>●</span> 3D Hiperfelületi Hullámok & Klaszterek:
+                  <span>●</span> {t.analysisWavesTitle}
                 </div>
                 <p className="text-slate-300 text-[11px]">
                   {typeof interpretation === 'string' ? interpretation : interpretation.structuresDesc}
@@ -724,7 +870,7 @@ export default function FourierAnalysis({ model }: FourierAnalysisProps) {
 
               <div className="bg-slate-900/30 p-3 rounded-lg border border-slate-800/40">
                 <div className="font-bold text-emerald-400 mb-1 flex items-center gap-1">
-                  <span>●</span> Rendszer-Stabilizáció és Szerveződés:
+                  <span>●</span> {t.analysisStabilityTitle}
                 </div>
                 <p className="text-slate-300 text-[11px]">
                   {typeof interpretation === 'string' ? interpretation : interpretation.stabilityDesc}
@@ -735,7 +881,7 @@ export default function FourierAnalysis({ model }: FourierAnalysisProps) {
             <div className="mt-1 flex items-start gap-2 bg-indigo-500/5 p-2.5 rounded-lg border border-indigo-500/10 text-[11px] text-slate-400 leading-normal">
               <Info className="h-4 w-4 text-indigo-400 shrink-0 mt-0.5" />
               <span>
-                <strong>Hogyan kell olvasni?</strong> A Fourier Spektrum a térbeli formákat frekvencia-összetevőkre bontja. Ha a spektrum elmosódott és sima (magas entrópia), a tér kiegyenlítődik és homogenizálódik (termikus egyensúly felé halad). Ha határozott, éles pontok láthatóak (alacsony entrópia), akkor a térben megmaradó, stabilan lüktető hullámfront-gátak, egyedi klaszterek és zárt formák konzerválódtak az aszimmetrikus indításból!
+                <strong>{t.infoTitle}</strong> {t.infoText}
               </span>
             </div>
           </div>

@@ -575,7 +575,7 @@ export default function HypersurfaceLab({ model, lang = 'hu' }: HypersurfaceLabP
         <div className="flex flex-col gap-0.5">
           <span className="text-slate-500 uppercase text-[9px] tracking-wider">{t.r4Rad}</span>
           <span className="text-sky-400 font-bold text-sm">
-            {r4Radius.toFixed(4)} rács
+            {r4Radius.toFixed(4)} {lang === 'hu' ? 'rács' : lang === 'de' ? 'Gitter' : 'lattice'}
           </span>
         </div>
         <div className="flex flex-col gap-0.5">
@@ -702,7 +702,9 @@ export default function HypersurfaceLab({ model, lang = 'hu' }: HypersurfaceLabP
               <div className="flex justify-between items-center border-b border-slate-850 pb-1.5">
                 <span className="text-slate-400">{t.solitonWl}</span>
                 <span className="font-bold text-sky-400">
-                  {analysis.solitonWidth > 0 ? `${analysis.solitonWidth.toFixed(3)} rács` : 'Nincs stabil csúcs'}
+                  {analysis.solitonWidth > 0 
+                    ? `${analysis.solitonWidth.toFixed(3)} ${lang === 'hu' ? 'rács' : lang === 'de' ? 'Gitter' : 'lattice'}` 
+                    : (lang === 'hu' ? 'Nincs stabil csúcs' : lang === 'de' ? 'Kein stabiler Peak' : 'No stable peak')}
                 </span>
               </div>
               <div className="flex justify-between items-center border-b border-slate-850 pb-1.5">
@@ -762,7 +764,13 @@ export default function HypersurfaceLab({ model, lang = 'hu' }: HypersurfaceLabP
                             isCenterOfSoliton ? 'ring-1 ring-white scale-110' : ''
                           }`}
                           style={{ backgroundColor: bg }}
-                          title={`Pozíció x: ${xIdx}, y: ${yIdx}\nTérerő feszültség: ${val.toFixed(3)}`}
+                          title={
+                            lang === 'hu'
+                              ? `Pozíció x: ${xIdx}, y: ${yIdx}\nTérerő feszültség: ${val.toFixed(3)}`
+                              : lang === 'de'
+                                ? `Position x: ${xIdx}, y: ${yIdx}\nFeldspannung: ${val.toFixed(3)}`
+                                : `Position x: ${xIdx}, y: ${yIdx}\nField tension: ${val.toFixed(3)}`
+                          }
                         />
                       );
                     })

@@ -6,15 +6,64 @@
 import React, { useState, useMemo } from 'react';
 import { parseCoord, makeKey, Coord4D, GrowingR4Model } from '../model/toyModel';
 import { Grid3X3, Layers } from 'lucide-react';
+import { Language } from '../i18n';
 
 interface SliceViewProps {
   model: GrowingR4Model;
   selectedCoord: string | null;
   onSelectCoord: (coordStr: string | null) => void;
+  lang?: Language;
 }
 
-export default function SliceView({ model, selectedCoord, onSelectCoord }: SliceViewProps) {
+const dict = {
+  hu: {
+    title: '2D Hőtérkép Szeletelő',
+    desc: 'Vetítse ki a 4D rácsot egy tetszőleges 2D koordinátasíkra. A többi dimenziót rögzítheti.',
+    axesTitle: 'Síkvetítési Tengelyek',
+    xAxis: 'X-Tengely (Vízszintes):',
+    yAxis: 'Y-Tengely (Függőleges):',
+    fixedDims: 'Szelet Pozíciók',
+    sliceLabel: 'Szelet',
+    sliceValue: 'érték:',
+    sliceRange: 'Tartomány:',
+    scaleLabel: 'Potenciál Skála:',
+    notExists: 'Nem létezik rácspont',
+    perturbedLabel: ' (Perturbált / Lezárt)'
+  },
+  en: {
+    title: '2D Slice Heatmap',
+    desc: 'Project the 4D grid onto any 2D coordinate plane. You can lock other dimensions.',
+    axesTitle: 'Plane Projection Axes',
+    xAxis: 'X-Axis (Horizontal):',
+    yAxis: 'Y-Axis (Vertical):',
+    fixedDims: 'Slice Positions',
+    sliceLabel: 'Slice',
+    sliceValue: 'value:',
+    sliceRange: 'Range:',
+    scaleLabel: 'Potential Scale:',
+    notExists: 'Grid point does not exist',
+    perturbedLabel: ' (Perturbed / Locked)'
+  },
+  de: {
+    title: '2D-Schnitt-Heatmap',
+    desc: 'Projizieren Sie das 4D-Gitter auf eine beliebige 2D-Koordinatebene. Sie können andere Dimensionen sperren.',
+    axesTitle: 'Ebenenprojektionsachsen',
+    xAxis: 'X-Achse (Horizontal):',
+    yAxis: 'Y-Achse (Vertikal):',
+    fixedDims: 'Schnittpositionen',
+    sliceLabel: 'Schnitt',
+    sliceValue: 'Wert:',
+    sliceRange: 'Bereich:',
+    scaleLabel: 'Potenzialskala:',
+    notExists: 'Gitterpunkt existiert nicht',
+    perturbedLabel: ' (Gestört / Gesperrt)'
+  }
+};
+
+export default function SliceView({ model, selectedCoord, onSelectCoord, lang = 'hu' }: SliceViewProps) {
   const V = model.V;
+  const t = dict[lang] || dict.hu;
+
   // Dimensions layout settings:
   // 0 -> x0, 1 -> x1, 2 -> x2, 3 -> x3
   const [xAxisDim, setXAxisDim] = useState<number>(0);
@@ -67,28 +116,28 @@ export default function SliceView({ model, selectedCoord, onSelectCoord }: Slice
     if (pot === 0) return 'rgba(51, 65, 85, 0.15)'; // slate-700 translucent
     const ratio = pot / maxPot;
     if (ratio < 0.2) {
-      const t = ratio / 0.2;
-      const r = Math.round(56 + t * (6 - 56));
-      const g = Math.round(189 + t * (182 - 189));
-      const b = Math.round(248 + t * (212 - 248));
+      const tCol = ratio / 0.2;
+      const r = Math.round(56 + tCol * (6 - 56));
+      const g = Math.round(189 + tCol * (182 - 189));
+      const b = Math.round(248 + tCol * (212 - 248));
       return `rgb(${r}, ${g}, ${b})`;
     } else if (ratio < 0.5) {
-      const t = (ratio - 0.2) / 0.3;
-      const r = Math.round(6 + t * (234 - 6));
-      const g = Math.round(182 + t * (179 - 182));
-      const b = Math.round(212 + t * (8 - 212));
+      const tCol = (ratio - 0.2) / 0.3;
+      const r = Math.round(6 + tCol * (234 - 6));
+      const g = Math.round(182 + tCol * (179 - 182));
+      const b = Math.round(212 + tCol * (8 - 212));
       return `rgb(${r}, ${g}, ${b})`;
     } else if (ratio < 0.8) {
-      const t = (ratio - 0.5) / 0.3;
-      const r = Math.round(234 + t * (249 - 234));
-      const g = Math.round(179 + t * (115 - 179));
-      const b = Math.round(8 + t * (22 - 8));
+      const tCol = (ratio - 0.5) / 0.3;
+      const r = Math.round(234 + tCol * (249 - 234));
+      const g = Math.round(179 + tCol * (115 - 179));
+      const b = Math.round(8 + tCol * (22 - 8));
       return `rgb(${r}, ${g}, ${b})`;
     } else {
-      const t = (ratio - 0.8) / 0.2;
-      const r = Math.round(249 + t * (255 - 249));
-      const g = Math.round(115 + t * (255 - 115));
-      const b = Math.round(22 + t * (255 - 22));
+      const tCol = (ratio - 0.8) / 0.2;
+      const r = Math.round(249 + tCol * (255 - 249));
+      const g = Math.round(115 + tCol * (255 - 115));
+      const b = Math.round(22 + tCol * (255 - 22));
       return `rgb(${r}, ${g}, ${b})`;
     }
   };
@@ -186,10 +235,10 @@ export default function SliceView({ model, selectedCoord, onSelectCoord }: Slice
         <div>
           <h2 className="text-md font-semibold text-slate-100 flex items-center gap-2">
             <Grid3X3 className="h-4 w-4 text-sky-400" />
-            2D Hőtérkép Szeletelő
+            {t.title}
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Vetítse ki a 4D rácsot egy tetszőleges 2D koordinátasíkra. A többi dimenziót rögzítheti.
+            {t.desc}
           </p>
         </div>
       </div>
@@ -201,12 +250,12 @@ export default function SliceView({ model, selectedCoord, onSelectCoord }: Slice
           <div className="rounded-xl bg-slate-950/60 p-4 border border-slate-800/80">
             <h3 className="font-semibold text-slate-200 text-xs mb-3 flex items-center gap-1.5 uppercase tracking-wider">
               <Layers className="h-3.5 w-3.5 text-sky-400" />
-              Síkvetítési Tengelyek
+              {t.axesTitle}
             </h3>
             
             <div className="flex flex-col gap-3 text-xs">
               <div>
-                <label className="text-slate-400 block mb-1 font-mono">X-Tengely (Vízszintes):</label>
+                <label className="text-slate-400 block mb-1 font-mono">{t.xAxis}</label>
                 <div className="grid grid-cols-4 gap-1 font-mono">
                   {[0, 1, 2, 3].map((d) => (
                     <button
@@ -225,7 +274,7 @@ export default function SliceView({ model, selectedCoord, onSelectCoord }: Slice
               </div>
 
               <div>
-                <label className="text-slate-400 block mb-1 font-mono">Y-Tengely (Függőleges):</label>
+                <label className="text-slate-400 block mb-1 font-mono">{t.yAxis}</label>
                 <div className="grid grid-cols-4 gap-1 font-mono">
                   {[0, 1, 2, 3].map((d) => (
                     <button
@@ -248,7 +297,7 @@ export default function SliceView({ model, selectedCoord, onSelectCoord }: Slice
           {/* Slices Controls */}
           <div className="rounded-xl bg-slate-950/60 p-4 border border-slate-800/80">
             <h3 className="font-semibold text-slate-200 text-xs mb-3 flex items-center gap-1.5 uppercase tracking-wider">
-              <span>Szelet Pozíciók</span>
+              <span>{t.fixedDims}</span>
             </h3>
             
             <div className="flex flex-col gap-3 font-mono text-xs">
@@ -260,8 +309,8 @@ export default function SliceView({ model, selectedCoord, onSelectCoord }: Slice
                 return (
                   <div key={dim} className="bg-slate-900/60 p-2.5 rounded border border-slate-800">
                     <div className="flex justify-between items-center mb-1.5">
-                      <span className="text-slate-300 font-bold">X{dim} Szelet</span>
-                      <span className="text-sky-400 font-bold">érték: {currentVal}</span>
+                      <span className="text-slate-300 font-bold">X{dim} {t.sliceLabel}</span>
+                      <span className="text-sky-400 font-bold">{t.sliceValue} {currentVal}</span>
                     </div>
 
                     <div className="flex items-center gap-2 justify-between">
@@ -273,7 +322,7 @@ export default function SliceView({ model, selectedCoord, onSelectCoord }: Slice
                         -
                       </button>
                       <span className="text-[10px] text-slate-500">
-                        Tartomány: {min} .. {max}
+                        {t.sliceRange} {min} .. {max}
                       </span>
                       <button
                         disabled={currentVal >= max}
@@ -294,7 +343,7 @@ export default function SliceView({ model, selectedCoord, onSelectCoord }: Slice
         <div className="md:col-span-2 flex flex-col items-center justify-center bg-slate-950/80 rounded-xl border border-slate-800 p-4 relative min-h-[300px]">
           {/* Legend */}
           <div className="w-full flex items-center justify-between mb-4 px-2 text-[10px] font-mono text-slate-400">
-            <span>Potenciál Skála:</span>
+            <span>{t.scaleLabel}</span>
             <div className="flex items-center gap-1">
               <span>0.0</span>
               <div className="w-32 h-2.5 rounded bg-gradient-to-r from-slate-800 via-sky-400 via-amber-400 to-red-500 border border-slate-700" />
@@ -345,7 +394,7 @@ export default function SliceView({ model, selectedCoord, onSelectCoord }: Slice
                       onClick={() => isExist && onSelectCoord(isSelected ? null : cell.key)}
                       className={`h-7 w-7 rounded flex items-center justify-center cursor-pointer border transition-all relative ${borderStyle}`}
                       style={{ backgroundColor: bg }}
-                      title={`Koor: [${cell.coord.join(',')}]\nPotenciál: ${isExist ? val.toFixed(3) : 'Nem létezik rácspont'}${isPerturbed ? ' (Perturbált / Lezárt)' : ''}`}
+                      title={`Koor: [${cell.coord.join(',')}]\nPotenciál: ${isExist ? val.toFixed(3) : t.notExists}${isPerturbed ? t.perturbedLabel : ''}`}
                     >
                       {/* Dotted indicator for non-existent sites */}
                       {!isExist && (

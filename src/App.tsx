@@ -504,7 +504,7 @@ export default function App() {
           <div className="flex items-start gap-3 rounded-xl border border-sky-500/20 bg-sky-500/5 p-4 text-xs leading-relaxed text-sky-400">
             <ShieldAlert className="h-4 w-4 mt-0.5 flex-shrink-0 text-sky-400" />
             <div className="flex-1">
-              <span className="font-bold">Értesítés: </span>
+              <span className="font-bold">{t.alertNotice}</span>
               {alertMessage}
             </div>
             <button

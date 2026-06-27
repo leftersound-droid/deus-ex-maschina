@@ -43,7 +43,7 @@ export function neighbors4(coord: Coord4D): Coord4D[] {
   return [
     [x0 + 1, x1, x2, x3], [x0 - 1, x1, x2, x3],
     [x0, x1 + 1, x2, x3], [x0, x1 - 1, x2, x3],
-    [x0, x1, x2 + 1, x3], [x0, x1 - 1, x2, x3],
+    [x0, x1, x2 + 1, x3], [x0, x1, x2 - 1, x3],
     [x0, x1, x2, x3 + 1], [x0, x1, x2, x3 - 1],
   ];
 }

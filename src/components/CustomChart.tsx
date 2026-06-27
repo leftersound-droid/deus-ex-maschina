@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useRef, useMemo } from 'react';
+import { Language } from '../i18n';
 
 interface ChartDataItem {
   [key: string]: number;
@@ -17,6 +18,7 @@ interface CustomChartProps {
   title: string;
   yLabel?: string;
   valueFormatter?: (v: number) => string;
+  lang?: Language;
 }
 
 export default function CustomChart({
@@ -27,6 +29,7 @@ export default function CustomChart({
   title,
   yLabel = '',
   valueFormatter = (v) => v.toFixed(2),
+  lang = 'hu',
 }: CustomChartProps) {
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -147,7 +150,9 @@ export default function CustomChart({
         <h3 className="text-sm font-semibold tracking-wide text-slate-200 uppercase">{title}</h3>
         {activePoint && (
           <div className="flex items-center gap-1.5 text-xs font-mono">
-            <span className="text-slate-500">Lépés {activePoint.item[xKey]}:</span>
+            <span className="text-slate-500">
+              {lang === 'hu' ? 'Lépés' : lang === 'de' ? 'Schritt' : 'Step'} {activePoint.item[xKey]}:
+            </span>
             <span className="font-bold" style={{ color }}>
               {valueFormatter(activePoint.item[yKey])}
             </span>

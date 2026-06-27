@@ -6,15 +6,91 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { parseCoord, makeKey, neighbors4, Coord4D, GrowingR4Model } from '../model/toyModel';
 import { RotateCw, Move, HelpCircle, ZoomIn, ZoomOut } from 'lucide-react';
+import { Language } from '../i18n';
 
 interface Visualizer4DProps {
   model: GrowingR4Model;
   selectedCoord: string | null;
   onSelectCoord: (coordStr: string | null) => void;
+  lang?: Language;
 }
 
-export default function Visualizer4D({ model, selectedCoord, onSelectCoord }: Visualizer4DProps) {
+const dict = {
+  hu: {
+    title: '4D Hiperspacia Vetítés (R⁴)',
+    desc: 'Forgassa az egeret vonszolva. Forgási síkok és 4D vetítési konfiguráció.',
+    zoomOut: 'Kicsinyítés',
+    zoomIn: 'Nagyítás',
+    loading: 'Szimuláció betöltése...',
+    dragRotate: 'Drag / Forgatás',
+    planesTitle: '4D Forgatás Síkok',
+    planesHelp: '4D-ben 6 fő síkon tudunk forgatni a gömböket.',
+    planeLabel: 'Síkszeg:',
+    rotating: 'FOROG',
+    stopped: 'ÁLL',
+    cameraTitle: 'Kameramódok',
+    p4D: '4D Perspektíva',
+    dist4D: '4D Távolság (W)',
+    p3D: '3D Perspektíva',
+    edges: 'Összekötő élek',
+    edgeThreshold: 'Élpotenciál Küszöb',
+    hoverCoord: 'Koor:',
+    hoverPotential: 'Potenciál:',
+    hoverPerturbed: 'PERTURBÁLT (Blokkolva)',
+    hoverDetails: 'Kattintson a részletekért'
+  },
+  en: {
+    title: '4D Hyperspace Projection (R⁴)',
+    desc: 'Rotate by dragging the mouse. Rotation planes and 4D projection setup.',
+    zoomOut: 'Zoom Out',
+    zoomIn: 'Zoom In',
+    loading: 'Loading simulation...',
+    dragRotate: 'Drag / Rotate',
+    planesTitle: '4D Rotation Planes',
+    planesHelp: 'In 4D, we can rotate the spheres across 6 principal planes.',
+    planeLabel: 'Plane:',
+    rotating: 'ROTATING',
+    stopped: 'STATIC',
+    cameraTitle: 'Camera Modes',
+    p4D: '4D Perspective',
+    dist4D: '4D Distance (W)',
+    p3D: '3D Perspective',
+    edges: 'Connecting Edges',
+    edgeThreshold: 'Edge Potential Threshold',
+    hoverCoord: 'Coord:',
+    hoverPotential: 'Potential:',
+    hoverPerturbed: 'PERTURBED (Blocked)',
+    hoverDetails: 'Click for details'
+  },
+  de: {
+    title: '4D-Hyperraumprojektion (R⁴)',
+    desc: 'Durch Ziehen mit der Maus rotieren. Rotationsbereiche und 4D-Projektionseinstellungen.',
+    zoomOut: 'Herauszoomen',
+    zoomIn: 'Hineinzoomen',
+    loading: 'Simulation wird geladen...',
+    dragRotate: 'Ziehen / Rotieren',
+    planesTitle: '4D Rotationsflächen',
+    planesHelp: 'Im 4D-Raum können wir die Kugeln über 6 Hauptebenen rotieren.',
+    planeLabel: 'Ebene:',
+    rotating: 'ROTIERT',
+    stopped: 'STILL',
+    cameraTitle: 'Kameramodi',
+    p4D: '4D-Perspektive',
+    dist4D: '4D-Abstand (W)',
+    p3D: '3D-Perspektive',
+    edges: 'Verbindungskanten',
+    edgeThreshold: 'Kantenpotenzialschwellenwert',
+    hoverCoord: 'Koord:',
+    hoverPotential: 'Potenzial:',
+    hoverPerturbed: 'GESTÖRT (Sperre)',
+    hoverDetails: 'Klicken für Details'
+  }
+};
+
+export default function Visualizer4D({ model, selectedCoord, onSelectCoord, lang = 'hu' }: Visualizer4DProps) {
   const V = model.V;
+  const t = dict[lang] || dict.hu;
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // 3D rotation angles (orbit controls)
@@ -481,27 +557,27 @@ export default function Visualizer4D({ model, selectedCoord, onSelectCoord }: Vi
 
         ctx.font = 'bold 11px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
         ctx.fillStyle = '#f8fafc';
-        ctx.fillText(`Koor: [${hp.origCoord.join(', ')}]`, boxX + 10, boxY + 18);
+        ctx.fillText(`${t.hoverCoord} [${hp.origCoord.join(', ')}]`, boxX + 10, boxY + 18);
         
         ctx.font = '10px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
         ctx.fillStyle = '#94a3b8';
-        ctx.fillText(`Potenciál: `, boxX + 10, boxY + 34);
+        ctx.fillText(`${t.hoverPotential} `, boxX + 10, boxY + 34);
         ctx.fillStyle = isPerturbed ? '#f59e0b' : getColorForPotential(hp.potential, maxPotential);
         ctx.font = 'bold 10px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
-        ctx.fillText(`${hp.potential.toFixed(3)}`, boxX + 66, boxY + 34);
+        ctx.fillText(`${hp.potential.toFixed(3)}`, boxX + 10 + ctx.measureText(`${t.hoverPotential} `).width, boxY + 34);
 
         if (isPerturbed) {
           ctx.fillStyle = '#f59e0b';
           ctx.font = 'bold 9px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
-          ctx.fillText(`PERTURBÁLT (Blokkolva)`, boxX + 10, boxY + 50);
+          ctx.fillText(t.hoverPerturbed, boxX + 10, boxY + 50);
 
           ctx.font = '10px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
           ctx.fillStyle = '#94a3b8';
-          ctx.fillText(`Kattintson a részletekért`, boxX + 10, boxY + 68);
+          ctx.fillText(t.hoverDetails, boxX + 10, boxY + 68);
         } else {
           ctx.font = '10px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
           ctx.fillStyle = '#94a3b8';
-          ctx.fillText(`Kattintson a részletekért`, boxX + 10, boxY + 54);
+          ctx.fillText(t.hoverDetails, boxX + 10, boxY + 54);
         }
       }
     }
@@ -528,10 +604,10 @@ export default function Visualizer4D({ model, selectedCoord, onSelectCoord }: Vi
         <div>
           <h2 className="text-md font-semibold text-slate-100 flex items-center gap-2">
             <RotateCw className="h-4 w-4 text-sky-400 animate-spin-slow" />
-            4D Hiperspagia Vetítés (R⁴)
+            {t.title}
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Forgassa az egeret vonszolva. Forgási síkok és 4D vetítési konfiguráció.
+            {t.desc}
           </p>
         </div>
 
@@ -539,7 +615,7 @@ export default function Visualizer4D({ model, selectedCoord, onSelectCoord }: Vi
           <button
             onClick={() => setZoom((z) => Math.max(40, z - 15))}
             className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
-            title="Kicsinyítés"
+            title={t.zoomOut}
           >
             <ZoomOut className="h-4 w-4" />
           </button>
@@ -547,7 +623,7 @@ export default function Visualizer4D({ model, selectedCoord, onSelectCoord }: Vi
           <button
             onClick={() => setZoom((z) => Math.min(250, z + 15))}
             className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
-            title="Nagyítás"
+            title={t.zoomIn}
           >
             <ZoomIn className="h-4 w-4" />
           </button>
@@ -570,14 +646,14 @@ export default function Visualizer4D({ model, selectedCoord, onSelectCoord }: Vi
           />
           {projectedData.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center text-sm font-mono text-slate-500">
-              Szimuláció betöltése...
+              {t.loading}
             </div>
           )}
 
           {/* Guide Overlay */}
           <div className="absolute bottom-3 left-3 flex gap-2 pointer-events-none opacity-80">
             <span className="flex items-center gap-1 text-[10px] font-mono text-slate-400 bg-slate-900/80 px-2 py-1 rounded border border-slate-800">
-              <Move className="h-3 w-3" /> Drag / Forgatás
+              <Move className="h-3 w-3" /> {t.dragRotate}
             </span>
           </div>
         </div>
@@ -587,8 +663,8 @@ export default function Visualizer4D({ model, selectedCoord, onSelectCoord }: Vi
           {/* 4D Rotation States */}
           <div className="rounded-xl bg-slate-950/60 p-3.5 border border-slate-800/80">
             <h3 className="font-semibold text-slate-200 mb-2.5 flex items-center justify-between">
-              <span>4D Forgatás Síkok</span>
-              <HelpCircle className="h-3.5 w-3.5 text-slate-500 hover:text-slate-400 cursor-pointer" title="4D-ben 6 fő síkon tudunk forgatni a gömböket." />
+              <span>{t.planesTitle}</span>
+              <HelpCircle className="h-3.5 w-3.5 text-slate-500 hover:text-slate-400 cursor-pointer" title={t.planesHelp} />
             </h3>
             
             <div className="flex flex-col gap-2 font-mono">
@@ -605,8 +681,8 @@ export default function Visualizer4D({ model, selectedCoord, onSelectCoord }: Vi
                         : 'bg-slate-900/60 text-slate-400 border border-slate-800 hover:border-slate-700'
                     }`}
                   >
-                    <span>Síkszeg: {plane.toUpperCase()}</span>
-                    <span>{isRotating ? 'FOROG' : 'ÁLL'}</span>
+                    <span>{t.planeLabel} {plane.toUpperCase()}</span>
+                    <span>{isRotating ? t.rotating : t.stopped}</span>
                   </button>
                 );
               })}
@@ -615,7 +691,7 @@ export default function Visualizer4D({ model, selectedCoord, onSelectCoord }: Vi
 
           {/* Perspective & Edges */}
           <div className="rounded-xl bg-slate-950/60 p-3.5 border border-slate-800/80 flex flex-col gap-3">
-            <h3 className="font-semibold text-slate-200">Kameramódok</h3>
+            <h3 className="font-semibold text-slate-200">{t.cameraTitle}</h3>
             
             <label className="flex items-center gap-2 cursor-pointer text-slate-300">
               <input
@@ -624,13 +700,13 @@ export default function Visualizer4D({ model, selectedCoord, onSelectCoord }: Vi
                 onChange={(e) => setIsPerspective4D(e.target.checked)}
                 className="rounded border-slate-800 text-sky-500 focus:ring-sky-500/50 bg-slate-900"
               />
-              <span>4D Perspektíva</span>
+              <span>{t.p4D}</span>
             </label>
 
             {isPerspective4D && (
               <div className="pl-5 flex flex-col gap-1.5">
                 <div className="flex justify-between text-[10px] text-slate-400">
-                  <span>4D Távolság (W)</span>
+                  <span>{t.dist4D}</span>
                   <span className="font-mono text-sky-400">{cameraDist4D.toFixed(1)}</span>
                 </div>
                 <input
@@ -652,7 +728,7 @@ export default function Visualizer4D({ model, selectedCoord, onSelectCoord }: Vi
                 onChange={(e) => setIsPerspective3D(e.target.checked)}
                 className="rounded border-slate-800 text-sky-500 focus:ring-sky-500/50 bg-slate-900"
               />
-              <span>3D Perspektíva</span>
+              <span>{t.p3D}</span>
             </label>
 
             <hr className="border-slate-800/80 my-1" />
@@ -664,14 +740,14 @@ export default function Visualizer4D({ model, selectedCoord, onSelectCoord }: Vi
                 onChange={(e) => setDrawEdges(e.target.checked)}
                 className="rounded border-slate-800 text-sky-500 focus:ring-sky-500/50 bg-slate-900"
               />
-              <span>Összekötő élek</span>
+              <span>{t.edges}</span>
             </label>
 
             {drawEdges && (
               <div className="pl-5 flex flex-col gap-2.5">
                 <div className="flex flex-col gap-1">
                   <div className="flex justify-between text-[10px] text-slate-400">
-                    <span>Élpotenciál Küszöb</span>
+                    <span>{t.edgeThreshold}</span>
                     <span className="font-mono text-sky-400">{edgeThreshold.toFixed(1)}</span>
                   </div>
                   <input

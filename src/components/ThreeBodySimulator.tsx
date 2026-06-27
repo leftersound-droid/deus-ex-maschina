@@ -70,7 +70,17 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       simSpeed: 'Szimulációs sebesség:',
       resetBtn: 'Újraindítás',
       infoTitle: 'Miért térnek el a pályák?',
-      infoText: 'Azonos indítási sebességek és koordináták mellett a három fizikai modell drámaian eltérő jövőt eredményez: A Newtoni stabilan kering; az Általános Relativitás (GR) a téridő torzulása miatt precesszál, majd a szoros közelítéseknél kaotikussá válik; a Deus Ex Machina modellben pedig a 4. dimenziós szabadságfok és fluktuáció (a hipertér hullámfront csatolása) egyedi mikro-rezgéseket visz a rendszerbe, amely elnyeli vagy visszaadja az energiát a 3D szeletben.'
+      infoText: 'Azonos indítási sebességek és koordináták mellett a három fizikai modell drámaian eltérő jövőt eredményez: A Newtoni stabilan kering; az Általános Relativitás (GR) a téridő torzulása miatt precesszál, majd a szoros közelítéseknél kaotikussá válik; a Deus Ex Machina modellben pedig a 4. dimenziós szabadságfok és fluktuáció (a hipertér hullámfront csatolása) egyedi mikro-rezgéseket visz a rendszerbe, amely elnyeli vagy visszaadja az energiát a 3D szeletben.',
+
+      ctrlTitle: 'Vezérlők & Időfejlődés',
+      btnStop: 'Megállítás',
+      btnPlay: 'Indítás',
+      pointUnit: 'pont',
+      presetStatus: 'Preset állapot:',
+      descG: 'Minden modell alapvető gravitációs állandója.',
+      descGR: 'A téridő görbületéből adódó relativisztikus precesszió mértéke.',
+      descTension: 'A 4. dimenzióból (w) az ℝ³ hiperszeletbe visszahúzó rugalmas erő állandója.',
+      descJitter: 'A hipertér hullámfront és az éter fluktuációinak csatolási amplitúdója.'
     },
     en: {
       title: '3-Body Problem Comparison Simulator',
@@ -98,7 +108,17 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       simSpeed: 'Simulation Speed:',
       resetBtn: 'Reset Orbit',
       infoTitle: 'Why do the trajectories diverge?',
-      infoText: 'Starting with identical velocities and positions, the three physical models produce vastly different futures: Newton orbits eternally; General Relativity (GR) precesses and decays due to spacetime warping; and our Deus Ex Machina model allows energy-exchange with the 4D scalar potential field, creating subtle quantum-like path ripples.'
+      infoText: 'Starting with identical velocities and positions, the three physical models produce vastly different futures: Newton orbits eternally; General Relativity (GR) precesses and decays due to spacetime warping; and our Deus Ex Machina model allows energy-exchange with the 4D scalar potential field, creating subtle quantum-like path ripples.',
+
+      ctrlTitle: 'Controls & Time Evolution',
+      btnStop: 'Pause',
+      btnPlay: 'Start',
+      pointUnit: 'points',
+      presetStatus: 'Preset status:',
+      descG: 'Fundamental gravitational constant of all models.',
+      descGR: 'Relativistic orbital precession rate due to spacetime curvature.',
+      descTension: 'Elastic return force pulling from the 4th dimension (w) back into the ℝ³ hypersurface.',
+      descJitter: 'Coupling amplitude of ether and hypersurface wavefront fluctuations.'
     },
     de: {
       title: '3-Körper-Problem Vergleichs-Simulator',
@@ -126,7 +146,17 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       simSpeed: 'Simulations-Geschwindigkeit:',
       resetBtn: 'Zurücksetzen',
       infoTitle: 'Warum weichen die Bahnen ab?',
-      infoText: 'Trotz identischer Startgeschwindigkeiten führen die drei physikalischen Modelle zu völlig unterschiedlichen Schicksalen: Newton kreist ewig stabil; die Allgemeine Relativitätstheorie (GR) zeigt Präzession und stürzt ab; das Deus Ex Machina-Modell koppelt mit dem 4D-Hyperraum-Feld, was zu winzigen Quanten-Wellen-Fluktuationen führt.'
+      infoText: 'Trotz identischer Startgeschwindigkeiten führen die drei physikalischen Modelle zu völlig unterschiedlichen Schicksalen: Newton kreist ewig stabil; die Allgemeine Relativitätstheorie (GR) zeigt Präzession und stürzt ab; das Deus Ex Machina-Modell koppelt mit dem 4D-Hyperraum-Feld, was zu winzigen Quanten-Wellen-Fluktuationen führt.',
+
+      ctrlTitle: 'Steuerung & Zeitentwicklung',
+      btnStop: 'Pause',
+      btnPlay: 'Start',
+      pointUnit: 'Punkte',
+      presetStatus: 'Preset-Status:',
+      descG: 'Fundamentale Gravitationskonstante für alle Modelle.',
+      descGR: 'Relativistische Bahnpräzessionsrate aufgrund der Raumzeitkrümmung.',
+      descTension: 'Elastische Rückholkraft aus der 4. Dimension (w) zurück in die ℝ³-Hyperfläche.',
+      descJitter: 'Kopplungsamplitude von Äther- und Hyperflächen-Wellenfrontfluktuationen.'
     }
   }[lang];
 
@@ -682,7 +712,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
           <div className="flex flex-col gap-3 text-xs font-mono">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 border-b border-slate-800/60 pb-2">
               <Sliders className="h-3.5 w-3.5 text-indigo-400" />
-              Vezérlők & Időfejlődés
+              {text.ctrlTitle}
             </h3>
 
             {/* Play/Pause & Reset Row */}
@@ -696,7 +726,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
                 }`}
               >
                 {isPlaying ? <Pause className="h-4 w-4 fill-slate-950" /> : <Play className="h-4 w-4 fill-white" />}
-                {isPlaying ? 'Megállítás' : 'Indítás'}
+                {isPlaying ? text.btnStop : text.btnPlay}
               </button>
 
               <button
@@ -729,7 +759,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
             <div className="flex flex-col gap-1">
               <div className="flex justify-between text-[11px] text-slate-400">
                 <span>{text.trailLength}</span>
-                <span className="text-indigo-400 font-bold">{trailLength} pont</span>
+                <span className="text-indigo-400 font-bold">{trailLength} {text.pointUnit}</span>
               </div>
               <input
                 type="range"
@@ -744,7 +774,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
           </div>
           
           <div className="text-[10px] text-slate-500 font-mono bg-slate-950/80 p-2 border border-slate-900 rounded">
-            <strong>Preset állapot:</strong> {
+            <strong>{text.presetStatus}</strong> {
               activePreset === 'figure8' ? text.presetFigure8 :
               activePreset === 'lagrange' ? text.presetLagrange :
               activePreset === 'binary' ? text.presetBinary :
@@ -777,7 +807,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
                 onChange={(e) => setG(parseFloat(e.target.value))}
                 className="w-full accent-sky-400 h-1 rounded-lg bg-slate-900"
               />
-              <span className="text-[9px] text-slate-500">Minden modell alapvető gravitációs állandója.</span>
+              <span className="text-[9px] text-slate-500">{text.descG}</span>
             </div>
 
             {/* Relativistic Alpha */}
@@ -795,7 +825,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
                 onChange={(e) => setAlphaGR(parseFloat(e.target.value))}
                 className="w-full accent-rose-500 h-1 rounded-lg bg-slate-900"
               />
-              <span className="text-[9px] text-slate-500">A téridő görbületéből adódó relativisztikus precesszió mértéke.</span>
+              <span className="text-[9px] text-slate-500">{text.descGR}</span>
             </div>
 
             {/* DEM Tension (k_tension) */}
@@ -813,7 +843,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
                 onChange={(e) => setKTension(parseFloat(e.target.value))}
                 className="w-full accent-emerald-500 h-1 rounded-lg bg-slate-900"
               />
-              <span className="text-[9px] text-slate-500">A 4. dimenzióból (w) az ℝ³ hiperszeletbe visszahúzó rugalmas erő állandója.</span>
+              <span className="text-[9px] text-slate-500">{text.descTension}</span>
             </div>
 
             {/* DEM Jitter (epsilon) */}
@@ -831,7 +861,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
                 onChange={(e) => setEpsilonDEM(parseFloat(e.target.value))}
                 className="w-full accent-amber-500 h-1 rounded-lg bg-slate-900"
               />
-              <span className="text-[9px] text-slate-500">A hipertér hullámfront és az éter fluktuációinak csatolási amplitúdója.</span>
+              <span className="text-[9px] text-slate-500">{text.descJitter}</span>
             </div>
 
           </div>
