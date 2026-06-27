@@ -20,6 +20,7 @@ import StatsPanel from './components/StatsPanel';
 import FourierAnalysis from './components/FourierAnalysis';
 import HypersurfaceLab from './components/HypersurfaceLab';
 import Manuscript from './components/Manuscript';
+import ThreeBodySimulator from './components/ThreeBodySimulator';
 import { i18n, Language } from './i18n';
 import {
   Play,
@@ -39,7 +40,8 @@ import {
   Flame,
   Activity,
   FlaskConical,
-  BookOpen
+  BookOpen,
+  Sparkles
 } from 'lucide-react';
 
 export default function App() {
@@ -84,7 +86,7 @@ export default function App() {
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
   // UI Tabs
-  const [activeTab, setActiveTab] = useState<'visualization' | 'slice' | 'fourier' | 'lab' | 'charts' | 'manuscript'>('visualization');
+  const [activeTab, setActiveTab] = useState<'visualization' | 'slice' | 'fourier' | 'lab' | 'threebody' | 'charts' | 'manuscript'>('visualization');
 
   // Initialize simulation with specific parameters
   const initializeSimulation = useCallback(
@@ -471,6 +473,32 @@ export default function App() {
           </div>
         </header>
 
+        {/* Nav Tabs - directly below the download button / header */}
+        <div className="flex border-b border-slate-800 overflow-x-auto scrollbar-thin scrollbar-thumb-slate-850 bg-slate-950/40 p-1.5 rounded-xl border border-slate-850 gap-1.5 my-4">
+          {[
+            { id: 'visualization', label: t.tab4D, icon: <Radio className="h-4 w-4" /> },
+            { id: 'slice', label: t.tabSlice, icon: <Grid3X3 className="h-4 w-4" /> },
+            { id: 'fourier', label: t.tabFourier, icon: <Activity className="h-4 w-4" /> },
+            { id: 'lab', label: t.tabLab, icon: <FlaskConical className="h-4 w-4" /> },
+            { id: 'threebody', label: lang === 'hu' ? '3-Test Összehasonlítás' : lang === 'de' ? '3-Körper-Vergleich' : '3-Body Comparison', icon: <Sparkles className="h-4 w-4 text-indigo-400" /> },
+            { id: 'charts', label: t.tabCharts, icon: <TrendingUp className="h-4 w-4" /> },
+            { id: 'manuscript', label: t.tabManuscript, icon: <BookOpen className="h-4 w-4" /> },
+          ].map((tab) => (
+            <button
+              id={`tab-btn-${tab.id}`}
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'bg-sky-500/10 border border-sky-500/30 text-sky-400 shadow-md shadow-sky-500/5 font-bold'
+                  : 'border border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/40'
+              }`}
+            >
+              {tab.icon} {tab.label}
+            </button>
+          ))}
+        </div>
+
         {/* Alerts */}
         {alertMessage && (
           <div className="flex items-start gap-3 rounded-xl border border-sky-500/20 bg-sky-500/5 p-4 text-xs leading-relaxed text-sky-400">
@@ -488,8 +516,13 @@ export default function App() {
           </div>
         )}
 
-        {/* Dashboard Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Dashboard Grid Layout / Comparison view */}
+        {activeTab === 'threebody' ? (
+          <div className="mt-2">
+            <ThreeBodySimulator lang={lang} />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
           {/* LEFT PANEL: Setup, Presets & Controls (Col span 4) */}
           <div className="lg:col-span-4 flex flex-col gap-6">
@@ -897,30 +930,6 @@ export default function App() {
 
           {/* RIGHT PANEL: Tab view of visualizers, slice, charts, and Stats (Col span 8) */}
           <div className="lg:col-span-8 flex flex-col gap-6">
-            
-             {/* Nav Tabs */}
-             <div className="flex border-b border-slate-800 overflow-x-auto scrollbar-thin scrollbar-thumb-slate-850">
-               {[
-                 { id: 'visualization', label: t.tab4D, icon: <Radio className="h-4 w-4" /> },
-                 { id: 'slice', label: t.tabSlice, icon: <Grid3X3 className="h-4 w-4" /> },
-                 { id: 'fourier', label: t.tabFourier, icon: <Activity className="h-4 w-4" /> },
-                 { id: 'lab', label: t.tabLab, icon: <FlaskConical className="h-4 w-4" /> },
-                 { id: 'charts', label: t.tabCharts, icon: <TrendingUp className="h-4 w-4" /> },
-                 { id: 'manuscript', label: t.tabManuscript, icon: <BookOpen className="h-4 w-4" /> },
-               ].map((tab) => (
-                 <button
-                   key={tab.id}
-                   onClick={() => setActiveTab(tab.id as any)}
-                   className={`flex items-center gap-2 px-5 py-3 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-                     activeTab === tab.id
-                       ? 'border-sky-400 text-sky-400 bg-sky-500/5'
-                       : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/40'
-                   }`}
-                 >
-                   {tab.icon} {tab.label}
-                 </button>
-               ))}
-             </div>
 
             {/* Tab Contents */}
             <div className="min-h-[460px]">
@@ -1122,6 +1131,7 @@ export default function App() {
           </div>
 
         </div>
+        )}
 
         {/* Footer with Madách Quote */}
         <footer className="mt-12 border-t border-slate-900/60 pt-8 pb-12 flex flex-col items-center justify-center text-center gap-4">
