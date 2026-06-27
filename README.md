@@ -31,4 +31,11 @@ npm install
 # Set GEMINI_API_KEY in .env.local (optional)
 npm run dev
 
+
+## Author
+**Simon Lefter**
+First public release: June 2026
+License
+MIT License — Free to use and modify, please retain attribution.
+
  
