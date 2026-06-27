@@ -6,7 +6,7 @@ An interactive toy model demonstrating how a simple local gradient flow on a 4D 
 
 **Live Demo:** [https://www.deusexsmachina.com/](https://www.deusexsmachina.com/)
 
-**[Magyar verzió / Hungarian version](./README.hu.md)**
+**[Magyar verzió](./README.hu.md)**
 
 ---
 
@@ -22,11 +22,13 @@ The simulation runs on a growing 4D lattice (R⁴). A scalar potential flows loc
 - 4D projection, 2D slicing, Fourier analysis, Hypersurface Lab
 - Time series charts and detailed statistics
 
+---
 
+## Run Locally
 
-## Author
-
-**Simon Lefter**  
-First public release: June 2026
+```bash
+npm install
+# Set GEMINI_API_KEY in .env.local (optional)
+npm run dev
 
  
