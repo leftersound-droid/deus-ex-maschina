@@ -1,20 +1,34 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Deus Ex Machina
 
-# Run and deploy your AI Studio app
+**Kozmológiai táguló R⁴ rács-potenciál szimulátor és emergens R³ téridő**
 
-This contains everything you need to run your app locally.
+Egy interaktív toy modell, amely bemutatja, hogyan alakulhat ki egyszerű lokális szabályokból egy **emergens 3D hiperfelület** (wavefront), valamint azon klaszterek és szoliton-szerű struktúrák.
 
-View your app in AI Studio: https://ai.studio/apps/021147f8-32a5-4c06-a330-718622f01c4f
+**Live demo:** [https://www.deusexsmachina.com/](https://www.deusexsmachina.com/)
 
-## Run Locally
+---
 
-**Prerequisites:**  Node.js
+## Mi ez?
 
+A szimuláció egy **növekvő 4D rácson** (R⁴) fut, ahol egy skalár potenciál lokális gradiens-áramlással terjed. A rács dinamikusan bővül a határokon. Perturbációk (ideiglenesen blokkolt pontok) hatására a táguló 3D hiperfelületen gazdag dinamika figyelhető meg.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### Főbb jellemzők
+- Dinamikus 4D rácsnövekedés
+- Konzervatív energia (összpotenciál megmarad)
+- Wavefront vs Core detektálás
+- Perturbációval indukált klaszterizáció és lokalizált struktúrák
+- 4D vetítés, 2D szeletelő, Fourier-analízis, Hypersurface Lab
+- Idősor grafikonok és részletes statisztikák
+
+---
+
+## Hogyan fussam helyben?
+
+### Előfeltételek
+- Node.js (18+ verzió ajánlott)
+
+### Lépések
+```bash
+git clone https://github.com/[felhasználóneved]/deus-ex-maschina.git
+cd deus-ex-maschina
+npm install
