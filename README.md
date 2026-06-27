@@ -30,3 +30,6 @@ The simulation runs on a growing 4D lattice (R⁴). A scalar potential flows loc
 npm install
 # Set GEMINI_API_KEY in .env.local (optional)
 npm run dev
+
+## Author
+**Simon Lefter** – 2026
