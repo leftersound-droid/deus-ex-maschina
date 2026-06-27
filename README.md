@@ -24,6 +24,13 @@ The simulation runs on a growing 4D lattice (R⁴). A scalar potential flows loc
 
 ---
 
+## Author
+
+**Simon Lefter**
+First public release: June 2026
+License
+MIT License — Free to use and modify, please retain attribution.
+
 ## Run Locally
 
 ```bash
@@ -33,11 +40,6 @@ npm run dev
 
 ---
 
-## Author
 
-**Simon Lefter**
-First public release: June 2026
-License
-MIT License — Free to use and modify, please retain attribution.
 
  
