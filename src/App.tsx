@@ -41,6 +41,7 @@ import {
   FlaskConical,
   BookOpen
 } from 'lucide-react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 export default function App() {
   // Language selection state
@@ -1140,6 +1141,7 @@ export default function App() {
         </footer>
 
       </div>
+      <SpeedInsights />
     </div>
   );
 }
