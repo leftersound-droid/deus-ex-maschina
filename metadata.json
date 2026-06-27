@@ -1,0 +1,6 @@
+{
+  "name": "Deus Ex Machina",
+  "description": "Hiperdimenziós kozmológiai szimulátor. Skalár potenciálterek áramlása és szoliton-gerjesztések egy táguló 4D rácson (R⁴) és az emergens R³ hiperfelületen.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
