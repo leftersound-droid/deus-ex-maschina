@@ -22,6 +22,7 @@ import HypersurfaceLab from './components/HypersurfaceLab';
 import Manuscript from './components/Manuscript';
 import ThreeBodySimulator from './components/ThreeBodySimulator';
 import QuantizationSimulator from './components/QuantizationSimulator';
+import EffectiveSolitonLab from './components/EffectiveSolitonLab';
 import { i18n, Language } from './i18n';
 import {
   Play,
@@ -43,7 +44,8 @@ import {
   FlaskConical,
   BookOpen,
   Sparkles,
-  Scale
+  Scale,
+  Boxes
 } from 'lucide-react';
 
 export default function App() {
@@ -88,7 +90,7 @@ export default function App() {
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
   // UI Tabs
-  const [activeTab, setActiveTab] = useState<'visualization' | 'slice' | 'fourier' | 'lab' | 'threebody' | 'quantization' | 'charts' | 'manuscript'>('visualization');
+  const [activeTab, setActiveTab] = useState<'visualization' | 'slice' | 'fourier' | 'lab' | 'threebody' | 'quantization' | 'effectivelab' | 'charts' | 'manuscript'>('visualization');
 
   // Initialize simulation with specific parameters
   const initializeSimulation = useCallback(
@@ -431,7 +433,7 @@ export default function App() {
             <div>
               <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
                 {t.title}
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono font-medium tracking-wide">v1.1.1</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono font-medium tracking-wide">v2.0.0</span>
               </h1>
               <p className="text-xs text-slate-400 mt-0.5 font-mono">
                 {t.subtitle}
@@ -483,6 +485,7 @@ export default function App() {
             { id: 'slice', label: t.tabSlice, icon: <Grid3X3 className="h-4 w-4" /> },
             { id: 'fourier', label: t.tabFourier, icon: <Activity className="h-4 w-4" /> },
             { id: 'lab', label: t.tabLab, icon: <FlaskConical className="h-4 w-4" /> },
+            { id: 'effectivelab', label: t.tabEffectiveLab, icon: <Boxes className="h-4 w-4 text-amber-400" /> },
             { id: 'threebody', label: lang === 'hu' ? '3-Test Összehasonlítás' : lang === 'de' ? '3-Körper-Vergleich' : '3-Body Comparison', icon: <Sparkles className="h-4 w-4 text-indigo-400" /> },
             { id: 'quantization', label: lang === 'hu' ? 'Kvantálás & Tömeg' : lang === 'de' ? 'Quantisierung & Masse' : 'Quantization & Mass', icon: <Scale className="h-4 w-4 text-emerald-400" /> },
             { id: 'charts', label: t.tabCharts, icon: <TrendingUp className="h-4 w-4" /> },
@@ -1032,6 +1035,10 @@ export default function App() {
 
               {activeTab === 'quantization' && (
                 <QuantizationSimulator lang={lang} />
+              )}
+
+              {activeTab === 'effectivelab' && (
+                <EffectiveSolitonLab model={model} lang={lang} />
               )}
 
               {activeTab === 'manuscript' && (

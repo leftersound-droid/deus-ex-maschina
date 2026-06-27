@@ -18,6 +18,7 @@ export const i18n = {
     tabSlice: '2D Szeletelő',
     tabFourier: 'Fourier-Analízis (FFT)',
     tabLab: 'Hiperfelületi Lab (Szoliton)',
+    tabEffectiveLab: 'Effektív Szoliton Lab',
     tabCharts: 'Időbeli Grafikonok',
     tabManuscript: 'Tanulmány & Telepítés',
 
@@ -123,6 +124,7 @@ export const i18n = {
     tabSlice: '2D Slice Heatmap',
     tabFourier: 'Fourier Analysis (FFT)',
     tabLab: 'Hypersurface Lab (Soliton)',
+    tabEffectiveLab: 'Effective Soliton Lab',
     tabCharts: 'Time Graphs',
     tabManuscript: 'Study & Installation',
 
@@ -228,6 +230,7 @@ export const i18n = {
     tabSlice: '2D-Schnitt-Heatmap',
     tabFourier: 'Fourier-Analyse (FFT)',
     tabLab: 'Hyperflächen-Labor (Soliton)',
+    tabEffectiveLab: 'Effektives Soliton-Labor',
     tabCharts: 'Zeitdiagramme',
     tabManuscript: 'Studie & Installation',
 
