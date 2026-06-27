@@ -52,7 +52,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       modelGR: 'Általános Relativitás (1PN)',
       modelGRDesc: 'Post-Newtoni korrekció. Az elgörbült téridő miatti pálya-precessziót (merkúr-szerű elfordulás) és instabilitást szimulál.',
       modelDEM: 'Deus Ex Machina (ℝ⁴)',
-      modelDEMDesc: 'ℝ⁴ skalár-potenciál modell. A testek a 4. dimenzióban (w) is elmozdulhatnak kozmikus feszültség mellett, hullám-részecske szerű pálya-ingadozásokat okozva.',
+      modelDEMDesc: 'An ℝ⁴ emergent potential model. The bodies are solitons carving out local potential wells. Attraction is not an artificial action-at-a-distance force, but emerges directly from the gradient of the overlapping wave fields and Mach\'s principle.',
       
       preset: 'Pálya preset:',
       presetFigure8: 'Stabil Figure-8 (Nyolcas pálya)',
@@ -70,7 +70,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       simSpeed: 'Szimulációs sebesség:',
       resetBtn: 'Újraindítás',
       infoTitle: 'Miért térnek el a pályák?',
-      infoText: 'Azonos indítási sebességek és koordináták mellett a három fizikai modell drámaian eltérő jövőt eredményez: A Newtoni stabilan kering; az Általános Relativitás (GR) a téridő torzulása miatt precesszál, majd a szoros közelítéseknél kaotikussá válik; a Deus Ex Machina modellben pedig a 4. dimenziós szabadságfok és fluktuáció (a hipertér hullámfront csatolása) egyedi mikro-rezgéseket visz a rendszerbe, amely elnyeli vagy visszaadja az energiát a 3D szeletben.',
+      infoText: 'Azonos indítási sebességek és koordináták mellett a három fizikai modell drámaian eltérő jövőt eredményez: A Newtoni stabilan kering; az Általános Relativitás (GR) a téridő torzulása miatt precesszál, majd a szoros közelítéseknél kaotikussá válik; a Deus Ex Machina modellben pedig a vonzás nem távolsági erő, hanem az egymás potenciálgödrében való csúszás (potenciálgradiens) eredménye, miközben a w-oszcilláció és a Mach-elv alapján változó tömeg egyedi pálya-rezgéseket okoz.',
 
       ctrlTitle: 'Vezérlők & Időfejlődés',
       btnStop: 'Megállítás',
@@ -90,7 +90,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       modelGR: 'General Relativity (1PN)',
       modelGRDesc: 'Post-Newtonian correction. Simulates orbital precession (Mercury-like perihelion shift) and spacetime warping instabilities.',
       modelDEM: 'Deus Ex Machina (ℝ⁴)',
-      modelDEMDesc: 'ℝ⁴ scalar potential model. Bodies move slightly in the 4th dimension (w) under cosmic tension, exhibiting wave-particle path deviations.',
+      modelDEMDesc: 'An ℝ⁴ emergent potential model. The bodies are solitons carving out local potential wells. Attraction is not an artificial action-at-a-distance force, but emerges directly from the gradient of the overlapping wave fields and Mach\'s principle.',
       
       preset: 'Orbit Preset:',
       presetFigure8: 'Stable Figure-8 Orbit',
@@ -108,7 +108,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       simSpeed: 'Simulation Speed:',
       resetBtn: 'Reset Orbit',
       infoTitle: 'Why do the trajectories diverge?',
-      infoText: 'Starting with identical velocities and positions, the three physical models produce vastly different futures: Newton orbits eternally; General Relativity (GR) precesses and decays due to spacetime warping; and our Deus Ex Machina model allows energy-exchange with the 4D scalar potential field, creating subtle quantum-like path ripples.',
+      infoText: 'Starting with identical velocities and positions, the three physical models produce vastly different futures: Newton orbits eternally; General Relativity (GR) precesses and decays due to spacetime warping; and in our Deus Ex Machina model, attraction is not a hardcoded force, but emerges from solitons sliding down each other\'s potential wells, experiencing dynamic mass scaling via Mach\'s principle.',
 
       ctrlTitle: 'Controls & Time Evolution',
       btnStop: 'Pause',
@@ -128,7 +128,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       modelGR: 'Allgemeine Relativität (1PN)',
       modelGRDesc: 'Post-Newtonsche Korrektur. Simuliert Bahnpräzession (Merkur-ähnliche Periheldrehung) und Instabilitäten durch Raumzeit-Krümmung.',
       modelDEM: 'Deus Ex Machina (ℝ⁴)',
-      modelDEMDesc: 'ℝ⁴ Skalarpotenzial-Modell. Körper bewegen sich leicht in der 4. Dimension (w) unter kosmischer Spannung, mit wellenartigen Bahnstörungen.',
+      modelDEMDesc: 'An ℝ⁴ emergent potential model. The bodies are solitons carving out local potential wells. Attraction is not an artificial action-at-a-distance force, but emerges directly from the gradient of the overlapping wave fields and Mach\'s principle.',
       
       preset: 'Bahn-Preset:',
       presetFigure8: 'Stabile Figure-8 (Achterbahn)',
@@ -146,7 +146,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       simSpeed: 'Simulations-Geschwindigkeit:',
       resetBtn: 'Zurücksetzen',
       infoTitle: 'Warum weichen die Bahnen ab?',
-      infoText: 'Trotz identischer Startgeschwindigkeiten führen die drei physikalischen Modelle zu völlig unterschiedlichen Schicksalen: Newton kreist ewig stabil; die Allgemeine Relativitätstheorie (GR) zeigt Präzession und stürzt ab; das Deus Ex Machina-Modell koppelt mit dem 4D-Hyperraum-Feld, was zu winzigen Quanten-Wellen-Fluktuationen führt.',
+      infoText: 'Trotz identischer Startgeschwindigkeiten führen die drei physikalischen Modelle zu völlig unterschiedlichen Schicksalen: Newton kreist ewig stabil; die Allgemeine Relativitätstheorie (GR) zeigt Präzession; und das Deus Ex Machina-Modell lässt die Kraft aus dem Gradienten überlappender Solitonen-Potenziale hervorgehen, während die Trägheit dem Machschen Prinzip folgt.',
 
       ctrlTitle: 'Steuerung & Zeitentwicklung',
       btnStop: 'Pause',
@@ -423,12 +423,26 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
               const distSq4D = dx*dx + dy*dy + dz*dz + dw*dw + 1e-4;
               const dist4D = Math.sqrt(distSq4D);
 
-              // Gravitational interaction in ℝ⁴ with extra potential coupling
-              // In the DEM model, mass fluctuates with w position (hyperspace waves coupling)
-              const massOscillationI = 1.0 + epsilonDEM * Math.sin(5.0 * next[i].w);
+              // Gravitational interaction in ℝ⁴ arises from the gradient of the overlapping potential field:
+              // V_j(r) = -G * m_eff_j * sech^2(beta * r)
+              // The negative gradient of this potential gives the force:
+              // force_magnitude = 2 * beta * G * m_eff_j * sech^2(beta * r) * tanh(beta * r) / r
+              // Soliton inverse width parameter
+              const beta = 0.45;
+              const u = beta * dist4D;
+              const coshU = Math.cosh(u);
+              const sech = 1.0 / coshU;
+              const sechSq = sech * sech;
+              const tanh = Math.tanh(u);
+
+              // Mass fluctuates with w-position (wave coupling to the hypersurface)
               const massOscillationJ = 1.0 + epsilonDEM * Math.sin(5.0 * next[j].w);
-              
-              const forceMag = (G * next[j].mass * massOscillationI * massOscillationJ) / (distSq4D * dist4D);
+              const mEffJ = next[j].mass * massOscillationJ;
+
+              // We introduce a scaling factor of 2.2 to align the typical force strength with Newtonian
+              // gravity at orbital scales, enabling semi-stable and beautiful comparative trajectories.
+              const scaleFactor = 2.2;
+              const forceMag = (scaleFactor * 2.0 * beta * G * mEffJ * sechSq * tanh) / dist4D;
 
               accs[i].x += forceMag * dx;
               accs[i].y += forceMag * dy;
