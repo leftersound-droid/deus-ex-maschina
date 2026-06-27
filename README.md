@@ -22,23 +22,11 @@ The simulation runs on a growing 4D lattice (R⁴). A scalar potential flows loc
 - 4D projection, 2D slicing, Fourier analysis, Hypersurface Lab
 - Time series charts and detailed statistics
 
----
 
-
-
-
-## Run Locally
-
-```bash
-npm install
-# Set GEMINI_API_KEY in .env.local (optional)
-npm run dev 
-
----
 
 ## Author
 
 **Simon Lefter**  
-**First public release: June 2026**
+First public release: June 2026
 
  
