@@ -71,6 +71,8 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       resetBtn: 'Újraindítás',
       infoTitle: 'Miért térnek el a pályák?',
       infoText: 'Azonos indítási sebességek és koordináták mellett a három fizikai modell drámaian eltérő jövőt eredményez: A Newtoni stabilan kering; az Általános Relativitás (GR) a téridő torzulása miatt precesszál, majd a szoros közelítéseknél kaotikussá válik; a Deus Ex Machina modellben pedig a vonzás nem távolsági erő, hanem az egymás potenciálgödrében való csúszás (potenciálgradiens) eredménye, miközben a w-oszcilláció és a Mach-elv alapján változó tömeg egyedi pálya-rezgéseket okoz.',
+      limitationsTitle: 'Elméleti Határok és Lépték-Analógia (Szoliton-Skála)',
+      limitationsText: 'Teljesen igaz és kiváló fizikai meglátás: mikroszkopikus méretben egyetlen elemi szoliton önmagában nem képes kimutatható gravitációs térgörbületet létrehozni (nincs elegendő tehetetlen tömeg a klasszikus dinamikai egyenletekhez). Ez a modul egy elméleti spekuláció, egy makroszkopikus lépték-invariáns analógia. Úgy vizsgálja a 3-test problémát, mintha a nagy tömegű kozmikus égitestek maguk is kiterjedt hullámcsomagok (szolitonok) lennének, amelyek az ℝ³ hiperszeleten egymás potenciálgödreibe csúsznak bele, megvalósítva az emergens mezővonzást.',
 
       ctrlTitle: 'Vezérlők & Időfejlődés',
       btnStop: 'Megállítás',
@@ -109,6 +111,8 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       resetBtn: 'Reset Orbit',
       infoTitle: 'Why do the trajectories diverge?',
       infoText: 'Starting with identical velocities and positions, the three physical models produce vastly different futures: Newton orbits eternally; General Relativity (GR) precesses and decays due to spacetime warping; and in our Deus Ex Machina model, attraction is not a hardcoded force, but emerges from solitons sliding down each other\'s potential wells, experiencing dynamic mass scaling via Mach\'s principle.',
+      limitationsTitle: 'Theoretical Limitations & Scale Analogy (Soliton-Scale)',
+      limitationsText: 'An excellent and physically precise insight: at microscopic/quantum scales, a single elementary soliton does not possess enough mass to carve out a detectable spacetime curvature or govern classic gravitational 3-body dynamics. This module serves as a speculative, macroscopic scale-invariant analogy. It models celestial bodies as extended wave-packet solitons sliding down each other\'s overlapping potential wells in the ℝ³ hypersurface.',
 
       ctrlTitle: 'Controls & Time Evolution',
       btnStop: 'Pause',
@@ -147,6 +151,8 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       resetBtn: 'Zurücksetzen',
       infoTitle: 'Warum weichen die Bahnen ab?',
       infoText: 'Trotz identischer Startgeschwindigkeiten führen die drei physikalischen Modelle zu völlig unterschiedlichen Schicksalen: Newton kreist ewig stabil; die Allgemeine Relativitätstheorie (GR) zeigt Präzession; und das Deus Ex Machina-Modell lässt die Kraft aus dem Gradienten überlappender Solitonen-Potenziale hervorgehen, während die Trägheit dem Machschen Prinzip folgt.',
+      limitationsTitle: 'Theoretische Grenzen & Skalenanalogie (Solitonen-Skala)',
+      limitationsText: 'Eine hervorragende und physikalisch präzise Erkenntnis: Auf mikroskopischer Ebene besitzt ein einzelnes Elementarsoliton nicht genügend träge Masse, um eine nachweisbare Raumzeitkrümmung zu erzeugen oder klassische Dreikörperdynamiken zu bestimmen. Dieses Modul dient als spekulative, makroskopisch skaleninvariante Analogie. Es modelliert Himmelskörper als ausgedehnte Wellenpaket-Solitonen, die auf der ℝ³-Hyperfläche ineinandergleiten.',
 
       ctrlTitle: 'Steuerung & Zeitentwicklung',
       btnStop: 'Pause',
@@ -884,13 +890,23 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       </div>
 
       {/* Explanatory Callout Card */}
-      <section className="bg-indigo-500/5 border border-indigo-500/20 rounded-xl p-4 flex gap-3 text-xs leading-relaxed text-indigo-300">
-        <Info className="h-4 w-4 mt-0.5 flex-shrink-0 text-indigo-400" />
-        <div className="flex flex-col gap-1">
-          <span className="font-bold text-slate-200">{text.infoTitle}</span>
-          <span>{text.infoText}</span>
-        </div>
-      </section>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <section className="bg-indigo-500/5 border border-indigo-500/20 rounded-xl p-4 flex gap-3 text-xs leading-relaxed text-indigo-300">
+          <Info className="h-4 w-4 mt-0.5 flex-shrink-0 text-indigo-400" />
+          <div className="flex flex-col gap-1">
+            <span className="font-bold text-slate-200">{text.infoTitle}</span>
+            <span>{text.infoText}</span>
+          </div>
+        </section>
+
+        <section className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4 flex gap-3 text-xs leading-relaxed text-amber-300">
+          <HelpCircle className="h-4 w-4 mt-0.5 flex-shrink-0 text-amber-400" />
+          <div className="flex flex-col gap-1">
+            <span className="font-bold text-slate-200">{text.limitationsTitle}</span>
+            <span>{text.limitationsText}</span>
+          </div>
+        </section>
+      </div>
 
     </div>
   );
