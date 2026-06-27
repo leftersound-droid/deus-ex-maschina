@@ -33,6 +33,7 @@ npm install
 # Set GEMINI_API_KEY in .env.local (optional)
 npm run dev
 
+---
 ## Author
 **Simon Lefter** – June 2026
 
