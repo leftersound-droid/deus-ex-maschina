@@ -1,34 +1,32 @@
 # Deus Ex Machina
 
-**Kozmológiai táguló R⁴ rács-potenciál szimulátor és emergens R³ téridő**
+**Cosmological Expanding R⁴ Lattice-Potential Simulator and Emergent R³ Spacetime**
 
-Egy interaktív toy modell, amely bemutatja, hogyan alakulhat ki egyszerű lokális szabályokból egy **emergens 3D hiperfelület** (wavefront), valamint azon klaszterek és szoliton-szerű struktúrák.
+An interactive toy model demonstrating how a simple local gradient flow on a 4D lattice can give rise to an **emergent 3D hypersurface** (wavefront) with clustering and soliton-like structures.
 
-**Live demo:** [https://www.deusexsmachina.com/](https://www.deusexsmachina.com/)
+**Live Demo:** [https://www.deusexsmachina.com/](https://www.deusexsmachina.com/)
 
----
-
-## Mi ez?
-
-A szimuláció egy **növekvő 4D rácson** (R⁴) fut, ahol egy skalár potenciál lokális gradiens-áramlással terjed. A rács dinamikusan bővül a határokon. Perturbációk (ideiglenesen blokkolt pontok) hatására a táguló 3D hiperfelületen gazdag dinamika figyelhető meg.
-
-### Főbb jellemzők
-- Dinamikus 4D rácsnövekedés
-- Konzervatív energia (összpotenciál megmarad)
-- Wavefront vs Core detektálás
-- Perturbációval indukált klaszterizáció és lokalizált struktúrák
-- 4D vetítés, 2D szeletelő, Fourier-analízis, Hypersurface Lab
-- Idősor grafikonok és részletes statisztikák
+**[Magyar verzió / Hungarian version](./README.hu.md)**
 
 ---
 
-## Hogyan fussam helyben?
+## What is this?
 
-### Előfeltételek
-- Node.js (18+ verzió ajánlott)
+The simulation runs on a growing 4D lattice (R⁴). A scalar potential flows locally to lower-potential neighbors, while the lattice expands dynamically at the boundaries. Controlled perturbations (temporary pinning of sites) lead to rich dynamics on the expanding 3D hypersurface.
 
-### Lépések
+### Key Features
+- Dynamic 4D lattice growth
+- Strictly conserved total energy
+- Wavefront vs Core classification
+- Perturbation-induced clustering and localized structures
+- 4D projection, 2D slicing, Fourier analysis, Hypersurface Lab
+- Time series charts and detailed statistics
+
+---
+
+## Run Locally
+
 ```bash
-git clone https://github.com/[felhasználóneved]/deus-ex-maschina.git
-cd deus-ex-maschina
 npm install
+# Set GEMINI_API_KEY in .env.local (optional)
+npm run dev
