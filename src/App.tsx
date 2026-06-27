@@ -21,6 +21,7 @@ import FourierAnalysis from './components/FourierAnalysis';
 import HypersurfaceLab from './components/HypersurfaceLab';
 import Manuscript from './components/Manuscript';
 import ThreeBodySimulator from './components/ThreeBodySimulator';
+import QuantizationSimulator from './components/QuantizationSimulator';
 import { i18n, Language } from './i18n';
 import {
   Play,
@@ -41,7 +42,8 @@ import {
   Activity,
   FlaskConical,
   BookOpen,
-  Sparkles
+  Sparkles,
+  Scale
 } from 'lucide-react';
 
 export default function App() {
@@ -86,7 +88,7 @@ export default function App() {
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
   // UI Tabs
-  const [activeTab, setActiveTab] = useState<'visualization' | 'slice' | 'fourier' | 'lab' | 'threebody' | 'charts' | 'manuscript'>('visualization');
+  const [activeTab, setActiveTab] = useState<'visualization' | 'slice' | 'fourier' | 'lab' | 'threebody' | 'quantization' | 'charts' | 'manuscript'>('visualization');
 
   // Initialize simulation with specific parameters
   const initializeSimulation = useCallback(
@@ -481,6 +483,7 @@ export default function App() {
             { id: 'fourier', label: t.tabFourier, icon: <Activity className="h-4 w-4" /> },
             { id: 'lab', label: t.tabLab, icon: <FlaskConical className="h-4 w-4" /> },
             { id: 'threebody', label: lang === 'hu' ? '3-Test Összehasonlítás' : lang === 'de' ? '3-Körper-Vergleich' : '3-Body Comparison', icon: <Sparkles className="h-4 w-4 text-indigo-400" /> },
+            { id: 'quantization', label: lang === 'hu' ? 'Kvantálás & Tömeg' : lang === 'de' ? 'Quantisierung & Masse' : 'Quantization & Mass', icon: <Scale className="h-4 w-4 text-emerald-400" /> },
             { id: 'charts', label: t.tabCharts, icon: <TrendingUp className="h-4 w-4" /> },
             { id: 'manuscript', label: t.tabManuscript, icon: <BookOpen className="h-4 w-4" /> },
           ].map((tab) => (
@@ -1024,6 +1027,10 @@ export default function App() {
                     valueFormatter={(v) => v.toLocaleString(lang === 'hu' ? 'hu-HU' : lang === 'de' ? 'de-DE' : 'en-US')}
                   />
                 </div>
+              )}
+
+              {activeTab === 'quantization' && (
+                <QuantizationSimulator lang={lang} />
               )}
 
               {activeTab === 'manuscript' && (

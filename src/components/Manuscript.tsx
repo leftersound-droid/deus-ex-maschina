@@ -18,7 +18,9 @@ import {
   ChevronUp, 
   Compass, 
   HelpCircle,
-  ExternalLink
+  ExternalLink,
+  Sparkles,
+  Scale
 } from 'lucide-react';
 import { Language } from '../i18n';
 
@@ -174,6 +176,33 @@ npm run build
       sec2_tr3_c3: 'Lokális feszültség-mező (Tension Field) az ℝ³-ban • ℝ⁴ bulk potenciál (V)',
       sec2_tr3_c4: 'Emergens, zárt önreflexív hatásminták • Dinamikusan fluktuáló effektív tömeg • Véges terjedési sebesség (c)',
 
+      sec2_h6: '6. Kvantálás a Hiperhéj Vastagságán Keresztül (Geometriai Kvantálás)',
+      sec2_p16: 'A modell egyik kulcsfontosságú felismerése, hogy a fizikai kvantálás természetes módon származtatható a hiperhéj véges L vastagságából. A 4D bulk tágulása által hátrahagyott ℝ³ hiperfelület mint elektromágneses/gravitációs hullámvezető működik, amelyre Dirichlet vagy Neumann határfeltételek vonatkoznak. A szoliton belső gerjesztései állóhullámokat képeznek, így csak a λ_n = 2L/n hullámhosszú és f_n = n * c / (2L) frekvenciájú módusok maradhatnak stabilak. Ez egy kényszerített, geometriai kvantálást ad a fizikai mezőknek.',
+      
+      sec2_h7: '7. Emergens Tömeg mint Öngerjesztő Potenciálgödör (Mach-elv)',
+      sec2_p17: 'A hagyományos modellekben a tömeg egy fundamentális, beépített paraméter. Ebben a modellben a szolitonnak nincs inherens tömege; a belső szerkezetét a Φ hullámegyenlet írja le. Azonban a hullámtér öngerjedése (κ) miatt a szoliton lokális potenciálgödröt váj ki maga körül. Ez a potenciálgödör meggátolja a szoliton szétesését (öntömörítés), és a térbeli elmozdulásakor tehetetlenségként jelentkezik. A gödör mélysége és a tehetetlen tömeg nem állandó, hanem a teljes rendszer más pontjaiban lévő energiák és tömegek eloszlásától függ, megvalósítva a Mach-elvet és a gravitációs tenzor-analógiát.',
+
+      sec2_tbl_col_phenomenon: 'Fizikai Jelenség',
+      sec2_tbl_col_standard: 'Elfogadott Formalizmus',
+      sec2_tbl_col_speculative: 'Deus Ex Machina Analógia',
+      sec2_tbl_col_explanation: 'Hatómechanizmus Leírása',
+      sec2_tbl_r1_c1: 'Tömeg & Tehetetlenség',
+      sec2_tbl_r1_c2: 'Einstein-féle téridő görbület (g_μν) az energia-lendület tenzor (T_μν) hatására.',
+      sec2_tbl_r1_c3: 'A szoliton Φ hullámmezeje lokális feszültséggel (κ) saját potenciálgödröt váj ki az ℝ³ feszültségtérben.',
+      sec2_tbl_r1_c4: 'A gödör mélysége adja a tehetetlen tömeget, aszimmetriája (külső test) a feszültség-erőt.',
+      sec2_tbl_r2_c1: 'Kvantált Állapotok',
+      sec2_tbl_r2_c2: 'Schrödinger-egyenlet: iħ∂ψ/∂t = Ĥψ • Dobozba zárt részecske diszkrét energiaszintjei (E_n).',
+      sec2_tbl_r2_c3: 'A szoliton az ℝ³ hiperhéj vastagságán (L) belül terjed mint rezonanciaüregben.',
+      sec2_tbl_r2_c4: 'Az L vastagságú hullámvezető természetes geometriai kvantálást kényszerít a szoliton frekvenciáira (f_n).',
+      sec2_tbl_r3_c1: 'Fénysebesség korlát',
+      sec2_tbl_r3_c2: 'v < c • Lorentz-transzformáció és a fizikai kölcsönhatások maximális terjedési sebessége.',
+      sec2_tbl_r3_c3: 'A rács terjedési sebességének és a hiperhéj L vastagságának dinamikus korlátja: c = √(2.5 / ΔR).',
+      sec2_tbl_r3_c4: 'Az információ terjedési sebessége nem végtelen, hanem a hiperhéj feszültség-paraméterei határolják.',
+      sec2_tbl_r4_c1: 'Kozmikus Tágulás',
+      sec2_tbl_r4_c2: 'Friedmann-egyenletek: H² = 8πG/3 * ρ - k c²/a² + Λc²/3 • Metrikus tágulás.',
+      sec2_tbl_r4_c3: 'A 4D rács 𝕎(t) dinamikus növekedése a potenciál terjedése és a szomszédsági csatolások miatt.',
+      sec2_tbl_r4_c4: 'A téridő térfogata az energia tágulásával párhuzamosan önmagát növeli (infláció/tágulás).',
+
       quote: '"A megfigyelő nélkül a valóság csak egy végtelen méretű, szimmetrikus ℝ⁴ potenciáltér, ahol semmi sem történik, mert minden egyszerre van jelen. Csak a megfigyelés által hasad fel a téridő, és kelnek életre a szolitonok, mint anyagi létezők az ℝ³ hiperfelületen."'
     },
     en: {
@@ -311,6 +340,33 @@ npm run build
       sec2_tr3_c3: 'Local tension field in ℝ³ • ℝ⁴ bulk potential (V)',
       sec2_tr3_c4: 'Emergent, closed self-reflective effect patterns • Dynamically fluctuating effective mass • Finite speed of propagation (c)',
 
+      sec2_h6: '6. Quantization via Hypershell Thickness (Geometric Quantization)',
+      sec2_p16: 'A key insight of our model is that physical quantization can be derived naturally from the finite thickness L of the hypershell. The R³ hypersurface left behind by the expanding 4D bulk acts as a resonant waveguide, subject to Dirichlet or Neumann boundary conditions. The soliton\'s internal excitations form standing waves, meaning only modes with wavelengths λ_n = 2L/n and frequencies f_n = n * c / (2L) can remain stable. This yields a forced, purely geometric quantization of the physical fields.',
+      
+      sec2_h7: '7. Emergent Mass as a Self-Focusing Potential Well (Mach\'s Principle)',
+      sec2_p17: 'In traditional physics, mass is a fundamental, hardcoded parameter. In this model, the soliton possesses no inherent mass; its internal structure is governed by the Φ wave equation. However, due to self-excitation (κ), the soliton carves out a local potential well around itself. This well prevents the soliton from dispersing (self-focusing) and manifests as inertia when moving. The potential well depth and effective mass are dynamically dependent on the global energy and mass distribution of the entire system, fulfilling Mach\'s principle and the gravitational tensor analogy.',
+
+      sec2_tbl_col_phenomenon: 'Physical Phenomenon',
+      sec2_tbl_col_standard: 'Established Formalism',
+      sec2_tbl_col_speculative: 'Deus Ex Machina Analogy',
+      sec2_tbl_col_explanation: 'Mechanism of Action Description',
+      sec2_tbl_r1_c1: 'Mass & Inertia',
+      sec2_tbl_r1_c2: 'Einstein\'s spacetime curvature (g_μν) curved by the stress-energy tensor (T_μν).',
+      sec2_tbl_r1_c3: 'The soliton\'s Φ wave field generates a local self-focusing tension (κ), carving a potential well.',
+      sec2_tbl_r1_c4: 'The well depth yields the inertial mass, and its spatial asymmetry (external body) drives the force.',
+      sec2_tbl_r2_c1: 'Quantized States',
+      sec2_tbl_r2_c2: 'Schrödinger Equation: iħ∂ψ/∂t = Ĥψ • Quantized energy levels (E_n) of a bounded particle.',
+      sec2_tbl_r2_c3: 'The soliton propagates within the finite L thickness of the R³ hypershell as a resonator.',
+      sec2_tbl_r2_c4: 'The L-wide waveguide forces a natural geometric boundary constraint on the soliton\'s modes (f_n).',
+      sec2_tbl_r3_c1: 'Speed of Light Limit',
+      sec2_tbl_r3_c2: 'v < c • Lorentz transformations and the maximum propagation speed of physical interactions.',
+      sec2_tbl_r3_c3: 'The dynamic limit of lattice propagation and the hypershell L thickness: c = √(2.5 / ΔR).',
+      sec2_tbl_r3_c4: 'The speed of information is bounded by the physical and tension parameters of the hypershell.',
+      sec2_tbl_r4_c1: 'Cosmic Expansion',
+      sec2_tbl_r4_c2: 'Friedmann equations: H² = 8πG/3 * ρ - k c²/a² + Λc²/3 • Metric expansion of space.',
+      sec2_tbl_r4_c3: 'The dynamic growth of the 4D lattice 𝕎(t) due to potential spreading and neighbor coupling.',
+      sec2_tbl_r4_c4: 'Spacetime volume increases in parallel with energy spread, explaining inflation/expansion.',
+
       quote: '"Without the observer, reality is just an infinite-sized, symmetric ℝ⁴ potential field, where nothing happens because everything is present simultaneously. Only by observation is spacetime split, and solitons come to life as material existences on the ℝ³ hypersurface."'
     },
     de: {
@@ -447,6 +503,33 @@ npm run build
       sec2_tr3_c2: '∂Φ/∂t = D∇²Φ + γ∇·(Φ∇(∇²Φ)) • ∂²ψ/∂τ² - c²∇²ψ + η∂ψ/∂τ + ω₀²sin(ψ) = 0',
       sec2_tr3_c3: 'Lokales Spannungsfeld (Tension Field) in ℝ³ • ℝ⁴-Bulk-Potenzial (V)',
       sec2_tr3_c4: 'Emergente, geschlossene selbstreflexive Effektmuster • Dynamisch fluktuierende effektive Masse • Endliche Ausbreitungsgeschwindigkeit (c)',
+
+      sec2_h6: '6. Quantisierung über die Hyperhüllendicke (Geometrische Quantisierung)',
+      sec2_p16: 'Eine wichtige Erkenntnis unseres Modells ist, dass die physikalische Quantisierung auf natürliche Weise aus der endlichen Dicke L der Hyperhülle abgeleitet werden kann. Die R³-Hyperfläche, die durch den expandierenden 4D-Bulk zurückgelassen wird, wirkt als resonanter Wellenleiter, der Dirichlet- oder Neumann-Randbedingungen unterliegt. Die internen Schwingungen des Solitons bilden stehende Wellen, sodass nur Modi mit Wellenlängen λ_n = 2L/n und Frequenzen f_n = n * c / (2L) stabil bleiben können. Dies führt zu einer rein geometrischen Quantisierung der physikalischen Felder.',
+      
+      sec2_h7: '7. Emergente Masse als selbstfokussierende Potenzialsenke (Machsches Prinzip)',
+      sec2_p17: 'In der traditionellen Physik ist die Masse ein fundamentaler Parameter. In diesem Modell besitzt das Soliton keine inhärente Masse; seine interne Struktur wird durch die Φ-Wellengleichung beschrieben. Aufgrund der Selbsterregung (κ) gräbt das Soliton jedoch eine lokale Potenzialsenke um sich herum. Diese Senke verhindert, dass sich das Soliton auflöst (Selbstfokussierung), und äußert sich bei Bewegung als Trägheit. Die Tiefe dieser Senke und die effektive Masse hängen dynamisch von der globalen Energie- und Massenverteilung des Gesamtsystems ab, was das Machsche Prinzip und die Gravitationstensor-Analogie realisiert.',
+
+      sec2_tbl_col_phenomenon: 'Physikalisches Phänomen',
+      sec2_tbl_col_standard: 'Etablierter Formalismus',
+      sec2_tbl_col_speculative: 'Deus Ex Machina Analogie',
+      sec2_tbl_col_explanation: 'Beschreibung des Wirkungsmechanismus',
+      sec2_tbl_r1_c1: 'Masse & Trägheit',
+      sec2_tbl_r1_c2: 'Einsteins Raumzeitkrümmung (g_μν) gekrümmt durch den Energie-Impuls-Tensor (T_μν).',
+      sec2_tbl_r1_c3: 'Das Φ-Wellenfeld des Solitons erzeugt lokale Spannung (κ) und gräbt eine Potenzialsenke.',
+      sec2_tbl_r1_c4: 'Die Tiefe der Senke bestimmt die träge Masse; Asymmetrien (externer Körper) treiben die Kraft.',
+      sec2_tbl_r2_c1: 'Quantisierte Zustände',
+      sec2_tbl_r2_c2: 'Schrödinger-Gleichung: iħ∂ψ/∂t = Ĥψ • Quantisierte Energieniveaus (E_n) im Kastenpotenzial.',
+      sec2_tbl_r2_c3: 'Das Soliton breitet sich innerhalb der endlichen Dicke L der R³-Hyperhülle aus.',
+      sec2_tbl_r2_c4: 'Der Wellenleiter der Breite L erzwingt eine natürliche geometrische Randbedingung für die Modi (f_n).',
+      sec2_tbl_r3_c1: 'Lichtgeschwindigkeitsgrenze',
+      sec2_tbl_r3_c2: 'v < c • Lorentz-Transformationen und maximale Ausbreitungsgeschwindigkeit physikalischer Wechselwirkungen.',
+      sec2_tbl_r3_c3: 'Die dynamische Grenze des Gitterflusses und der Hyperhüllendicke L: c = √(2.5 / ΔR).',
+      sec2_tbl_r3_c4: 'Die Geschwindigkeit von Signalen ist durch die physikalischen und Spannungsparameter begrenzt.',
+      sec2_tbl_r4_c1: 'Kosmische Expansion',
+      sec2_tbl_r4_c2: 'Friedmann-Gleichungen: H² = 8πG/3 * ρ - k c²/a² + Λc²/3 • Metrische Expansion des Raumes.',
+      sec2_tbl_r4_c3: 'Die dynamische Ausbreitung des 4D-Gitters 𝕎(t) durch Potenzialverteilung und Nachbarkopplung.',
+      sec2_tbl_r4_c4: 'Das Volumen der Raumzeit wächst parallel zur Energieausbreitung, was die Inflation/Expansion erklärt.',
 
       quote: '"Ohne den Beobachter ist die Realität nur ein unendlich großes, symmetrisches ℝ⁴-Potenzialfeld, in dem nichts passiert, weil alles gleichzeitig vorhanden ist. Erst durch die Beobachtung wird die Raumzeit gespalten, und Solitonen erwachen als materielle Existenzen auf der ℝ³-Hyperfläche zum Leben."'
     }
@@ -651,6 +734,79 @@ npm run build
                   <li><strong className="text-white">{t.sec2_l2}</strong></li>
                   <li><strong className="text-white">{t.sec2_l3}</strong></li>
                 </ul>
+              </div>
+
+              {/* Point 6: Quantization via Hypershell Thickness */}
+              <div>
+                <h4 className="text-xs font-mono text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-emerald-400" /> {t.sec2_h6}
+                </h4>
+                <p className="mb-3">
+                  {t.sec2_p16}
+                </p>
+                <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 text-center font-mono text-xs text-amber-300 my-2">
+                  λ_n = 2L / n  •  f_n = n · c / (2L)  •  E_n ∝ (n / L)²
+                </div>
+              </div>
+
+              {/* Point 7: Emergent Mass as Self-Exciting Potential Well */}
+              <div>
+                <h4 className="text-xs font-mono text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <Scale className="h-4 w-4 text-emerald-400" /> {t.sec2_h7}
+                </h4>
+                <p className="mb-3">
+                  {t.sec2_p17}
+                </p>
+                <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-left font-mono text-xs text-amber-300 my-2 overflow-x-auto whitespace-pre">
+                  V_self(x) = -κ · |Φ(x)|²
+                  M_eff = ∫ |Φ(x)|² dx · (1 + κ · ∫ |∇Φ|² dx)
+                  g_μν ∝ T_μν  ⟹  V_total(x) = ∑ V_ext,i(x) + V_self(x)
+                </div>
+              </div>
+
+              {/* Comprehensive Speculative Analogies Comparison Table */}
+              <div className="pt-4 border-t border-slate-900/60 flex flex-col gap-3">
+                <h4 className="text-xs font-mono text-sky-400 uppercase tracking-wider mb-1 flex items-center gap-2">
+                  <Compass className="h-4 w-4 text-sky-400" /> {lang === 'hu' ? 'A MEGJELENTETETT FIZIKAI JELENSÉGEK ÉS SPEKULATÍV ANALÓGIÁK TÁBLÁZATA' : lang === 'de' ? 'VERGLEICHSTABELLE DER PHYSIKALISCHEN PHÄNOMENE UND SPEKULATIVEN ANALOGIEN' : 'COMPARATIVE TABLE OF PHYSICAL PHENOMENA AND SPECULATIVE ANALOGIES'}
+                </h4>
+                <div className="overflow-x-auto my-2 border border-slate-800/80 rounded-xl bg-slate-950/80">
+                  <table className="w-full border-collapse text-xs font-sans text-slate-300">
+                    <thead>
+                      <tr className="bg-slate-900/90 border-b border-slate-800 text-slate-400 font-mono text-left">
+                        <th className="p-3 font-semibold whitespace-nowrap">{t.sec2_tbl_col_phenomenon}</th>
+                        <th className="p-3 font-semibold whitespace-nowrap">{t.sec2_tbl_col_standard}</th>
+                        <th className="p-3 font-semibold whitespace-nowrap">{t.sec2_tbl_col_speculative}</th>
+                        <th className="p-3 font-semibold whitespace-nowrap">{t.sec2_tbl_col_explanation}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/40">
+                      <tr className="hover:bg-slate-900/35 transition-colors">
+                        <td className="p-3 font-semibold text-amber-400 font-mono whitespace-nowrap">{t.sec2_tbl_r1_c1}</td>
+                        <td className="p-3 text-slate-300 font-mono">{t.sec2_tbl_r1_c2}</td>
+                        <td className="p-3 text-emerald-400 font-mono">{t.sec2_tbl_r1_c3}</td>
+                        <td className="p-3 text-slate-400">{t.sec2_tbl_r1_c4}</td>
+                      </tr>
+                      <tr className="hover:bg-slate-900/35 transition-colors">
+                        <td className="p-3 font-semibold text-sky-400 font-mono whitespace-nowrap">{t.sec2_tbl_r2_c1}</td>
+                        <td className="p-3 text-slate-300 font-mono">{t.sec2_tbl_r2_c2}</td>
+                        <td className="p-3 text-emerald-400 font-mono">{t.sec2_tbl_r2_c3}</td>
+                        <td className="p-3 text-slate-400">{t.sec2_tbl_r2_c4}</td>
+                      </tr>
+                      <tr className="hover:bg-slate-900/35 transition-colors">
+                        <td className="p-3 font-semibold text-emerald-400 font-mono whitespace-nowrap">{t.sec2_tbl_r3_c1}</td>
+                        <td className="p-3 text-slate-300 font-mono">{t.sec2_tbl_r3_c2}</td>
+                        <td className="p-3 text-emerald-400 font-mono">{t.sec2_tbl_r3_c3}</td>
+                        <td className="p-3 text-slate-400">{t.sec2_tbl_r3_c4}</td>
+                      </tr>
+                      <tr className="hover:bg-slate-900/35 transition-colors">
+                        <td className="p-3 font-semibold text-indigo-400 font-mono whitespace-nowrap">{t.sec2_tbl_r4_c1}</td>
+                        <td className="p-3 text-slate-300 font-mono">{t.sec2_tbl_r4_c2}</td>
+                        <td className="p-3 text-emerald-400 font-mono">{t.sec2_tbl_r4_c3}</td>
+                        <td className="p-3 text-slate-400">{t.sec2_tbl_r4_c4}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
               {/* Research Program: 3-Body Problem Comparative Analysis */}
