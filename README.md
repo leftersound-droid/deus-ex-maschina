@@ -36,8 +36,8 @@ npm run dev
 ---
 
 
----
 
 ## Author
+
 **Simon Lefter**  
 First public release: June 2026
