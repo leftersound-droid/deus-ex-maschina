@@ -431,6 +431,7 @@ export default function App() {
             <div>
               <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
                 {t.title}
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono font-medium tracking-wide">v1.1.0</span>
               </h1>
               <p className="text-xs text-slate-400 mt-0.5 font-mono">
                 {t.subtitle}
