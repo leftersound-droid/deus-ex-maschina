@@ -34,6 +34,10 @@ npm install
 npm run dev
 
 ---
-## Author
-**Simon Lefter** – June 2026
 
+
+---
+
+## Author
+**Simon Lefter**  
+First public release: June 2026
