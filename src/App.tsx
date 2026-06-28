@@ -22,6 +22,8 @@ import HypersurfaceLab from './components/HypersurfaceLab';
 import Manuscript from './components/Manuscript';
 import QuantizationSimulator from './components/QuantizationSimulator';
 import EffectiveSolitonLab from './components/EffectiveSolitonLab';
+import SolitonComparisonLab from './components/SolitonComparisonLab';
+import GlobalLocalHologramLab from './components/GlobalLocalHologramLab';
 import { i18n, Language } from './i18n';
 import {
   Play,
@@ -89,7 +91,7 @@ export default function App() {
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
   // UI Tabs
-  const [activeTab, setActiveTab] = useState<'visualization' | 'slice' | 'fourier' | 'lab' | 'quantization' | 'effectivelab' | 'charts' | 'manuscript'>('visualization');
+  const [activeTab, setActiveTab] = useState<'visualization' | 'slice' | 'fourier' | 'lab' | 'comparison' | 'hologram' | 'quantization' | 'effectivelab' | 'charts' | 'manuscript'>('visualization');
 
   // Initialize simulation with specific parameters
   const initializeSimulation = useCallback(
@@ -485,6 +487,8 @@ export default function App() {
             { id: 'fourier', label: t.tabFourier, icon: <Activity className="h-4 w-4" /> },
             { id: 'lab', label: t.tabLab, icon: <FlaskConical className="h-4 w-4" /> },
             { id: 'effectivelab', label: t.tabEffectiveLab, icon: <Boxes className="h-4 w-4 text-amber-400" /> },
+            { id: 'comparison', label: lang === 'hu' ? 'Összehasonlítás' : lang === 'de' ? 'Soliton-Vergleich' : 'Soliton Comparison', icon: <Scale className="h-4 w-4 text-sky-400" /> },
+            { id: 'hologram', label: lang === 'hu' ? 'Holografikus Csatolás' : lang === 'de' ? 'Holographische Kopplung' : 'Holographic Coupling', icon: <Database className="h-4 w-4 text-purple-400" /> },
             { id: 'quantization', label: lang === 'hu' ? 'Kvantálás & Tömeg' : lang === 'de' ? 'Quantisierung & Masse' : 'Quantization & Mass', icon: <Scale className="h-4 w-4 text-emerald-400" /> },
             { id: 'charts', label: t.tabCharts, icon: <TrendingUp className="h-4 w-4" /> },
             { id: 'manuscript', label: t.tabManuscript, icon: <BookOpen className="h-4 w-4" /> },
@@ -1032,6 +1036,14 @@ export default function App() {
 
               {activeTab === 'effectivelab' && (
                 <EffectiveSolitonLab model={model} lang={lang} />
+              )}
+
+              {activeTab === 'comparison' && (
+                <SolitonComparisonLab lang={lang} />
+              )}
+
+              {activeTab === 'hologram' && (
+                <GlobalLocalHologramLab lang={lang} />
               )}
 
               {activeTab === 'manuscript' && (
