@@ -809,63 +809,6 @@ npm run build
                   </table>
                 </div>
               </div>
-
-              {/* Research Program: 3-Body Problem Comparative Analysis */}
-              <div className="pt-4 border-t border-slate-900/60 flex flex-col gap-3">
-                <h4 className="text-xs font-mono text-sky-400 uppercase tracking-wider mb-1 flex items-center gap-2">
-                  <Compass className="h-4 w-4" /> {t.sec2_h5}
-                </h4>
-                <p className="text-slate-300">
-                  {t.sec2_p13}
-                </p>
-                <p className="text-slate-300">
-                  {t.sec2_p14}
-                </p>
-                
-                {/* Comparison Table */}
-                <div className="overflow-x-auto my-3 border border-slate-800/80 rounded-xl bg-slate-950/80">
-                  <table className="w-full border-collapse text-xs font-sans text-slate-300">
-                    <thead>
-                      <tr className="bg-slate-900/90 border-b border-slate-800 text-slate-400 font-mono text-left">
-                        <th className="p-3 font-semibold whitespace-nowrap">{t.sec2_th_col1}</th>
-                        <th className="p-3 font-semibold whitespace-nowrap">{t.sec2_th_col2}</th>
-                        <th className="p-3 font-semibold whitespace-nowrap">{t.sec2_th_col3}</th>
-                        <th className="p-3 font-semibold whitespace-nowrap">{t.sec2_th_col4}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800/50">
-                      <tr className="hover:bg-slate-900/35 transition-colors">
-                        <td className="p-3 font-semibold text-amber-400 font-mono whitespace-nowrap">{t.sec2_tr1_c1}</td>
-                        <td className="p-3 font-mono text-amber-200">{t.sec2_tr1_c2}</td>
-                        <td className="p-3 text-slate-400">{t.sec2_tr1_c3}</td>
-                        <td className="p-3 text-slate-400">{t.sec2_tr1_c4}</td>
-                      </tr>
-                      <tr className="hover:bg-slate-900/35 transition-colors">
-                        <td className="p-3 font-semibold text-sky-400 font-mono whitespace-nowrap">{t.sec2_tr2_c1}</td>
-                        <td className="p-3 font-mono text-sky-200">{t.sec2_tr2_c2}</td>
-                        <td className="p-3 text-slate-400">{t.sec2_tr2_c3}</td>
-                        <td className="p-3 text-slate-400">{t.sec2_tr2_c4}</td>
-                      </tr>
-                      <tr className="hover:bg-slate-900/35 transition-colors">
-                        <td className="p-3 font-semibold text-emerald-400 font-mono whitespace-nowrap">{t.sec2_tr3_c1}</td>
-                        <td className="p-3 font-mono text-emerald-200">{t.sec2_tr3_c2}</td>
-                        <td className="p-3 text-slate-400">{t.sec2_tr3_c3}</td>
-                        <td className="p-3 text-slate-400">{t.sec2_tr3_c4}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                <p className="mt-2 font-semibold text-xs text-slate-400 uppercase tracking-wider">
-                  {t.sec2_p15}
-                </p>
-                <ul className="list-disc pl-5 space-y-2 text-xs text-slate-400">
-                  <li>{t.sec2_p15_l1}</li>
-                  <li>{t.sec2_p15_l2}</li>
-                  <li>{t.sec2_p15_l3}</li>
-                </ul>
-              </div>
-
             </div>
           )}
         </div>

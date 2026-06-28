@@ -20,7 +20,6 @@ import StatsPanel from './components/StatsPanel';
 import FourierAnalysis from './components/FourierAnalysis';
 import HypersurfaceLab from './components/HypersurfaceLab';
 import Manuscript from './components/Manuscript';
-import ThreeBodySimulator from './components/ThreeBodySimulator';
 import QuantizationSimulator from './components/QuantizationSimulator';
 import EffectiveSolitonLab from './components/EffectiveSolitonLab';
 import { i18n, Language } from './i18n';
@@ -90,7 +89,7 @@ export default function App() {
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
   // UI Tabs
-  const [activeTab, setActiveTab] = useState<'visualization' | 'slice' | 'fourier' | 'lab' | 'threebody' | 'quantization' | 'effectivelab' | 'charts' | 'manuscript'>('visualization');
+  const [activeTab, setActiveTab] = useState<'visualization' | 'slice' | 'fourier' | 'lab' | 'quantization' | 'effectivelab' | 'charts' | 'manuscript'>('visualization');
 
   // Initialize simulation with specific parameters
   const initializeSimulation = useCallback(
@@ -486,7 +485,6 @@ export default function App() {
             { id: 'fourier', label: t.tabFourier, icon: <Activity className="h-4 w-4" /> },
             { id: 'lab', label: t.tabLab, icon: <FlaskConical className="h-4 w-4" /> },
             { id: 'effectivelab', label: t.tabEffectiveLab, icon: <Boxes className="h-4 w-4 text-amber-400" /> },
-            { id: 'threebody', label: lang === 'hu' ? '3-Test Összehasonlítás' : lang === 'de' ? '3-Körper-Vergleich' : '3-Body Comparison', icon: <Sparkles className="h-4 w-4 text-indigo-400" /> },
             { id: 'quantization', label: lang === 'hu' ? 'Kvantálás & Tömeg' : lang === 'de' ? 'Quantisierung & Masse' : 'Quantization & Mass', icon: <Scale className="h-4 w-4 text-emerald-400" /> },
             { id: 'charts', label: t.tabCharts, icon: <TrendingUp className="h-4 w-4" /> },
             { id: 'manuscript', label: t.tabManuscript, icon: <BookOpen className="h-4 w-4" /> },
@@ -524,12 +522,7 @@ export default function App() {
         )}
 
         {/* Dashboard Grid Layout / Comparison view */}
-        {activeTab === 'threebody' ? (
-          <div className="mt-2">
-            <ThreeBodySimulator lang={lang} />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
           {/* LEFT PANEL: Setup, Presets & Controls (Col span 4) */}
           <div className="lg:col-span-4 flex flex-col gap-6">
@@ -1146,7 +1139,6 @@ export default function App() {
           </div>
 
         </div>
-        )}
 
         {/* Footer with Madách Quote */}
         <footer className="mt-12 border-t border-slate-900/60 pt-8 pb-12 flex flex-col items-center justify-center text-center gap-4">
