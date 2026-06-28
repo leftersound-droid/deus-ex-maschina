@@ -37,6 +37,7 @@ interface BodyState {
   wVel: number; // 4D velocity
   mass: number;
   color: string;
+  charge?: number; // Electrostatic charge for Coulomb model
 }
 
 type PresetType = 'figure8' | 'lagrange' | 'binary' | 'chaotic';
@@ -51,6 +52,8 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       modelNewtonDesc: 'Klasszikus 1/r² erő. Stabil, determinisztikus pályák, zárt ellipszisek és végtelen ciklusok (pl. Figure-8).',
       modelGR: 'Általános Relativitás (1PN)',
       modelGRDesc: 'Post-Newtoni korrekció. Az elgörbült téridő miatti pálya-precessziót (merkúr-szerű elfordulás) és instabilitást szimulál.',
+      modelCoulomb: 'Elektrosztatikus Mező (Coulomb)',
+      modelCoulombDesc: 'Coulomb-törvény (1/r²). Különböző előjelű töltések vonzása és azonosak taszítása, bemutatva a töltés-aszimmetria egyedi kaotikus hatásait.',
       modelDEM: 'Deus Ex Machina (ℝ⁴)',
       modelDEMDesc: 'An ℝ⁴ emergent potential model. The bodies are solitons carving out local potential wells. Attraction is not an artificial action-at-a-distance force, but emerges directly from the gradient of the overlapping wave fields and Mach\'s principle.',
       
@@ -63,6 +66,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       paramsTitle: 'Fizikai Paraméterek',
       paramG: 'Gravitációs állandó (G):',
       paramGR: 'Relativisztikus korrekció (α_GR):',
+      paramCoulomb: 'Coulomb-állandó (k_e):',
       paramDEMTension: 'Hipertér feszültség (k_tension):',
       paramDEMJitter: 'Kvantum-szerű fluktuáció (ε):',
       
@@ -70,9 +74,9 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       simSpeed: 'Szimulációs sebesség:',
       resetBtn: 'Újraindítás',
       infoTitle: 'Miért térnek el a pályák?',
-      infoText: 'Azonos indítási sebességek és koordináták mellett a három fizikai modell drámaian eltérő jövőt eredményez: A Newtoni stabilan kering; az Általános Relativitás (GR) a téridő torzulása miatt precesszál, majd a szoros közelítéseknél kaotikussá válik; a Deus Ex Machina modellben pedig a vonzás nem távolsági erő, hanem az egymás potenciálgödrében való csúszás (potenciálgradiens) eredménye, miközben a w-oszcilláció és a Mach-elv alapján változó tömeg egyedi pálya-rezgéseket okoz.',
+      infoText: 'Azonos indítási sebességek és koordináták mellett a fizikai modellek eltérő jövőt eredményeznek: A Newtoni stabilan kering; a GR a téridő torzulása miatt precesszál; az Elektrosztatikus Mezőben a pozitív és negatív töltések aszimmetriája (vonzás/taszítás) azonnal felbontja a klasszikus gravitatív szimmetriát; a Deus Ex Machina modellben pedig a vonzás az ℝ⁴-beli hullám-potenciál gradienséből emergál.',
       limitationsTitle: 'Elméleti Határok és Lépték-Analógia (Szoliton-Skála)',
-      limitationsText: 'Teljesen igaz és kiváló fizikai meglátás: mikroszkopikus méretben egyetlen elemi szoliton önmagában nem képes kimutatható gravitációs térgörbületet létrehozni (nincs elegendő tehetetlen tömeg a klasszikus dinamikai egyenletekhez). Ez a modul egy elméleti spekuláció, egy makroszkopikus lépték-invariáns analógia. Úgy vizsgálja a 3-test problémát, mintha a nagy tömegű kozmikus égitestek maguk is kiterjedt hullámcsomagok (szolitonok) lennének, amelyek az ℝ³ hiperszeleten egymás potenciálgödreibe csúsznak bele, megvalósítva az emergens mezővonzást.',
+      limitationsText: 'Kiváló fizikai meglátás: mikroszkopikus méretben egyetlen elemi szoliton önmagában nem képes kimutatható gravitációs térgörbületet létrehozni. Ez a modul egy elméleti spekuláció, egy makroszkopikus lépték-invariáns analógia. Úgy vizsgálja a 3-test problémát, mintha a nagy tömegű kozmikus égitestek maguk is kiterjedt hullámcsomagok lennének.',
 
       ctrlTitle: 'Vezérlők & Időfejlődés',
       btnStop: 'Megállítás',
@@ -81,6 +85,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       presetStatus: 'Preset állapot:',
       descG: 'Minden modell alapvető gravitációs állandója.',
       descGR: 'A téridő görbületéből adódó relativisztikus precesszió mértéke.',
+      descCoulomb: 'Az elektrosztatikus vonzás és taszítás erőssége a Coulomb-törvény szerint.',
       descTension: 'A 4. dimenzióból (w) az ℝ³ hiperszeletbe visszahúzó rugalmas erő állandója.',
       descJitter: 'A hipertér hullámfront és az éter fluktuációinak csatolási amplitúdója.'
     },
@@ -91,6 +96,8 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       modelNewtonDesc: 'Classical 1/r² force. Stable, deterministic orbits, closed ellipses, and infinite loops (e.g., Figure-8).',
       modelGR: 'General Relativity (1PN)',
       modelGRDesc: 'Post-Newtonian correction. Simulates orbital precession (Mercury-like perihelion shift) and spacetime warping instabilities.',
+      modelCoulomb: 'Electrostatic Field (Coulomb)',
+      modelCoulombDesc: 'Coulomb\'s Law (1/r²). Attraction and repulsion between positive and negative charges, showing how charge asymmetry alters the 3-body system.',
       modelDEM: 'Deus Ex Machina (ℝ⁴)',
       modelDEMDesc: 'An ℝ⁴ emergent potential model. The bodies are solitons carving out local potential wells. Attraction is not an artificial action-at-a-distance force, but emerges directly from the gradient of the overlapping wave fields and Mach\'s principle.',
       
@@ -103,6 +110,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       paramsTitle: 'Physical Parameters',
       paramG: 'Gravitational Constant (G):',
       paramGR: 'Relativistic Precession (α_GR):',
+      paramCoulomb: 'Coulomb Constant (k_e):',
       paramDEMTension: 'Hyperspace Tension (k_tension):',
       paramDEMJitter: 'Quantum-like Jitter (ε):',
       
@@ -110,9 +118,9 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       simSpeed: 'Simulation Speed:',
       resetBtn: 'Reset Orbit',
       infoTitle: 'Why do the trajectories diverge?',
-      infoText: 'Starting with identical velocities and positions, the three physical models produce vastly different futures: Newton orbits eternally; General Relativity (GR) precesses and decays due to spacetime warping; and in our Deus Ex Machina model, attraction is not a hardcoded force, but emerges from solitons sliding down each other\'s potential wells, experiencing dynamic mass scaling via Mach\'s principle.',
+      infoText: 'Starting with identical velocities and positions, the physical models produce different futures: Newton orbits eternally; GR precesses due to spacetime warping; the Electrostatic Field immediately breaks symmetry through charge attraction/repulsion; and in our DEM model, attraction emerges from 4D wave potential gradients.',
       limitationsTitle: 'Theoretical Limitations & Scale Analogy (Soliton-Scale)',
-      limitationsText: 'An excellent and physically precise insight: at microscopic/quantum scales, a single elementary soliton does not possess enough mass to carve out a detectable spacetime curvature or govern classic gravitational 3-body dynamics. This module serves as a speculative, macroscopic scale-invariant analogy. It models celestial bodies as extended wave-packet solitons sliding down each other\'s overlapping potential wells in the ℝ³ hypersurface.',
+      limitationsText: 'An excellent and physically precise insight: at microscopic/quantum scales, a single elementary soliton does not possess enough mass to carve out a detectable spacetime curvature. This module serves as a speculative, macroscopic scale-invariant analogy.',
 
       ctrlTitle: 'Controls & Time Evolution',
       btnStop: 'Pause',
@@ -121,6 +129,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       presetStatus: 'Preset status:',
       descG: 'Fundamental gravitational constant of all models.',
       descGR: 'Relativistic orbital precession rate due to spacetime curvature.',
+      descCoulomb: 'Strength of electrostatic attraction and repulsion based on Coulomb\'s law.',
       descTension: 'Elastic return force pulling from the 4th dimension (w) back into the ℝ³ hypersurface.',
       descJitter: 'Coupling amplitude of ether and hypersurface wavefront fluctuations.'
     },
@@ -131,6 +140,8 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       modelNewtonDesc: 'Klassische 1/r² Kraft. Stabile, deterministische Orbits, geschlossene Ellipsen und unendliche Schleifen (z. B. Figure-8).',
       modelGR: 'Allgemeine Relativität (1PN)',
       modelGRDesc: 'Post-Newtonsche Korrektur. Simuliert Bahnpräzession (Merkur-ähnliche Periheldrehung) und Instabilitäten durch Raumzeit-Krümmung.',
+      modelCoulomb: 'Elektrostatisches Feld (Coulomb)',
+      modelCoulombDesc: 'Coulombsches Gesetz (1/r²). Anziehung und Abstoßung zwischen positiven und negativen Ladungen, was zu asymmetrischen Flugbahnen führt.',
       modelDEM: 'Deus Ex Machina (ℝ⁴)',
       modelDEMDesc: 'An ℝ⁴ emergent potential model. The bodies are solitons carving out local potential wells. Attraction is not an artificial action-at-a-distance force, but emerges directly from the gradient of the overlapping wave fields and Mach\'s principle.',
       
@@ -143,6 +154,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       paramsTitle: 'Physikalische Parameter',
       paramG: 'Gravitationskonstante (G):',
       paramGR: 'Relativistische Korrektur (α_GR):',
+      paramCoulomb: 'Coulomb-Konstante (k_e):',
       paramDEMTension: 'Hyperraum-Spannung (k_tension):',
       paramDEMJitter: 'Quanten-Fluktuation (ε):',
       
@@ -150,9 +162,9 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       simSpeed: 'Simulations-Geschwindigkeit:',
       resetBtn: 'Zurücksetzen',
       infoTitle: 'Warum weichen die Bahnen ab?',
-      infoText: 'Trotz identischer Startgeschwindigkeiten führen die drei physikalischen Modelle zu völlig unterschiedlichen Schicksalen: Newton kreist ewig stabil; die Allgemeine Relativitätstheorie (GR) zeigt Präzession; und das Deus Ex Machina-Modell lässt die Kraft aus dem Gradienten überlappender Solitonen-Potenziale hervorgehen, während die Trägheit dem Machschen Prinzip folgt.',
+      infoText: 'Trotz identischer Startgeschwindigkeiten führen die physikalischen Modelle zu unterschiedlichen Schicksalen: Newton kreist ewig stabil; GR zeigt Präzession; das elektrostatische Feld bricht die Symmetrie durch Ladungsanziehung/-abstoßung; und im DEM-Modell entsteht die Anziehung aus den Wellenpotenzialgradienten.',
       limitationsTitle: 'Theoretische Grenzen & Skalenanalogie (Solitonen-Skala)',
-      limitationsText: 'Eine hervorragende und physikalisch präzise Erkenntnis: Auf mikroskopischer Ebene besitzt ein einzelnes Elementarsoliton nicht genügend träge Masse, um eine nachweisbare Raumzeitkrümmung zu erzeugen oder klassische Dreikörperdynamiken zu bestimmen. Dieses Modul dient als spekulative, makroskopisch skaleninvariante Analogie. Es modelliert Himmelskörper als ausgedehnte Wellenpaket-Solitonen, die auf der ℝ³-Hyperfläche ineinandergleiten.',
+      limitationsText: 'Eine hervorragende und physikalisch präzise Erkenntnis: Auf mikroskopischer Ebene besitzt ein einzelnes Elementarsoliton nicht genügend träge Masse, um eine nachweisbare Raumzeitkrümmung zu erzeugen. Dieses Modul dient als spekulative, makroskopisch skaleninvariante Analogie.',
 
       ctrlTitle: 'Steuerung & Zeitentwicklung',
       btnStop: 'Pause',
@@ -161,6 +173,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       presetStatus: 'Preset-Status:',
       descG: 'Fundamentale Gravitationskonstante für alle Modelle.',
       descGR: 'Relativistische Bahnpräzessionsrate aufgrund der Raumzeitkrümmung.',
+      descCoulomb: 'Stärke der elektrostatischen Wechselwirkung basierend auf dem Coulomb-Gesetz.',
       descTension: 'Elastische Rückholkraft aus der 4. Dimension (w) zurück in die ℝ³-Hyperfläche.',
       descJitter: 'Kopplungsamplitude von Äther- und Hyperflächen-Wellenfrontfluktuationen.'
     }
@@ -175,25 +188,29 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
   const [alphaGR, setAlphaGR] = useState<number>(0.15); // Precession coefficient
   const [kTension, setKTension] = useState<number>(4.0); // 4D return force
   const [epsilonDEM, setEpsilonDEM] = useState<number>(0.12); // Quantum jitter amplitude
+  const [kE, setKE] = useState<number>(0.8); // Coulomb electrostatic constant
   
   // View options
   const [trailLength, setTrailLength] = useState<number>(300);
   const [simSpeed, setSimSpeed] = useState<number>(3); // steps per frame
 
-  // Three models states
+  // Four models states
   const [newtonianBodies, setNewtonianBodies] = useState<BodyState[]>([]);
   const [grBodies, setGrBodies] = useState<BodyState[]>([]);
   const [demBodies, setDemBodies] = useState<BodyState[]>([]);
+  const [coulombBodies, setCoulombBodies] = useState<BodyState[]>([]);
 
   // Trails histories
   const newtonianTrails = useRef<Vec3[][]>([[], [], []]);
   const grTrails = useRef<Vec3[][]>([[], [], []]);
   const demTrails = useRef<Vec3[][]>([[], [], []]);
+  const coulombTrails = useRef<Vec3[][]>([[], [], []]);
 
   // Viewports canvas references
   const canvasNewtonRef = useRef<HTMLCanvasElement | null>(null);
   const canvasGrRef = useRef<HTMLCanvasElement | null>(null);
   const canvasDemRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasCoulombRef = useRef<HTMLCanvasElement | null>(null);
 
   // Define Preset orbits generator
   const getPresetBodies = (preset: PresetType): BodyState[] => {
@@ -215,29 +232,29 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       bodies.push({
         pos: { x: x1, y: y1, z: 0 },
         vel: { x: vx1, y: vy1, z: 0 },
-        w: 0, wVel: 0, mass: m, color: colors[0]
+        w: 0, wVel: 0, mass: m, color: colors[0], charge: 1.0
       });
       bodies.push({
         pos: { x: -x1, y: -y1, z: 0 },
         vel: { x: vx1, y: vy1, z: 0 },
-        w: 0.1, wVel: 0.05, mass: m, color: colors[1] // slight w displacement for 4D model
+        w: 0.1, wVel: 0.05, mass: m, color: colors[1], charge: -1.0 // slight w displacement for 4D model
       });
       bodies.push({
         pos: { x: 0, y: 0, z: 0 },
         vel: { x: -2 * vx1, y: -2 * vy1, z: 0 },
-        w: -0.1, wVel: -0.05, mass: m, color: colors[2]
+        w: -0.1, wVel: -0.05, mass: m, color: colors[2], charge: 1.0
       });
     } else if (preset === 'lagrange') {
       // Massive sun (center), heavy planet, small trojan asteroid
       bodies.push({ // Sun
         pos: { x: 0, y: 0, z: 0 },
         vel: { x: 0, y: -0.05, z: 0 },
-        w: 0, wVel: 0, mass: 10.0, color: '#f59e0b' // Gold
+        w: 0, wVel: 0, mass: 10.0, color: '#f59e0b', charge: 4.0 // Gold
       });
       bodies.push({ // Jupiter
         pos: { x: 1.8, y: 0, z: 0 },
         vel: { x: 0, y: 2.3, z: 0 },
-        w: 0.05, wVel: 0.02, mass: 1.0, color: colors[0]
+        w: 0.05, wVel: 0.02, mass: 1.0, color: colors[0], charge: -1.0
       });
       const angle = Math.PI / 3; // 60 deg
       const dist = 1.8;
@@ -245,48 +262,48 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
         pos: { x: dist * Math.cos(angle), y: dist * Math.sin(angle), z: 0 },
         // circular orbit velocity vector
         vel: { x: -2.3 * Math.sin(angle) * 1.03, y: 2.3 * Math.cos(angle) * 1.03, z: 0 },
-        w: -0.05, wVel: -0.02, mass: 0.01, color: colors[1]
+        w: -0.05, wVel: -0.02, mass: 0.01, color: colors[1], charge: 0.5
       });
     } else if (preset === 'binary') {
       // Two massive stars orbiting each other, and a lighter planet orbiting further away
       bodies.push({
         pos: { x: -0.7, y: 0, z: 0 },
         vel: { x: 0, y: -1.2, z: 0 },
-        w: 0.02, wVel: 0.01, mass: 3.0, color: '#f43f5e'
+        w: 0.02, wVel: 0.01, mass: 3.0, color: '#f43f5e', charge: 2.0
       });
       bodies.push({
         pos: { x: 0.7, y: 0, z: 0 },
         vel: { x: 0, y: 1.2, z: 0 },
-        w: -0.02, wVel: -0.01, mass: 3.0, color: '#ec4899'
+        w: -0.02, wVel: -0.01, mass: 3.0, color: '#ec4899', charge: -2.0
       });
       bodies.push({
         pos: { x: 2.2, y: 0, z: 0 },
         vel: { x: 0, y: 2.1, z: 0 },
-        w: 0.1, wVel: 0.08, mass: 0.05, color: colors[0]
+        w: 0.1, wVel: 0.08, mass: 0.05, color: colors[0], charge: 0.5
       });
     } else {
       // Chaotic Dance
       bodies.push({
         pos: { x: -0.8, y: 0.5, z: 0 },
         vel: { x: 0.5, y: -0.5, z: 0 },
-        w: 0.05, wVel: 0.02, mass: 2.0, color: colors[0]
+        w: 0.05, wVel: 0.02, mass: 2.0, color: colors[0], charge: 1.2
       });
       bodies.push({
         pos: { x: 0.8, y: 0.3, z: 0 },
         vel: { x: -0.4, y: 0.8, z: 0 },
-        w: -0.05, wVel: -0.02, mass: 1.5, color: colors[1]
+        w: -0.05, wVel: -0.02, mass: 1.5, color: colors[1], charge: -1.2
       });
       bodies.push({
         pos: { x: 0.1, y: -0.8, z: 0 },
         vel: { x: -0.1, y: -0.3, z: 0 },
-        w: 0, wVel: 0, mass: 1.8, color: colors[2]
+        w: 0, wVel: 0, mass: 1.8, color: colors[2], charge: 0.8
       });
     }
 
     return bodies;
   };
 
-  // Re-initialize all three simulations
+  // Re-initialize all four simulations
   const initializeAllModels = (preset: PresetType) => {
     const fresh = getPresetBodies(preset);
     
@@ -294,11 +311,13 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
     setNewtonianBodies(JSON.parse(JSON.stringify(fresh)));
     setGrBodies(JSON.parse(JSON.stringify(fresh)));
     setDemBodies(JSON.parse(JSON.stringify(fresh)));
+    setCoulombBodies(JSON.parse(JSON.stringify(fresh)));
 
     // Clear trails
     newtonianTrails.current = [[], [], []];
     grTrails.current = [[], [], []];
     demTrails.current = [[], [], []];
+    coulombTrails.current = [[], [], []];
   };
 
   // Trigger init on preset change
@@ -481,6 +500,50 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
           }
           return next;
         });
+
+        // --- 4. COULOMB (ELECTROSTATIC) UPDATE ---
+        setCoulombBodies((prev) => {
+          const next = prev.map(b => ({ ...b, pos: { ...b.pos }, vel: { ...b.vel } }));
+          const accs: Vec3[] = next.map(() => ({ x: 0, y: 0, z: 0 }));
+
+          for (let i = 0; i < next.length; i++) {
+            for (let j = 0; j < next.length; j++) {
+              if (i === j) continue;
+              const dx = next[j].pos.x - next[i].pos.x;
+              const dy = next[j].pos.y - next[i].pos.y;
+              const dz = next[j].pos.z - next[i].pos.z;
+              const distSq = dx*dx + dy*dy + dz*dz + 1e-4;
+              const dist = Math.sqrt(distSq);
+
+              // Coulomb force: F_c = k_e * q_i * q_j / r^2
+              // Acceleration: a_c = F_c / m_i
+              const qI = next[i].charge !== undefined ? next[i].charge : 1.0;
+              const qJ = next[j].charge !== undefined ? next[j].charge : 1.0;
+              const forceMag = (-kE * qI * qJ) / (next[i].mass * distSq * dist);
+
+              accs[i].x += forceMag * dx;
+              accs[i].y += forceMag * dy;
+              accs[i].z += forceMag * dz;
+            }
+          }
+
+          for (let i = 0; i < next.length; i++) {
+            next[i].vel.x += accs[i].x * dt;
+            next[i].vel.y += accs[i].y * dt;
+            next[i].vel.z += accs[i].z * dt;
+            
+            next[i].pos.x += next[i].vel.x * dt;
+            next[i].pos.y += next[i].vel.y * dt;
+            next[i].pos.z += next[i].vel.z * dt;
+
+            if (step === 0) {
+              const trail = coulombTrails.current[i];
+              trail.push({ x: next[i].pos.x, y: next[i].pos.y, z: next[i].pos.z });
+              if (trail.length > trailLength) trail.shift();
+            }
+          }
+          return next;
+        });
       }
 
       // Draw the viewports
@@ -494,7 +557,9 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
       drawCanvas(canvasNewtonRef.current, newtonianBodies, newtonianTrails.current, 'Newtonian');
       // 2. Draw GR
       drawCanvas(canvasGrRef.current, grBodies, grTrails.current, 'GR');
-      // 3. Draw DEM
+      // 3. Draw Coulomb
+      drawCanvas(canvasCoulombRef.current, coulombBodies, coulombTrails.current, 'Electrostatic');
+      // 4. Draw DEM
       drawCanvas(canvasDemRef.current, demBodies, demTrails.current, 'DeusExMachina');
     };
 
@@ -618,17 +683,34 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
           ctx.arc(px - r/3, py - r/3, r/3, 0, Math.PI * 2);
           ctx.fill();
         }
+
+        // Draw charge details if Coulomb model
+        if (modelName === 'Electrostatic' && b.charge !== undefined) {
+          ctx.save();
+          // Draw a soft glowing boundary indicating charge type
+          ctx.strokeStyle = b.charge > 0 ? '#f43f5e90' : '#38bdf890';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.arc(px, py, r + 4, 0, Math.PI * 2);
+          ctx.stroke();
+
+          // Text label next to the body
+          ctx.fillStyle = '#cbd5e1';
+          ctx.font = '9px monospace';
+          ctx.fillText(`q=${b.charge > 0 ? '+' : ''}${b.charge}`, px + r + 6, py + 3);
+          ctx.restore();
+        }
       }
     };
 
     animFrame = requestAnimationFrame(runPhysicsStep);
     return () => cancelAnimationFrame(animFrame);
-  }, [isPlaying, G, alphaGR, kTension, epsilonDEM, trailLength, simSpeed, activePreset, newtonianBodies, grBodies, demBodies]);
+  }, [isPlaying, G, alphaGR, kTension, epsilonDEM, kE, trailLength, simSpeed, activePreset, newtonianBodies, grBodies, demBodies, coulombBodies]);
 
   // Adjust canvas dimension for retina displays on mount
   useEffect(() => {
     const handleResize = () => {
-      [canvasNewtonRef, canvasGrRef, canvasDemRef].forEach((ref) => {
+      [canvasNewtonRef, canvasGrRef, canvasDemRef, canvasCoulombRef].forEach((ref) => {
         if (ref.current) {
           ref.current.width = ref.current.clientWidth;
           ref.current.height = 240;
@@ -674,8 +756,8 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
         </div>
       </div>
 
-      {/* Viewport Canvas Grid (3 side-by-side viewports) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {/* Viewport Canvas Grid (2x2 Grid) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         
         {/* Newton Viewport */}
         <div className="rounded-xl border border-slate-800/80 bg-slate-950/40 p-3 flex flex-col gap-2 relative group overflow-hidden">
@@ -704,6 +786,21 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
           />
           <div className="text-[10px] text-slate-400 leading-relaxed font-mono p-1 bg-slate-950/40 rounded border border-slate-900/60 min-h-[44px]">
             {text.modelGRDesc}
+          </div>
+        </div>
+
+        {/* Electrostatic Field Viewport */}
+        <div className="rounded-xl border border-slate-800/80 bg-slate-950/40 p-3 flex flex-col gap-2 relative group overflow-hidden">
+          <div className="absolute top-3 left-3 bg-slate-900/80 border border-slate-800 rounded-lg px-2.5 py-1 z-10 flex items-center gap-1.5 font-mono text-[10px] uppercase font-bold text-pink-400">
+            <Zap className="h-3.5 w-3.5 text-pink-400 animate-pulse" />
+            {text.modelCoulomb}
+          </div>
+          <canvas 
+            ref={canvasCoulombRef}
+            className="w-full h-[240px] rounded-lg bg-[#050811] border border-slate-900 shadow-inner cursor-crosshair"
+          />
+          <div className="text-[10px] text-slate-400 leading-relaxed font-mono p-1 bg-slate-950/40 rounded border border-slate-900/60 min-h-[44px]">
+            {text.modelCoulombDesc}
           </div>
         </div>
 
@@ -848,6 +945,24 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
               <span className="text-[9px] text-slate-500">{text.descGR}</span>
             </div>
 
+            {/* Coulomb Constant (k_e) */}
+            <div className="flex flex-col gap-1.5 bg-slate-950/50 p-3 rounded-lg border border-slate-900">
+              <div className="flex justify-between text-[11px]">
+                <span className="text-pink-400 font-bold">{text.paramCoulomb}</span>
+                <span className="text-pink-400 font-bold">{kE.toFixed(2)}</span>
+              </div>
+              <input
+                type="range"
+                min="0.1"
+                max="3.0"
+                step="0.05"
+                value={kE}
+                onChange={(e) => setKE(parseFloat(e.target.value))}
+                className="w-full accent-pink-500 h-1 rounded-lg bg-slate-900"
+              />
+              <span className="text-[9px] text-slate-500">{text.descCoulomb}</span>
+            </div>
+
             {/* DEM Tension (k_tension) */}
             <div className="flex flex-col gap-1.5 bg-slate-950/50 p-3 rounded-lg border border-slate-900">
               <div className="flex justify-between text-[11px]">
@@ -867,7 +982,7 @@ export default function ThreeBodySimulator({ lang = 'hu' }: ThreeBodySimulatorPr
             </div>
 
             {/* DEM Jitter (epsilon) */}
-            <div className="flex flex-col gap-1.5 bg-slate-950/50 p-3 rounded-lg border border-slate-900">
+            <div className="flex flex-col gap-1.5 bg-slate-950/50 p-3 rounded-lg border border-slate-900 col-span-1 sm:col-span-2">
               <div className="flex justify-between text-[11px]">
                 <span className="text-amber-400 font-bold">{text.paramDEMJitter}</span>
                 <span className="text-amber-400 font-bold">{(epsilonDEM * 100).toFixed(0)}%</span>
