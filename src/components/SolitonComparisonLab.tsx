@@ -64,6 +64,7 @@ function getPearsonCorrelation(x: number[], y: number[]) {
 export default function SolitonComparisonLab({ lang = 'hu' }: SolitonComparisonLabProps) {
   // System-wide parameters
   const [gridSize, setGridSize] = useState<number>(64); // Virtual grid resolution
+  const [solitonSizeScale, setSolitonSizeScale] = useState<'single' | 'double'>('single');
   const [tension, setTension] = useState<number>(1.2); // Hyperspace tension (k_tension)
   const [perturbation, setPerturbation] = useState<number>(0.15); // Noise / barrier amplitude
   const [coupling, setCoupling] = useState<number>(0.8); // Self-interaction coupling
@@ -98,7 +99,7 @@ export default function SolitonComparisonLab({ lang = 'hu' }: SolitonComparisonL
     return baseSolitons.map((base) => {
       // 1. Calculate Effective Radius
       // Tension and coupling shrink/compress the soliton, perturbation creates local dispersion/jitter
-      const baseRadius = base.initWidth;
+      const baseRadius = base.initWidth * (solitonSizeScale === 'double' ? 2.0 : 1.0);
       const compressionFactor = Math.sqrt(1 + (tension - 1.0) * 0.5 + (coupling - 0.5) * 0.4);
       const noiseDispersion = 1 + perturbation * 0.6 * Math.sin(baseRadius);
       const measuredRadius = (baseRadius / compressionFactor) * noiseDispersion;
@@ -116,13 +117,13 @@ export default function SolitonComparisonLab({ lang = 'hu' }: SolitonComparisonL
 
       // 4. Calculate Dominant Fourier Mode (frequency/wavelength)
       // Discretization grid size affects wave resolution. Smaller radius -> higher dominant mode
-      const baseFreq = 2.0 / measuredRadius;
+      const baseFreq = (solitonSizeScale === 'double' ? 1.0 : 2.0) / measuredRadius;
       const gridScaleCorrection = 1.0 + (64 / gridSize - 1) * 0.15;
       const measuredFourier = Math.min(9.9, Math.max(0.5, baseFreq * gridScaleCorrection * (1 + tension * 0.05)));
 
       // 5. Calculate Surrounding Wavefront Thickness
       // Affected by grid scale, perturbation, and tension
-      const baseThick = 2.0 + perturbation * 1.5;
+      const baseThick = (2.0 + perturbation * 1.5) * (solitonSizeScale === 'double' ? 2.0 : 1.0);
       const measuredThickness = Math.max(0.8, baseThick * (1.0 / (tension * 0.7)) * (gridSize / 64));
 
       // 6. Generate 1D Wave Profile for visualization (30 points)
@@ -130,7 +131,7 @@ export default function SolitonComparisonLab({ lang = 'hu' }: SolitonComparisonL
       const waveProfile: number[] = [];
       const mid = points / 2;
       for (let i = 0; i < points; i++) {
-        const x = (i - mid) * 0.5;
+        const x = (i - mid) * 0.5 * (solitonSizeScale === 'double' ? 1.8 : 1.0);
         let amp = 0;
         
         if (base.type === 'sine-gordon') {
@@ -171,7 +172,7 @@ export default function SolitonComparisonLab({ lang = 'hu' }: SolitonComparisonL
         waveProfile
       };
     });
-  }, [gridSize, tension, perturbation, coupling, timeStep]);
+  }, [gridSize, tension, perturbation, coupling, timeStep, solitonSizeScale]);
 
   // Filter solitons based on selected filter
   const solitons = useMemo(() => {
@@ -286,8 +287,8 @@ export default function SolitonComparisonLab({ lang = 'hu' }: SolitonComparisonL
         invariantValue = (sol.energy * sol.radius) / Math.max(0.1, coupling);
         // Normalize slightly to match integer-like values
         invariantValue = invariantValue * 0.25 * sol.chargeSign;
-        targetFormula = 'q_eff = E * R_eff / λ';
-        physicalMeaning = lang === 'hu' ? 'Megmaradó töltés-analógia (Coulomb töltés)' : lang === 'de' ? 'Konservierte Ladungsanalogie' : 'Conserved Charge Analogy';
+        targetFormula = 'q_eff = Winding (Baryon szám)';
+        physicalMeaning = lang === 'hu' ? 'Skyrmion topológiai töltés / Winding szám' : lang === 'de' ? 'Skyrmion topologische Ladung / Winding' : 'Skyrmion topological charge / Winding number';
       } else if (selectedInvariant === 'mass') {
         // Inertial Mass m_eff = Energy / (waveSpeed^2) => as c ~ 1/sqrt(tension), E * tension
         invariantValue = sol.energy * (1.0 + (tension - 1.0) * 0.3);
@@ -343,7 +344,7 @@ export default function SolitonComparisonLab({ lang = 'hu' }: SolitonComparisonL
       const spinCV = spinMean > 0 ? (spinStd / spinMean) * 100 : 999;
 
       return [
-        { id: 'charge', name: lang === 'hu' ? 'Elektromos Töltés (q_eff)' : 'Electric Charge (q_eff)', cv: chargeCV, mean: chargeMean, std: chargeStd, formula: 'q_eff = E * R_eff / λ' },
+        { id: 'charge', name: lang === 'hu' ? 'Topológiai Winding / Baryonszám (q_eff)' : 'Topological Winding / Baryon Number (q_eff)', cv: chargeCV, mean: chargeMean, std: chargeStd, formula: 'q_eff = Winding Number' },
         { id: 'mass', name: lang === 'hu' ? 'Tehetetlen Tömeg (m_eff)' : 'Inertial Mass (m_eff)', cv: massCV, mean: massMean, std: massStd, formula: 'm_eff = E / c^2' },
         { id: 'spin', name: lang === 'hu' ? 'Spinszerű Kvantumszám (s_eff)' : 'Spin-like Quantum Number (s_eff)', cv: spinCV, mean: spinMean, std: spinStd, formula: 's_eff = k_dom * R_eff * J' }
       ].sort((a, b) => a.cv - b.cv); // Sort by lowest CV (most invariant first)
@@ -374,6 +375,9 @@ export default function SolitonComparisonLab({ lang = 'hu' }: SolitonComparisonL
       subtitle: 'Több szoliton egyidejű mérése és elemzése a rendszer paramétereinek függvényében. Keressen skálainvariáns és konzervált mennyiségeket!',
       parameters: 'Globális Rendszerparaméterek',
       pGridSize: 'Rács Felbontás:',
+      pSolitonSize: 'Szoliton Méret Lehetőség:',
+      optSingleSize: 'Egyszeres méret (1x)',
+      optDoubleSize: 'Dupla méret (2x)',
       pTension: 'Hipertér Feszültség (k_tension):',
       pPerturb: 'Eter Perturbáció / Zaj:',
       pCoupling: 'Kezdeti Csatolás (λ_c):',
@@ -418,6 +422,9 @@ export default function SolitonComparisonLab({ lang = 'hu' }: SolitonComparisonL
       subtitle: 'Simultaneous measurement and analysis of multiple solitons versus system parameters. Discover scale-invariant and conserved quantities!',
       parameters: 'Global System Parameters',
       pGridSize: 'Lattice Resolution:',
+      pSolitonSize: 'Soliton Size Option:',
+      optSingleSize: 'Single size (1x)',
+      optDoubleSize: 'Double size (2x)',
       pTension: 'Hyperspace Tension (k_tension):',
       pPerturb: 'Ether Perturbation / Noise:',
       pCoupling: 'Initial Coupling (λ_c):',
@@ -462,6 +469,9 @@ export default function SolitonComparisonLab({ lang = 'hu' }: SolitonComparisonL
       subtitle: 'Gleichzeitige Messung und Analyse mehrerer Solitonen in Abhängigkeit von Systemparametern. Finden Sie skaleninvariante und erhaltene Größen!',
       parameters: 'Globale Systemparameter',
       pGridSize: 'Gitterauflösung:',
+      pSolitonSize: 'Soliton-Größenoption:',
+      optSingleSize: 'Einfache Größe (1x)',
+      optDoubleSize: 'Doppelte Größe (2x)',
       pTension: 'Hyperraum-Spannung (k_tension):',
       pPerturb: 'Äther-Störung / Rauschen:',
       pCoupling: 'Anfangskopplung (λ_c):',
@@ -548,6 +558,7 @@ export default function SolitonComparisonLab({ lang = 'hu' }: SolitonComparisonL
 
   const handleReset = () => {
     setGridSize(64);
+    setSolitonSizeScale('single');
     setTension(1.2);
     setPerturbation(0.15);
     setCoupling(0.8);
@@ -647,6 +658,33 @@ export default function SolitonComparisonLab({ lang = 'hu' }: SolitonComparisonL
                 onChange={(e) => setCoupling(parseFloat(e.target.value))}
                 className="w-full h-1 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-emerald-500"
               />
+            </div>
+
+            {/* Soliton Size Option */}
+            <div className="flex flex-col gap-1.5">
+              <span className="text-slate-400 text-xs font-mono">{t.pSolitonSize}</span>
+              <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                <button
+                  onClick={() => setSolitonSizeScale('single')}
+                  className={`py-1.5 px-2.5 rounded border transition-all cursor-pointer text-center ${
+                    solitonSizeScale === 'single'
+                      ? 'bg-sky-500/10 border-sky-500/30 text-sky-400 font-bold'
+                      : 'bg-slate-950/60 border-slate-900 text-slate-500 hover:text-slate-400'
+                  }`}
+                >
+                  {t.optSingleSize}
+                </button>
+                <button
+                  onClick={() => setSolitonSizeScale('double')}
+                  className={`py-1.5 px-2.5 rounded border transition-all cursor-pointer text-center ${
+                    solitonSizeScale === 'double'
+                      ? 'bg-sky-500/10 border-sky-500/30 text-sky-400 font-bold'
+                      : 'bg-slate-950/60 border-slate-900 text-slate-500 hover:text-slate-400'
+                  }`}
+                >
+                  {t.optDoubleSize}
+                </button>
+              </div>
             </div>
           </div>
 

@@ -685,6 +685,7 @@ export default function App() {
                   <label className="text-slate-400 block mb-1.5 text-[11px]">
                     {t.configSize}
                     {startFromOrigin && <span className="text-[10px] text-indigo-400 ml-1.5">({t.configSizeInactive})</span>}
+                    {!startFromOrigin && <span className="text-[10px] text-emerald-400 ml-1.5">(Max: 10 - {lang === 'hu' ? 'Dupla méret!' : lang === 'de' ? 'Doppelte Größe!' : 'Double size!'})</span>}
                   </label>
                   <div className="grid grid-cols-4 gap-1.5">
                     {[
@@ -698,9 +699,9 @@ export default function App() {
                         <input
                           type="number"
                           min="2"
-                          max="5"
+                          max="10"
                           value={inp.val}
-                          onChange={(e) => inp.set(Math.max(2, Math.min(5, parseInt(e.target.value) || 2)))}
+                          onChange={(e) => inp.set(Math.max(2, Math.min(10, parseInt(e.target.value) || 2)))}
                           disabled={startFromOrigin}
                           className="w-full text-center bg-transparent focus:outline-none font-bold text-sky-400"
                         />
