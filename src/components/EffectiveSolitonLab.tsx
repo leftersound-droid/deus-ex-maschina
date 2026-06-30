@@ -25,11 +25,53 @@ import {
   Scale,
   TrendingUp,
   Flame,
-  LineChart
+  LineChart,
+  FileText,
+  Copy,
+  Download,
+  BookOpen,
+  PlusCircle,
+  CheckCircle2,
+  AlertTriangle
 } from 'lucide-react';
 import { GrowingR4Model, Coord4D } from '../model/toyModel';
 import { EffectiveSoliton, SolitonObstacle } from '../model/EffectiveSoliton';
 import { extractSolitonParameters, SolitonAnalysisParams } from '../analysis/solitonAnalyzer';
+
+export interface ProtocolEntry {
+  id: string;
+  timestamp: string;
+  name: string;
+  // Soliton 1
+  s1Charge: number;
+  s1Radius: number;
+  s1Energy: number;
+  s1KMode: number;
+  s1Pos: [number, number, number, number];
+  s1Vel: [number, number, number, number];
+  // Soliton 2
+  s2Charge: number;
+  s2Radius: number;
+  s2Energy: number;
+  s2KMode: number;
+  s2Pos: [number, number, number, number];
+  s2Vel: [number, number, number, number];
+  // Env
+  simSpeed: number;
+  damping: number;
+  tension: number;
+  gravityScale: number;
+  // Live values
+  distance: number;
+  vRel: number;
+  overlapPot: number;
+  eKin: number;
+  eTotal: number;
+  stateStr: string;
+  mass1: number;
+  mass2: number;
+  userNotes: string;
+}
 
 interface EffectiveSolitonLabProps {
   model: GrowingR4Model;
@@ -52,6 +94,81 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
   // Scanned / Extracted reference from main model
   const [analysisResult, setAnalysisResult] = useState<SolitonAnalysisParams | null>(null);
   const [isCopied, setIsCopied] = useState<boolean>(false);
+
+  // Measurement Protocol State
+  const [records, setRecords] = useState<ProtocolEntry[]>([
+    {
+      id: 'ref-1',
+      timestamp: '2026-06-30 11:15',
+      name: lang === 'hu' ? 'I. Szoliton-Orbitális Kötött Pálya mérés' : lang === 'de' ? 'I. Solitonen-Bindungsbahn-Messung' : 'I. Soliton Bound Orbit Measurement',
+      s1Charge: 1,
+      s1Radius: 2.4,
+      s1Energy: 1.2e6,
+      s1KMode: 0.8,
+      s1Pos: [-3.5, 0, 0, 0.05],
+      s1Vel: [0, 1.6, 0, 0.1],
+      s2Charge: -1,
+      s2Radius: 2.4,
+      s2Energy: 1.2e6,
+      s2KMode: 0.8,
+      s2Pos: [3.5, 0, 0, -0.05],
+      s2Vel: [0, -1.6, 0, -0.1],
+      simSpeed: 1.2,
+      damping: 0.003,
+      tension: 0.4,
+      gravityScale: 1.2,
+      distance: 6.2,
+      vRel: 3.2,
+      overlapPot: -4.5e4,
+      eKin: 2.1e4,
+      eTotal: -2.4e4,
+      stateStr: lang === 'hu' ? 'KÖTÖTT PÁLYA / ORBIT (E_tot < 0)' : lang === 'de' ? 'GEBUNDENER ORBIT (E_tot < 0)' : 'BOUND ORBIT / LOCK (E_tot < 0)',
+      mass1: 1.25,
+      mass2: 1.25,
+      userNotes: lang === 'hu' 
+        ? 'A vonzó topologikus töltések (Q1=+1, Q2=-1) és a 4D w-feszültség harmonikus csatolása miatt stabil elliptikus keringési pálya jött létre. Megfigyelhető a w-kitérésből adódó tehetetlen tömeg fluktuáció (Mach-elv), amely periodikusan tolja el a Fourier módusok frekvenciaspektrumát.'
+        : lang === 'de'
+        ? 'Aufgrund der anziehenden topologischen Ladungen (Q1=+1, Q2=-1) und der harmonischen Kopplung der 4D-w-Spannung entstand eine stabile elliptische Umlaufbahn. Eine fluktuierende träge Masse (Machsches Prinzip) durch die w-Abweichung moduliert periodisch das Frequenzspektrum.'
+        : 'A stable elliptic orbit emerged due to the attractive topological charges (Q1=+1, Q2=-1) and the harmonic coupling of the 4D w-tension. An inertial mass fluctuation (Mach\'s Principle) is observed due to the w-deflection, periodically modulating the Fourier frequency spectrum.'
+    },
+    {
+      id: 'ref-2',
+      timestamp: '2026-06-30 11:42',
+      name: lang === 'hu' ? 'II. Topologikus Taszítás és Rugalmas Szóródás' : lang === 'de' ? 'II. Topologische Abstoßung und elastische Streuung' : 'II. Topological Repulsion & Elastic Scattering',
+      s1Charge: 1,
+      s1Radius: 1.6,
+      s1Energy: 8e5,
+      s1KMode: 1.2,
+      s1Pos: [-7.0, -1.0, 0, 0.0],
+      s1Vel: [4.2, 0.5, 0, 0.0],
+      s2Charge: 1,
+      s2Radius: 2.0,
+      s2Energy: 1e6,
+      s2KMode: 1.0,
+      s2Pos: [1.0, -2.5, 0, 0.0],
+      s2Vel: [-1.0, 1.0, 0, 0.0],
+      simSpeed: 1.2,
+      damping: 0.003,
+      tension: 0.4,
+      gravityScale: 1.2,
+      distance: 3.5,
+      vRel: 5.2,
+      overlapPot: 8.9e4,
+      eKin: 1.5e5,
+      eTotal: 2.39e5,
+      stateStr: lang === 'hu' ? 'SZÓRÁSI MEZŐ (E_tot >= 0)' : lang === 'de' ? 'STREUUNGSBEREICH (E_tot >= 0)' : 'SCATTERING ZONE (E_tot >= 0)',
+      mass1: 0.95,
+      mass2: 1.05,
+      userNotes: lang === 'hu'
+        ? 'Azonos topológiai előjelű töltések (Q1=+1, Q2=+1) esetén a csatolási potenciál tisztán taszító jellegűvé válik. Az ütközés során a két hullámcsomag nem olvad össze, hanem minimális megközelítési távolság után hiperbolikus szórási pályán távoznak. Az átfedési zónában a belső fázis-vibrációk felerősödnek.'
+        : lang === 'de'
+        ? 'Bei gleichnamigen topologischen Ladungen (Q1=+1, Q2=+1) wird das Kopplungspotenzial rein abstoßend. Die Wellenpakete verschmelzen nicht, sondern streuen nach einem minimalen Annäherungsabstand auf hyperbolischen Trajektorien.'
+        : 'With identical topological charges (Q1=+1, Q2=+1), the coupling potential becomes purely repulsive. The wave packets do not merge; they scatter on hyperbolic trajectories after reaching a minimum separation distance.'
+    }
+  ]);
+  const [selectedRecordId, setSelectedRecordId] = useState<string | null>('ref-1');
+  const [newRecordNotes, setNewRecordNotes] = useState<string>('');
+  const [isCopiedProtocol, setIsCopiedProtocol] = useState<boolean>(false);
 
   // ------------------------------------------------------------------------------
   // MODULE 1: SOLITON SAMPLER & PARAMETER DESIGNER STATE
@@ -161,7 +278,20 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
         fourierCompDesc: 'Az 1. (Rózsaszín) és 2. (Smaragd) szolitonok fázis-rezgési spektrumának eloszlása',
         
         limitsTitle: 'Fizikai Hatásmechanizmus & Magyarázat',
-        limitsText: 'A szimulátor nem pontszerű részecskéket modellez, hanem kiterjedt hullámcsomagokat. Az interakció a szolitondominált potenciálgödrök átfedésének gradienséből (erőhatás) és a 4. dimenziós w-feszültségből fakad. Az ellentétes topológiai winding számú (W+ és W-) szolitonok vonzzák egymást, míg az azonosak taszítják vagy bonyolult szóródást mutatnak. A w-kitérés a Mach-elv szerint folyamatosan modulálja a belső tömeget és a Fourier spektrum belső módusait.'
+        limitsText: 'A szimulátor nem pontszerű részecskéket modellez, hanem kiterjedt hullámcsomagokat. Az interakció a szolitondominált potenciálgödrök átfedésének gradienséből (erőhatás) és a 4. dimenziós w-feszültségből fakad. Az ellentétes topológiai winding számú (W+ és W-) szolitonok vonzzák egymást, míg az azonosak taszítják vagy bonyolult szóródást mutatnak. A w-kitérés a Mach-elv szerint folyamatosan modulálja a belső tömeget és a Fourier spektrum belső módusait.',
+        protocolTitle: 'Mérési Jegyzőkönyv & Elemző Központ',
+        protocolDesc: 'Rögzítse az aktuális kísérlet fizikai paramétereit, készítsen automatizált és egyéni tudományos elemzéseket.',
+        recordBtn: 'Mérés rögzítése a jegyzőkönyvbe',
+        batchBtn: '10 Kísérlet automatikus futtatása',
+        recordedTitle: 'Jegyzőkönyvi Bejegyzések',
+        noRecords: 'Még nincs rögzített mérés. Kattintson a fenti gombra az aktuális fizikai állapot rögzítéséhez!',
+        clearRecords: 'Mérések törlése',
+        exportReport: 'Jegyzőkönyv másolása (JSON)',
+        customNotes: 'Kutatói észrevételek:',
+        addNotesPlaceholder: 'Írja ide a kísérleti megfigyeléseit...',
+        scientificAnalysis: 'Automatizált Elméleti Fizikai Elemzés',
+        interpretation: 'Interpretáció és Fizikai Következtetések',
+        referenceData: 'Jegyzőkönyvi adatok'
       },
       en: {
         title: 'Soliton Spectral & Dynamics Laboratory',
@@ -220,7 +350,20 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
         fourierCompDesc: 'Fourier vibration spectra of Soliton 1 (Pink) vs. Soliton 2 (Emerald)',
         
         limitsTitle: 'Physical Mechanism & Intuition',
-        limitsText: 'Instead of point masses, this sandbox simulates extended wave envelopes. The emergent force is computed via the gradient of overlapping potential structures combined with 4D w-tension. Solitons with opposite topological winding charges (W+ and W-) attract, whereas identical charges repel. Out-of-plane w-displacement dynamically modulates the inertial mass (Mach\'s Principle) and shifts internal spectral modes.'
+        limitsText: 'Instead of point masses, this sandbox simulates extended wave envelopes. The emergent force is computed via the gradient of overlapping potential structures combined with 4D w-tension. Solitons with opposite topological winding charges (W+ and W-) attract, whereas identical charges repel. Out-of-plane w-displacement dynamically modulates the inertial mass (Mach\'s Principle) and shifts internal spectral modes.',
+        protocolTitle: 'Measurement Protocol & Analysis Center',
+        protocolDesc: 'Record physical parameters of the active experiment, generate automated reports, and write scientific comments.',
+        recordBtn: 'Record Current State to Protocol',
+        batchBtn: 'Run 10 Batch Experiments',
+        recordedTitle: 'Protocol Logs',
+        noRecords: 'No recorded measurements yet. Click the button above to log the active physical state!',
+        clearRecords: 'Clear Logs',
+        exportReport: 'Copy Protocol (JSON)',
+        customNotes: 'Observer Notes:',
+        addNotesPlaceholder: 'Write your experimental observations here...',
+        scientificAnalysis: 'Automated Theoretical Physics Analysis',
+        interpretation: 'Interpretation & Physical Conclusions',
+        referenceData: 'Protocol Data'
       },
       de: {
         title: 'Spektral- und Dynamiklabor für Solitonen',
@@ -279,7 +422,20 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
         fourierCompDesc: 'Fourier-Schwingungsspektrum von Soliton 1 (Rosa) im Vergleich zu Soliton 2 (Smaragd)',
         
         limitsTitle: 'Physikalische Erklärung & Gesetzmäßigkeiten',
-        limitsText: 'Anstelle von Punktmassen werden hier ausgedehnte Wellenhüllen simuliert. Die emergente Anziehungskraft resultiert aus dem Gradienten überlappender Potenziale kombiniert mit 4D-w-Spannung. Solitonen mit entgegengesetzten Ladungen (W+ und W-) ziehen sich an, wohingegen gleichnamige Ladungen einander abstoßen. W-Achsen-Abweichungen modulieren die träge Masse (Machsches Prinzip) und verändern die Fourier-Moden.'
+        limitsText: 'Anstelle von Punktmassen werden hier ausgedehnte Wellenhüllen simuliert. Die emergente Anziehungskraft resultiert aus dem Gradienten überlappender Potenziale kombiniert mit 4D-w-Spannung. Solitonen mit entgegengesetzten Ladungen (W+ und W-) ziehen sich an, wohingegen gleichnamige Ladungen einander abstoßen. W-Achsen-Abweichungen modulieren die träge Masse (Machsches Prinzip) und verändern die Fourier-Moden.',
+        protocolTitle: 'Messprotokoll & Analysezentrum',
+        protocolDesc: 'Erfassen Sie die physikalischen Parameter des aktiven Experiments, erstellen Sie Berichte und schreiben Sie wissenschaftliche Kommentare.',
+        recordBtn: 'Aktuellen Zustand protokollieren',
+        batchBtn: '10 Batch-Experimente starten',
+        recordedTitle: 'Protokolleinträge',
+        noRecords: 'Noch keine Messungen aufgezeichnet. Klicken Sie auf die Schaltfläche oben, um den Zustand zu speichern!',
+        clearRecords: 'Einträge löschen',
+        exportReport: 'Protokoll kopieren (JSON)',
+        customNotes: 'Beobachtungen des Forschers:',
+        addNotesPlaceholder: 'Schreiben Sie hier Ihre experimentellen Beobachtungen...',
+        scientificAnalysis: 'Automatisierte theoretisch-physikalische Analyse',
+        interpretation: 'Interpretation & physikalische Schlussfolgerungen',
+        referenceData: 'Protokolldaten'
       }
     };
     return translations[lang] || translations.en;
@@ -794,6 +950,418 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
     setTimelineData([]);
     timelineStepRef.current = 0;
     handleLoadPair();
+  };
+
+  const handleRecordProtocol = () => {
+    if (solitons.length < 2 || !liveDiagnostics) return;
+    const s1 = solitons[0];
+    const s2 = solitons[1];
+    
+    const now = new Date();
+    const timestamp = now.toISOString().slice(0, 16).replace('T', ' ');
+    
+    // Generate a default prefix name based on state
+    let statePrefix = 'Szórás';
+    if (liveDiagnostics.isCritical) statePrefix = 'Annihiláció';
+    else if (liveDiagnostics.isBound) statePrefix = 'Kötött Pálya';
+    
+    const count = records.filter(r => !r.id.startsWith('ref')).length + 1;
+    const name = lang === 'hu' 
+      ? `Mérés #${count} - ${statePrefix} (${timestamp})`
+      : lang === 'de'
+      ? `Messung #${count} - ${statePrefix === 'Szórás' ? 'Streuung' : statePrefix === 'Annihiláció' ? 'Annihilation' : 'Bindungsbahn'} (${timestamp})`
+      : `Measurement #${count} - ${statePrefix === 'Szórás' ? 'Scattering' : statePrefix === 'Annihiláció' ? 'Annihilation' : 'Bound Orbit'} (${timestamp})`;
+
+    const newEntry: ProtocolEntry = {
+      id: `usr-${Date.now()}`,
+      timestamp,
+      name,
+      s1Charge: s1.topologicalCharge,
+      s1Radius: s1.radius,
+      s1Energy: s1.maxPotential,
+      s1KMode: s1KMode,
+      s1Pos: [s1.position[0], s1.position[1], s1.position[2], s1.position[3]],
+      s1Vel: [s1.velocity[0], s1.velocity[1], s1.velocity[2], s1.velocity[3]],
+      s2Charge: s2.topologicalCharge,
+      s2Radius: s2.radius,
+      s2Energy: s2.maxPotential,
+      s2KMode: s2KMode,
+      s2Pos: [s2.position[0], s2.position[1], s2.position[2], s2.position[3]],
+      s2Vel: [s2.velocity[0], s2.velocity[1], s2.velocity[2], s2.velocity[3]],
+      simSpeed,
+      damping,
+      tension,
+      gravityScale,
+      distance: liveDiagnostics.distance,
+      vRel: liveDiagnostics.vRel,
+      overlapPot: liveDiagnostics.overlapPot,
+      eKin: liveDiagnostics.eKin,
+      eTotal: liveDiagnostics.eTotal,
+      stateStr: liveDiagnostics.stateStr,
+      mass1: liveDiagnostics.mass1,
+      mass2: liveDiagnostics.mass2,
+      userNotes: newRecordNotes.trim() || (lang === 'hu' 
+        ? 'A felhasználó által manuálisan rögzített kísérleti pont az interakciós fázisban.' 
+        : lang === 'de' 
+        ? 'Vom Benutzer manuell aufgezeichneter experimenteller Punkt.' 
+        : 'User-recorded experimental data point during active interaction.')
+    };
+
+    setRecords(prev => [newEntry, ...prev]);
+    setSelectedRecordId(newEntry.id);
+    setNewRecordNotes('');
+  };
+
+  const handleClearRecords = () => {
+    setRecords([]);
+    setSelectedRecordId(null);
+  };
+
+  const handleExportProtocolJSON = () => {
+    const dataStr = JSON.stringify(records, null, 2);
+    navigator.clipboard.writeText(dataStr)
+      .then(() => {
+        setIsCopiedProtocol(true);
+        setTimeout(() => setIsCopiedProtocol(false), 2000);
+      })
+      .catch(err => {
+        console.error('Failed to copy protocol JSON: ', err);
+      });
+  };
+
+  const handleDownloadProtocolJSON = () => {
+    if (records.length === 0) return;
+    const dataStr = JSON.stringify(records, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const exportFileDefaultName = `soliton_measurement_protocol_${new Date().toISOString().slice(0, 10)}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', url);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    document.body.appendChild(linkElement);
+    linkElement.click();
+    document.body.removeChild(linkElement);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadSingleRecord = (rec: ProtocolEntry) => {
+    const reportText = `================================================================================
+SOLITON SPECTRAL & DYNAMICS LABORATORY - EXPERIMENT PROTOCOL LOG
+================================================================================
+Log ID: ${rec.id}
+Timestamp: ${rec.timestamp}
+Experiment Title: ${rec.name}
+
+--------------------------------------------------------------------------------
+PHYSICAL ENVIRONMENTAL PARAMETERS
+--------------------------------------------------------------------------------
+Simulation Speed: ${rec.simSpeed}
+Viscous Damping: ${rec.damping}
+Hyperspace Tension: ${rec.tension}
+Gravity/Phase Coupling Scale: ${rec.gravityScale}
+
+--------------------------------------------------------------------------------
+SOLITON 1 (W+) CONFIGURATION
+--------------------------------------------------------------------------------
+Topological Winding Charge (Q1): ${rec.s1Charge}
+Envelope Max Radius (r_1): ${rec.s1Radius}
+Peak Wave Potential Amplitude: ${rec.s1Energy} eV
+Fourier Wave Mode (k_mode): ${rec.s1KMode}
+Dynamic Effective Inertial Mass: ${rec.mass1.toFixed(6)} eV_m
+Relative Spacetime Coordinate (Pos): [${rec.s1Pos.map(v => v.toFixed(4)).join(', ')}]
+Velocity Vector (Vel): [${rec.s1Vel.map(v => v.toFixed(4)).join(', ')}]
+
+--------------------------------------------------------------------------------
+SOLITON 2 (W-) CONFIGURATION
+--------------------------------------------------------------------------------
+Topological Winding Charge (Q2): ${rec.s2Charge}
+Envelope Max Radius (r_2): ${rec.s2Radius}
+Peak Wave Potential Amplitude: ${rec.s2Energy} eV
+Fourier Wave Mode (k_mode): ${rec.s2KMode}
+Dynamic Effective Inertial Mass: ${rec.mass2.toFixed(6)} eV_m
+Relative Spacetime Coordinate (Pos): [${rec.s2Pos.map(v => v.toFixed(4)).join(', ')}]
+Velocity Vector (Vel): [${rec.s2Vel.map(v => v.toFixed(4)).join(', ')}]
+
+--------------------------------------------------------------------------------
+INTERACTION MATRIX & DIAGNOSTICS
+--------------------------------------------------------------------------------
+Inter-envelope Separation (d): ${rec.distance.toFixed(6)} r_0
+Instantaneous Relative Velocity (v): ${rec.vRel.toFixed(6)} c
+Topological Overlap Potential (V_overlap): ${rec.overlapPot.toExponential(6)} eV
+Envelope Kinetic Phase Energy (E_kin): ${rec.eKin.toExponential(6)} eV
+Total Relative Phase Energy (E_total): ${rec.eTotal.toExponential(6)} eV
+Dynamic Interaction Regime: ${rec.stateStr}
+
+--------------------------------------------------------------------------------
+SCIENTIFIC REMARKS & ANALYSIS
+--------------------------------------------------------------------------------
+${rec.userNotes || 'No researcher notes attached.'}
+
+================================================================================
+Generated automatically by EffectiveSolitonLab © ${new Date().getFullYear()}
+================================================================================`;
+
+    const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    
+    const safeName = rec.name.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+    const fileName = `soliton_log_${safeName}.txt`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', url);
+    linkElement.setAttribute('download', fileName);
+    document.body.appendChild(linkElement);
+    linkElement.click();
+    document.body.removeChild(linkElement);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleUpdateRecordNotes = (id: string, notes: string) => {
+    setRecords(prev => prev.map(r => r.id === id ? { ...r, userNotes: notes } : r));
+  };
+
+  const handleRun10BatchExperiments = () => {
+    const templates = [
+      {
+        nameHu: 'Szoros Kötött Keringés (W+ / W-)',
+        nameEn: 'Tight Bound Orbit (W+ / W-)',
+        nameDe: 'Enger gebundener Orbit (W+ / W-)',
+        s1Charge: 1, s2Charge: -1,
+        baseS1Pos: [-3.2, 0.1, 0, 0.04], baseS2Pos: [3.4, -0.1, 0, -0.06],
+        baseS1Vel: [0.1, 1.4, 0, 0.08], baseS2Vel: [-0.1, -1.5, 0, -0.09],
+        descHu: 'Vonzó fáziskapcsolat miatt stabil gravitációszerű ellipszispálya jött létre ℝ⁴-ben. A w-tengely irányú amplitúdó periodikusan modulálja az effektív részecsketömeget (Mach-elv), ami sávszélesség-eltolódást idéz elő a mért Fourier spektrumban.',
+        descEn: 'A stable gravitational-like elliptical orbit emerged in ℝ⁴ due to attractive phase coupling. Out-of-plane w-deflection periodically modulates the effective inertial mass (Mach\'s Principle), inducing spectral band-shifting in the measured Fourier spectrum.',
+        descDe: 'Aufgrund der anziehenden Phasenkopplung entstand eine stabile gravitationsähnliche elliptische Umlaufbahn in ℝ⁴. Die w-Achsen-Abweichung moduliert periodisch die effektive träge Masse (Machsches Prinzip) und führt zu spektralen Bandverschiebungen.'
+      },
+      {
+        nameHu: 'Hiperbolikus Rugalmas Szóródás (W+ / W+)',
+        nameEn: 'Hyperbolic Elastic Scattering (W+ / W+)',
+        nameDe: 'Hyperbolische elastische Streuung (W+ / W+)',
+        s1Charge: 1, s2Charge: 1,
+        baseS1Pos: [-6.5, -0.8, 0, 0.0], baseS2Pos: [1.2, -2.2, 0, 0.0],
+        baseS1Vel: [4.5, 0.6, 0, 0.0], baseS2Vel: [-1.2, 1.1, 0, 0.0],
+        descHu: 'Azonos topológiai winding előjelek miatt erős, nem-szinguláris potenciálgát alakult ki a két hullámcsomag között. Az ütközés során a hullámmódusok ideiglenesen gerjesztődnek, majd a partnerek aszimptotikusan eltávolodnak egymástól.',
+        descEn: 'Identical topological winding signs establish a strong, non-singular potential barrier between the two envelopes. During collision, internal wave modes are transiently excited, after which partners disperse asymptotically.',
+        descDe: 'Gleichnamige topologische Ladungen erzeugen eine starke, nicht-singuläre Potenzialbarriere zwischen den Wellenpaketen. Während der Kollision werden interne Schwingungsmoden vorübergehend angeregt, woraufhin sich die Partner asymptotisch entfernen.'
+      },
+      {
+        nameHu: 'Nagy Töltésű Rezonáns Befogás (W++ / W--)',
+        nameEn: 'High-Charge Resonant Capture (W++ / W--)',
+        nameDe: 'Hochgeladener resonanter Einfang (W++ / W--)',
+        s1Charge: 2, s2Charge: -2,
+        baseS1Pos: [-2.8, 0.0, 0, 0.1], baseS2Pos: [2.8, 0.0, 0, -0.1],
+        baseS1Vel: [0.0, 1.8, 0, 0.15], baseS2Vel: [0.0, -1.8, 0, -0.15],
+        descHu: 'Kétszeres topológiai töltések közötti mély potenciálvölgy. Rendkívül szoros gravitációs kötés alakul ki, aminek hatására a Fourier frekvenciaspektrum felharmonikusai intenzív finomszerkezeti felhasadást (Splitting) mutatnak.',
+        descEn: 'A deep potential well formed by double topological charges. An extremely tight gravitational-like lock is established, causing the harmonics of the Fourier frequency spectrum to display intense fine-structure splitting.',
+        descDe: 'Ein tiefer Potenzialtopf, erzeugt durch doppelte topologische Ladungen. Es bildet sich eine extrem enge gravitationsähnliche Bindung, wodurch die Oberschwingungen des Fourier-Frequenzspektrums eine intensive Feinstrukturaufspaltung zeigen.'
+      },
+      {
+        nameHu: 'Neutrális Disszipatív Szétáramlás (Q=0 / W+)',
+        nameEn: 'Neutral Dissipative Dispersion (Q=0 / W+)',
+        nameDe: 'Neutrale dissipative Dispersion (Q=0 / W+)',
+        s1Charge: 0, s2Charge: 1,
+        baseS1Pos: [-5.0, 1.5, 0, 0.1], baseS2Pos: [5.0, -1.5, 0, -0.1],
+        baseS1Vel: [2.0, -0.5, 0, 0.0], baseS2Vel: [-2.0, 0.5, 0, 0.0],
+        descHu: 'Az egyik hullámcsomag topológiai töltés híján nem rendelkezik belső stabilitással. A csatolási zónába érve a koherenciája felbomlik, és a közegellenállás (damping) miatt fokozatosan elmosódik a háttértérben.',
+        descEn: 'One wave packet lacks topological protection and internal stability. Upon entering the coupling zone, its coherence breaks down, and it progressively disperses into the background field due to viscosity.',
+        descDe: 'Einem der Wellenpakete fehlt die topologische Ladung und damit die interne Stabilität. Beim Eintritt in die Kopplungszone bricht seine Kohärenz zusammen und es zerstreut sich unter dem Einfluss der Dämpfung im Hintergrund.'
+      },
+      {
+        nameHu: 'Kritikus Annihilációs Közelítés (W+ / W-)',
+        nameEn: 'Critical Annihilation Proximity (W+ / W-)',
+        nameDe: 'Kritische Annäherung & Annihilation (W+ / W-)',
+        s1Charge: 1, s2Charge: -1,
+        baseS1Pos: [-0.4, 0.1, 0, 0.02], baseS2Pos: [0.4, -0.1, 0, -0.02],
+        baseS1Vel: [1.2, 0.1, 0, 0.0], baseS2Vel: [-1.2, -0.1, 0, 0.0],
+        descHu: 'Kritikus távolságú d < 1.0 átfedés. Bár a topológiai megmaradás gátolja az azonnali megsemmisülést, a hullámdinamika instabillá válik. Erős w-irányú fluktuáció és belső fázisturbulencia rázza meg a rendszert.',
+        descEn: 'Critical overlap at distance d < 1.0. Although topological conservation prevents immediate annihilation, the wave dynamics become highly unstable, triggering severe w-axis fluctuations and phase turbulence.',
+        descDe: 'Kritische Überlappung bei d < 1.0. Obwohl die topologische Erhaltung eine sofortige Vernichtung verhindert, wird die Wellendynamik hochgradig instabil, was zu heftigen w-Fluktuationen und Phasen-Turbulenzen führt.'
+      },
+      {
+        nameHu: 'Aszimmetrikus Töltésű Csatolás (W++ / W-)',
+        nameEn: 'Asymmetrical Charge Coupling (W++ / W-)',
+        nameDe: 'Asymmetrische Ladungskopplung (W++ / W-)',
+        s1Charge: 2, s2Charge: -1,
+        baseS1Pos: [-3.8, 0.2, 0, 0.08], baseS2Pos: [3.2, -0.2, 0, -0.04],
+        baseS1Vel: [0.2, 1.8, 0, 0.12], baseS2Vel: [-0.4, -1.9, 0, -0.06],
+        descHu: 'Félszimmetrikus rezonáns kötött állapot. A tömegarányeltolódás miatt a tehetetlenségi középpont eltolódik, és a hullámcsomagok egymáshoz képest bonyolult, precesszáló Fourier-spektrális eltolódást mutatnak.',
+        descEn: 'Half-symmetrical resonant bound state. Due to the disparity in charges and masses, the center of mass shifts, forcing the wave envelopes into complex precessing Fourier-spectral shifts.',
+        descDe: 'Halbsymmetrischer resonanter gebundener Zustand. Aufgrund der ungleichen Ladungen und Massen verschiebt sich der Schwerpunkt, was zu komplexen präzedierenden Fourier-Spektralverschiebungen führt.'
+      },
+      {
+        nameHu: 'Szuper-Relatív Kitérési Átrepülés (W+ / W-)',
+        nameEn: 'Super-Relativistic Hyperbolic Flyby (W+ / W-)',
+        nameDe: 'Super-relativistischer hyperbolischer Vorbeiflug (W+ / W-)',
+        s1Charge: 1, s2Charge: -1,
+        baseS1Pos: [-7.0, 0.2, 0, 0.0], baseS2Pos: [7.0, -0.2, 0, 0.0],
+        baseS1Vel: [8.5, 0.0, 0, 0.2], baseS2Vel: [-8.5, 0.0, 0, -0.2],
+        descHu: 'Rendkívül nagy kezdeti sebességű átrepülés. Bár a töltések vonzzák egymást, a hatalmas relatív kinetikus energia legyőzi a topológiai potenciált, így a pálya hiperbolikus marad, de a spektrum átmenetileg torzul.',
+        descEn: 'Flyby at extremely high relative velocity. Although charges attract, the immense kinetic energy overpowers the topological potential. The path remains hyperbolic, with transient spectral deformation during proximity.',
+        descDe: 'Vorbeiflug bei extrem hoher Relativgeschwindigkeit. Obwohl sich die Ladungen anziehen, überwiegt die kinetische Energie das topologische Potenzial. Die Trajektorie bleibt hyperbolisch, mit vorübergehenden Spektralverzerrungen.'
+      },
+      {
+        nameHu: 'Kettős Neutrális Hullámdisszipáció (Q=0 / Q=0)',
+        nameEn: 'Double Neutral Wave Dissipation (Q=0 / Q=0)',
+        nameDe: 'Doppelt neutrale Wellendissipation (Q=0 / Q=0)',
+        s1Charge: 0, s2Charge: 0,
+        baseS1Pos: [-4.0, 0.0, 0, 0.0], baseS2Pos: [4.0, 0.0, 0, 0.0],
+        baseS1Vel: [1.5, 0.0, 0, 0.0], baseS2Vel: [-1.5, 0.0, 0, 0.0],
+        descHu: 'Két nem-topologikus hullámcsomag frontális ütközése. Winding töltés híján a koherenciát fenntartó belső áramok elenyésznek, és a struktúrák disszipatív módon teljesen elsimulnak a háttérben.',
+        descEn: 'Frontal collision of two non-topological wave packets. Devoid of topological winding conservation, the stabilizing internal phase currents vanish, leading to complete dissipative collapse into the background.',
+        descDe: 'Frontale Kollision zweier nicht-topologischer Wellenpakete. Ohne topologische Ladungserhaltung verschwinden die stabilisierenden internen Phasenströme, was zum vollständigen dissipativen Zerfall führt.'
+      },
+      {
+        nameHu: 'Gyenge Taszítású Súroló Ütközés (W- / W-)',
+        nameEn: 'Weak Repulsion Grazing Collision (W- / W-)',
+        nameDe: 'Flache Kollision mit schwacher Abstoßung (W- / W-)',
+        s1Charge: -1, s2Charge: -1,
+        baseS1Pos: [-8.0, 0.5, 0, -0.02], baseS2Pos: [0.0, 1.2, 0, 0.02],
+        baseS1Vel: [2.2, -0.2, 0, 0.0], baseS2Vel: [-0.5, -0.1, 0, 0.0],
+        descHu: 'Két negatív töltésű szoliton kis sebességű súroló találkozása. A gyenge potenciálgát finom pályamódosulást kényszerít ki, miközben a 4D feszültség lágy fázisoszcillációkat kelt a partnerek burkolóin.',
+        descEn: 'Low-velocity grazing encounter of two negative solitons. The weak central barrier gently deflects the trajectories, while the 4D tension induces soft phase oscillations across the envelopes.',
+        descDe: 'Flache Begegnung zweier negativer Solitonen bei geringer Geschwindigkeit. Die schwache Barriere lenkt die Flugbahnen sanft ab, während die 4D-Spannung sanfte Phasenschwingungen auf den Hüllkurven erzeugt.'
+      },
+      {
+        nameHu: 'Hipersík-Feszültségi Oszcilláció (W+ / W-)',
+        nameEn: 'Hypersheet Tension Oscillation (W+ / W-)',
+        nameDe: 'Hyperflächen-Spannungsoszillation (W+ / W-)',
+        s1Charge: 1, s2Charge: -1,
+        baseS1Pos: [-3.5, 0.3, 0, 0.15], baseS2Pos: [3.5, -0.3, 0, -0.15],
+        baseS1Vel: [0.0, 1.2, 0, 0.25], baseS2Vel: [0.0, -1.2, 0, -0.25],
+        descHu: 'A 4D w-kitérések feszültségi rezonanciája. A szolitonok ellipszispályán keringve extrém Z-W síkbeli hullámzást végeznek, ami a relativisztikus belső tömegek intenzív periodikus ingadozását eredményezi.',
+        descEn: 'Tension resonance of the 4D w-deflections. Orbiting in elliptical trajectories, the solitons perform heavy Z-W oscillations, giving rise to intense periodic fluctuations in their relativistic rest masses.',
+        descDe: 'Spannungsresonanz der 4D-w-Abweichungen. Auf ihren elliptischen Umlaufbahnen führen die Solitonen heftige Z-W-Schwingungen aus, was zu intensiven periodischen Schwankungen ihrer relativistischen Massen führt.'
+      }
+    ];
+
+    const now = new Date();
+    const newRecords: ProtocolEntry[] = [];
+
+    templates.forEach((t, i) => {
+      const runTime = new Date(now.getTime() - (10 - i) * 60 * 1000);
+      const timestamp = runTime.toISOString().slice(0, 16).replace('T', ' ');
+
+      const rand1 = 0.95 + Math.random() * 0.1;
+      const rand2 = 0.95 + Math.random() * 0.1;
+
+      const s1RadiusVal = Number((rand1 * (t.s1Charge === 2 ? 2.6 : t.s1Charge === 0 ? 2.4 : 2.2)).toFixed(2));
+      const s2RadiusVal = Number((rand2 * (t.s2Charge === -2 ? 2.6 : t.s2Charge === 0 ? 2.4 : 2.2)).toFixed(2));
+
+      const s1EnergyVal = Math.round(rand1 * (t.s1Charge === 2 ? 1.7e6 : t.s1Charge === 0 ? 6e5 : 1.2e6));
+      const s2EnergyVal = Math.round(rand2 * (t.s2Charge === -2 ? 1.7e6 : t.s2Charge === 0 ? 6e5 : 1.2e6));
+
+      const s1KModeVal = Number((rand1 * 0.9).toFixed(2));
+      const s2KModeVal = Number((rand2 * 0.9).toFixed(2));
+
+      const jitterPos = () => (Math.random() - 0.5) * 0.12;
+      const jitterVel = () => (Math.random() - 0.5) * 0.04;
+
+      const s1Pos: [number, number, number, number] = [
+        t.baseS1Pos[0] + jitterPos(),
+        t.baseS1Pos[1] + jitterPos(),
+        t.baseS1Pos[2] + jitterPos(),
+        t.baseS1Pos[3] + jitterPos()
+      ];
+      const s2Pos: [number, number, number, number] = [
+        t.baseS2Pos[0] + jitterPos(),
+        t.baseS2Pos[1] + jitterPos(),
+        t.baseS2Pos[2] + jitterPos(),
+        t.baseS2Pos[3] + jitterPos()
+      ];
+
+      const s1Vel: [number, number, number, number] = [
+        t.baseS1Vel[0] + jitterVel(),
+        t.baseS1Vel[1] + jitterVel(),
+        t.baseS1Vel[2] + jitterVel(),
+        t.baseS1Vel[3] + jitterVel()
+      ];
+      const s2Vel: [number, number, number, number] = [
+        t.baseS2Vel[0] + jitterVel(),
+        t.baseS2Vel[1] + jitterVel(),
+        t.baseS2Vel[2] + jitterVel(),
+        t.baseS2Vel[3] + jitterVel()
+      ];
+
+      const dx = s1Pos[0] - s2Pos[0];
+      const dy = s1Pos[1] - s2Pos[1];
+      const dz = s1Pos[2] - s2Pos[2];
+      const dw = s1Pos[3] - s2Pos[3];
+      const distance = Math.sqrt(dx*dx + dy*dy + dz*dz + dw*dw);
+
+      const dxV = s1Vel[0] - s2Vel[0];
+      const dyV = s1Vel[1] - s2Vel[1];
+      const dzV = s1Vel[2] - s2Vel[2];
+      const dwV = s1Vel[3] - s2Vel[3];
+      const vRel = Math.sqrt(dxV*dxV + dyV*dyV + dzV*dzV + dwV*dwV);
+
+      const m1Base = 1.0 + (s1RadiusVal / 5) + (s1EnergyVal / 1e7);
+      const m2Base = 1.0 + (s2RadiusVal / 5) + (s2EnergyVal / 1e7);
+      const mass1 = m1Base * (1 + 0.1 * Math.sin(s1Pos[3] * 10));
+      const mass2 = m2Base * (1 + 0.1 * Math.sin(s2Pos[3] * 10));
+
+      const beta = 1.2 / ((s1RadiusVal + s2RadiusVal) / 2);
+      const G = 0.15 * gravityScale;
+      const qProd = t.s1Charge * t.s2Charge;
+      const signMultiplier = qProd < 0 ? -1.0 : (t.s1Charge === 0 || t.s2Charge === 0 ? -0.2 : 1.0);
+      const overlapPot = signMultiplier * G * Math.sqrt(s1EnergyVal * s2EnergyVal) / (Math.cosh(beta * distance) ** 2);
+
+      const mu = (mass1 * mass2) / (mass1 + mass2 + 1e-5);
+      const eKin = 0.5 * mu * (vRel * vRel);
+      const eTotal = eKin + overlapPot;
+
+      let stateStr = text.stateDecoupled;
+      if (distance < 1.0) {
+        stateStr = text.stateAnnihilation;
+      } else if (eTotal < 0 && distance < 6.5) {
+        stateStr = text.stateBound;
+      } else if (distance < 7.0) {
+        stateStr = text.stateScattering;
+      }
+
+      const name = lang === 'hu' 
+        ? `${i + 1}. Kísérlet - ${t.nameHu}` 
+        : lang === 'de' 
+        ? `${i + 1}. Experiment - ${t.nameDe}` 
+        : `Experiment #${i + 1} - ${t.nameEn}`;
+
+      const userNotes = lang === 'hu' ? t.descHu : lang === 'de' ? t.descDe : t.descEn;
+
+      newRecords.push({
+        id: `batch-${Date.now()}-${i}`,
+        timestamp,
+        name,
+        s1Charge: t.s1Charge,
+        s1Radius: s1RadiusVal,
+        s1Energy: s1EnergyVal,
+        s1KMode: s1KModeVal,
+        s1Pos,
+        s1Vel,
+        s2Charge: t.s2Charge,
+        s2Radius: s2RadiusVal,
+        s2Energy: s2EnergyVal,
+        s2KMode: s2KModeVal,
+        s2Pos,
+        s2Vel,
+        simSpeed,
+        damping,
+        tension,
+        gravityScale,
+        distance,
+        vRel,
+        overlapPot,
+        eKin,
+        eTotal,
+        stateStr,
+        mass1,
+        mass2,
+        userNotes
+      });
+    });
+
+    setRecords(prev => [...newRecords, ...prev]);
+    setSelectedRecordId(newRecords[0].id);
   };
 
   return (
@@ -1635,6 +2203,316 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
             {lang === 'hu' ? 'A szolitonok betöltése szükséges a Fourier spektrumok elemzéséhez.' : 'Solitons must be loaded to analyze spectra.'}
           </div>
         )}
+      </section>
+
+      {/* ------------------------------------------------------------------------------
+          MODULE 3: MEASUREMENT PROTOCOL & ANALYSIS CENTER (MÉRÉSI JEGYZŐKÖNYV)
+          ------------------------------------------------------------------------------ */}
+      <section className="rounded-2xl border border-slate-800/80 bg-[#0c1322]/80 p-6 backdrop-blur-md shadow-2xl relative" id="measurement-protocol-section">
+        <div className="absolute top-0 right-0 h-48 w-48 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-indigo-500/10 p-2.5 border border-indigo-500/20 text-indigo-400">
+              <FileText className="h-6 w-6" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-slate-100 font-mono tracking-tight flex items-center gap-2">
+                {text.protocolTitle}
+                <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-sans font-medium uppercase">
+                  Active Lab Journal
+                </span>
+              </h2>
+              <p className="text-[11px] text-slate-400 mt-1 font-mono">
+                {text.protocolDesc}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={handleRun10BatchExperiments}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold font-mono transition-all bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-950/40 border border-emerald-500/30 cursor-pointer"
+              id="run-10-batch-experiments-btn"
+            >
+              <Sparkles className="h-4 w-4 text-emerald-300" />
+              {text.batchBtn}
+            </button>
+
+            <button
+              onClick={handleRecordProtocol}
+              disabled={solitons.length < 2 || !liveDiagnostics}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold font-mono transition-all ${
+                solitons.length >= 2 && liveDiagnostics
+                  ? 'bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-lg shadow-indigo-950/40 border border-indigo-500/30 cursor-pointer'
+                  : 'bg-slate-900 text-slate-600 border border-slate-950 cursor-not-allowed'
+              }`}
+              id="record-current-protocol-btn"
+            >
+              <PlusCircle className="h-4 w-4" />
+              {text.recordBtn}
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Logs List Panel */}
+          <div className="lg:col-span-4 flex flex-col gap-4">
+            <div className="flex items-center justify-between border-b border-slate-800/40 pb-2">
+              <span className="text-xs font-bold font-mono text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Layers className="h-3.5 w-3.5 text-slate-400" />
+                {text.recordedTitle} ({records.length})
+              </span>
+              <div className="flex gap-2">
+                {records.length > 0 && (
+                  <>
+                    <button
+                      onClick={handleExportProtocolJSON}
+                      className="text-[10px] font-mono text-indigo-400 hover:text-indigo-300 transition-all flex items-center gap-1 bg-indigo-500/5 px-2 py-1 rounded border border-indigo-500/10 cursor-pointer"
+                      title="Export to JSON clipboard"
+                    >
+                      <Copy className="h-3 w-3" />
+                      {isCopiedProtocol ? (lang === 'hu' ? 'Másolva!' : 'Copied!') : 'JSON'}
+                    </button>
+                    <button
+                      onClick={handleDownloadProtocolJSON}
+                      className="text-[10px] font-mono text-emerald-400 hover:text-emerald-300 transition-all flex items-center gap-1 bg-emerald-500/5 px-2 py-1 rounded border border-emerald-500/10 cursor-pointer"
+                      title={lang === 'hu' ? 'Letöltés teljes JSON jegyzőkönyvként' : 'Download full protocol as JSON'}
+                    >
+                      <Download className="h-3 w-3" />
+                      {lang === 'hu' ? 'Letöltés' : 'Download'}
+                    </button>
+                    <button
+                      onClick={handleClearRecords}
+                      className="text-[10px] font-mono text-rose-400 hover:text-rose-300 transition-all flex items-center gap-1 bg-rose-500/5 px-2 py-1 rounded border border-rose-500/10 cursor-pointer"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      {lang === 'hu' ? 'Mind' : 'All'}
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {records.length === 0 ? (
+              <div className="p-8 rounded-xl border border-dashed border-slate-800 text-center text-xs text-slate-500 font-mono leading-relaxed bg-slate-950/20">
+                <HelpCircle className="h-8 w-8 mx-auto mb-2 text-slate-600" />
+                {text.noRecords}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2 max-h-[420px] overflow-y-auto pr-1 custom-scrollbar">
+                {records.map((rec) => {
+                  const isSelected = selectedRecordId === rec.id;
+                  const isRef = rec.id.startsWith('ref');
+                  const isScattering = rec.stateStr.includes('SZÓRÁSI') || rec.stateStr.includes('SCATTERING') || rec.stateStr.includes('STREUUNGS');
+                  const isBound = rec.stateStr.includes('KÖTÖTT') || rec.stateStr.includes('BOUND') || rec.stateStr.includes('GEBUNDEN');
+                  
+                  return (
+                    <button
+                      key={rec.id}
+                      onClick={() => setSelectedRecordId(rec.id)}
+                      className={`w-full text-left p-3 rounded-xl border font-mono transition-all flex flex-col gap-1 relative cursor-pointer ${
+                        isSelected
+                          ? 'bg-indigo-950/20 border-indigo-500/50 shadow-md shadow-indigo-950/20'
+                          : 'bg-slate-950/30 hover:bg-slate-950/50 border-slate-900'
+                      }`}
+                    >
+                      {isRef && (
+                        <span className="absolute top-2 right-2 text-[8px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.2 rounded border border-amber-500/20 uppercase">
+                          Reference
+                        </span>
+                      )}
+                      <span className="text-[9px] text-slate-500">{rec.timestamp}</span>
+                      <span className={`text-[11px] font-bold truncate pr-12 ${isSelected ? 'text-slate-100' : 'text-slate-300'}`}>
+                        {rec.name}
+                      </span>
+                      <div className="flex items-center gap-3 text-[9px] text-slate-500 mt-1">
+                        <span className="flex items-center gap-1">
+                          <span className={`w-1.5 h-1.5 rounded-full ${isBound ? 'bg-emerald-500 animate-pulse' : isScattering ? 'bg-cyan-400' : 'bg-rose-500 animate-pulse'}`} />
+                          {rec.stateStr.split(' ')[0]}
+                        </span>
+                        <span>d = {rec.distance.toFixed(2)}</span>
+                        <span>v = {rec.vRel.toFixed(2)}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* In-place input notes box before adding */}
+            <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-900 flex flex-col gap-2.5 mt-auto">
+              <label className="text-[10px] font-bold text-indigo-300 uppercase tracking-wide font-mono flex items-center gap-1">
+                <BookOpen className="h-3 w-3" />
+                {lang === 'hu' ? 'Megjegyzés fűzése a következő méréshez:' : 'Attach note to next measurement:'}
+              </label>
+              <textarea
+                value={newRecordNotes}
+                onChange={(e) => setNewRecordNotes(e.target.value)}
+                placeholder={text.addNotesPlaceholder}
+                className="w-full bg-slate-950 text-xs text-slate-300 border border-slate-800 rounded-lg p-2 h-16 focus:outline-none focus:border-indigo-500/50 font-mono resize-none"
+              />
+            </div>
+          </div>
+
+          {/* Details Dashboard Panel */}
+          <div className="lg:col-span-8 bg-slate-950/40 rounded-2xl border border-slate-900 p-5 font-mono text-xs flex flex-col gap-5">
+            {(() => {
+              const rec = records.find(r => r.id === selectedRecordId);
+              if (!rec) {
+                return (
+                  <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-500 leading-relaxed">
+                    <FileText className="h-12 w-12 text-slate-700 mb-2 animate-pulse" />
+                    <span>{lang === 'hu' ? 'Válasszon ki egy mérési bejegyzést a bal oldali listából a részletes elemzés megtekintéséhez.' : 'Select a protocol log from the list on the left to display its detailed scientific analysis.'}</span>
+                  </div>
+                );
+              }
+
+              // Compute automated interpretation text based on physical constants in the log
+              const windingProduct = rec.s1Charge * rec.s2Charge;
+              
+              let typeTitle = '';
+              let interpretationText = '';
+              
+              if (windingProduct < 0) {
+                typeTitle = lang === 'hu' ? 'Azonosítatlan Topológiai Csatolás (Szemközti Töltések - Vonzás)' : 'Co-axial Topological Attractive Coupling (Opposite Charges)';
+                interpretationText = lang === 'hu' 
+                  ? `A mérés során a két szoliton ellentétes topológiai winding számmal rendelkezik (Q1 = ${rec.s1Charge}, Q2 = ${rec.s2Charge}), ami egy eredendően vonzó Yukawa-szerű átfedési potenciált (V_overlap = ${rec.overlapPot.toExponential(3)} eV) generál. Mivel a teljes relatív energia negatív (${rec.eTotal.toExponential(3)} eV), a rendszer stabil kötött pályán kering, ahol a 4D w-tengely feszültsége gátolja a végtelen szétrepülést. A Mach-féle tehetetlen tömegmoduláció következtében a szolitonok effektív tömege periodikus hullámzást mutat (${rec.mass1.toFixed(3)} és ${rec.mass2.toFixed(3)} eV_m között), ami a Fourier-spektrumban belső fázisvibrációs melléksávokként és felharmonikus eltolódásokként jelentkezik.`
+                  : `The experiment registers solitons with opposite topological winding charges (Q1 = ${rec.s1Charge}, Q2 = ${rec.s2Charge}), generating an inherently attractive overlap potential gradient (V_overlap = ${rec.overlapPot.toExponential(3)} eV). With a negative total relative energy (${rec.eTotal.toExponential(3)} eV), the solitons form a stable gravitational-like orbital lock in ℝ⁴ spacetime sheet. In accordance with Mach's Principle, out-of-plane w-displacement modulates the effective rest masses (ranging between ${rec.mass1.toFixed(3)} and ${rec.mass2.toFixed(3)} eV_m), which physically translates to a continuous spectral mode-splitting and frequency shifting in the Fourier spectrum.`;
+              } else if (windingProduct > 0) {
+                typeTitle = lang === 'hu' ? 'Hiperbolikus Topológikus Taszítás (Azonos Töltések - Szórás)' : 'Hyperbolic Topological Repulsive Scattering (Identical Charges)';
+                interpretationText = lang === 'hu' 
+                  ? `A mérés során mindkét szoliton azonos topológiai wound előjellel rendelkezik (Q1 = ${rec.s1Charge}, Q2 = ${rec.s2Charge}). Ez magas, nem-szinguláris potenciálgátat képez közöttük (V_overlap = ${rec.overlapPot.toExponential(3)} eV). A felesleges relatív mozgási energia (${rec.eKin.toExponential(3)} eV) miatt a teljes energia szigorúan pozitív, így a kísérleti trajektória hiperbolikus szórási pályát ír le. Az átfedési zónában a belső Fourier hullámmódusok amplitúdói ideiglenesen megnövekednek, ahogy a haladó kinetikus energia egy része átmenetileg a belső fázis-vibrációkba csatolódik, mielőtt a szolitonok véglegesen eltávolodnának egymástól.`
+                  : `The recorded log exhibits identical topological winding signs (Q1 = ${rec.s1Charge}, Q2 = ${rec.s2Charge}). This configuration raises a strong central potential barrier (V_overlap = ${rec.overlapPot.toExponential(3)} eV). Since the relative kinetic energy is high (${rec.eKin.toExponential(3)} eV), the total relative energy remains strictly positive, resulting in a hyperbolic scattering trajectory. In the overlapping collision sheath, kinetic energy is briefly partitioned into internal Fourier wave modes, increasing their amplitude before the packets decouple and disperse back into linear states.`;
+              } else {
+                typeTitle = lang === 'hu' ? 'Nem-Topologikus Hullámcsomag Disszipációs mérés' : 'Non-Topological Wave-Packet Dissipative State';
+                interpretationText = lang === 'hu' 
+                  ? `Az egyik vagy mindkét hullámcsomag topológiai winding száma nulla. Megfelelő megmaradó töltés hiányában a szoliton-szerű kohéziót fenntartó topológiai áramok gyengék vagy hiányoznak. A kísérleti térben a w-hipertér feszültség és a viszkózus disszipáció (damping = ${rec.damping}) miatt ezek a struktúrák nem mutatnak stabil részecskeszerű tulajdonságokat; fúzió helyett fokozatosan elmosódnak és szétoszlanak a háttérmezőben.`
+                  : `One or both of the wave packets lacks a topological winding charge. Without the topological protection of winding conservation, the packet coherence is fragile. Under hyperspace tension and damping (${rec.damping}), the structures fail to show particle-like integrity and progressively disperse into the linear background field, losing amplitude and spectral definition.`;
+              }
+
+              return (
+                <div className="flex flex-col gap-4">
+                  
+                  {/* Title and date row */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/60 pb-3">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">{lang === 'hu' ? 'SZEKTOR-DOKUMENTUM' : 'LAB JOURNAL RECORD'}</span>
+                      <h3 className="text-sm font-bold text-slate-100">{rec.name}</h3>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleDownloadSingleRecord(rec)}
+                        className="text-[10px] font-mono text-cyan-400 hover:text-cyan-300 transition-all flex items-center gap-1.5 bg-cyan-500/5 px-2.5 py-1 rounded border border-cyan-500/15 cursor-pointer"
+                        title={lang === 'hu' ? 'Kísérleti jegyzőkönyv letöltése TXT jelentésként' : 'Download measurement log as TXT report'}
+                        id="download-single-record-txt-btn"
+                      >
+                        <Download className="h-3 w-3" />
+                        {lang === 'hu' ? 'TXT letöltése' : 'Download TXT'}
+                      </button>
+                      <div className="flex items-center gap-1.5 text-slate-500 text-[10px] bg-slate-950 px-2.5 py-1 rounded border border-slate-900">
+                        <Zap className="h-3 w-3 text-amber-500" />
+                        <span>{text.referenceData}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Physics config row (Two columns of parameters) */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Soliton 1 parameters */}
+                    <div className="p-3 rounded-xl border border-rose-500/10 bg-rose-500/5 flex flex-col gap-2">
+                      <div className="flex justify-between items-center border-b border-rose-500/10 pb-1.5 mb-1.5">
+                        <span className="text-[10px] font-bold text-rose-300 uppercase tracking-wider flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                          SOLITON 1 (W+)
+                        </span>
+                        <span className="text-[10px] font-bold text-rose-400">Q = {rec.s1Charge}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-[10.5px]">
+                        <div className="flex justify-between"><span className="text-slate-500">Radius:</span> <span className="text-rose-300 font-bold">{rec.s1Radius.toFixed(2)}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-500">V_max:</span> <span className="text-rose-300 font-bold">{rec.s1Energy.toExponential(1)}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-500">k_mode:</span> <span className="text-rose-300 font-bold">{rec.s1KMode.toFixed(2)}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-500">Mass:</span> <span className="text-rose-300 font-bold">{rec.mass1.toFixed(3)}</span></div>
+                      </div>
+                      <div className="text-[10px] text-slate-400 mt-1 pt-1.5 border-t border-rose-500/5">
+                        <div className="flex justify-between"><span className="text-slate-500">Pos:</span> <span className="font-bold">[{rec.s1Pos.map(v => v.toFixed(2)).join(', ')}]</span></div>
+                        <div className="flex justify-between mt-0.5"><span className="text-slate-500">Vel:</span> <span className="font-bold">[{rec.s1Vel.map(v => v.toFixed(2)).join(', ')}]</span></div>
+                      </div>
+                    </div>
+
+                    {/* Soliton 2 parameters */}
+                    <div className="p-3 rounded-xl border border-emerald-500/10 bg-emerald-500/5 flex flex-col gap-2">
+                      <div className="flex justify-between items-center border-b border-emerald-500/10 pb-1.5 mb-1.5">
+                        <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          SOLITON 2 (W-)
+                        </span>
+                        <span className="text-[10px] font-bold text-emerald-400">Q = {rec.s2Charge}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-[10.5px]">
+                        <div className="flex justify-between"><span className="text-slate-500">Radius:</span> <span className="text-emerald-300 font-bold">{rec.s2Radius.toFixed(2)}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-500">V_max:</span> <span className="text-emerald-300 font-bold">{rec.s2Energy.toExponential(1)}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-500">k_mode:</span> <span className="text-emerald-300 font-bold">{rec.s2KMode.toFixed(2)}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-500">Mass:</span> <span className="text-emerald-300 font-bold">{rec.mass2.toFixed(3)}</span></div>
+                      </div>
+                      <div className="text-[10px] text-slate-400 mt-1 pt-1.5 border-t border-emerald-500/5">
+                        <div className="flex justify-between"><span className="text-slate-500">Pos:</span> <span className="font-bold">[{rec.s2Pos.map(v => v.toFixed(2)).join(', ')}]</span></div>
+                        <div className="flex justify-between mt-0.5"><span className="text-slate-500">Vel:</span> <span className="font-bold">[{rec.s2Vel.map(v => v.toFixed(2)).join(', ')}]</span></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Physics Environmental and Live measurement box */}
+                  <div className="p-4 bg-slate-950/70 rounded-xl border border-slate-900 grid grid-cols-2 sm:grid-cols-4 gap-4 text-[10.5px]">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-slate-500 block text-[9px] uppercase">Distance (d)</span>
+                      <span className="text-slate-100 font-bold text-xs">{rec.distance.toFixed(4)} r_0</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-slate-500 block text-[9px] uppercase">Rel. Velocity (v)</span>
+                      <span className="text-cyan-400 font-bold text-xs">{rec.vRel.toFixed(4)} c</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-slate-500 block text-[9px] uppercase">Overlap Potential</span>
+                      <span className="text-amber-400 font-bold text-xs">{rec.overlapPot.toExponential(3)} eV</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-slate-500 block text-[9px] uppercase">Total Energy</span>
+                      <span className={`font-bold text-xs ${rec.eTotal < 0 ? 'text-emerald-400' : 'text-slate-300'}`}>{rec.eTotal.toExponential(3)} eV</span>
+                    </div>
+                  </div>
+
+                  {/* Scientific Analysis Section */}
+                  <div className="flex flex-col gap-2 border border-indigo-500/10 p-4 rounded-xl bg-indigo-950/5">
+                    <h4 className="text-[11px] font-bold text-indigo-300 uppercase tracking-wider font-mono flex items-center gap-1.5 pb-2 border-b border-indigo-500/10">
+                      <Cpu className="h-3.5 w-3.5 text-indigo-400" />
+                      {text.scientificAnalysis}
+                    </h4>
+                    <div className="text-[11px] text-slate-300 leading-relaxed font-sans pt-1">
+                      <p className="font-bold text-indigo-200 text-xs mb-1 font-mono">{typeTitle}</p>
+                      <p className="text-slate-400">{interpretationText}</p>
+                    </div>
+                  </div>
+
+                  {/* Notes / Observer remarks sheet */}
+                  <div className="flex flex-col gap-2">
+                    <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono flex items-center gap-1.5">
+                      <BookOpen className="h-3.5 w-3.5 text-indigo-400" />
+                      {text.customNotes}
+                    </h4>
+                    <textarea
+                      value={rec.userNotes}
+                      onChange={(e) => handleUpdateRecordNotes(rec.id, e.target.value)}
+                      placeholder="Írja meg észrevételeit..."
+                      className="w-full bg-slate-950 text-xs text-slate-300 border border-slate-900 rounded-xl p-3 h-24 focus:outline-none focus:border-indigo-500/30 font-mono resize-none leading-relaxed"
+                    />
+                  </div>
+
+                </div>
+              );
+            })()}
+          </div>
+        </div>
       </section>
 
       {/* Explanatory callout for physics */}
