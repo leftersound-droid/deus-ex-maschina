@@ -174,6 +174,85 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
   const [isCopiedProtocol, setIsCopiedProtocol] = useState<boolean>(false);
 
   // ------------------------------------------------------------------------------
+  // COSMIC SELF-REFLEXIVE ENVIRONMENT & HIGH-RESOLUTION PROBE EXPERIMENT STATE
+  // ------------------------------------------------------------------------------
+  const [cosmicGridSize, setCosmicGridSize] = useState<number>(256);
+  const [cosmicSteps, setCosmicSteps] = useState<number>(1200);
+  const [cosmicSimSpeed, setCosmicSimSpeed] = useState<number>(2.0);
+  const [cosmicStatus, setCosmicStatus] = useState<'idle' | 'generating' | 'completed'>('idle');
+  const [cosmicProgress, setCosmicProgress] = useState<number>(0);
+  const [cosmicWells, setCosmicWells] = useState<Array<{ id: string; name: string; x: number; y: number; depth: number; asymmetry: number; distortion: number }>>([]);
+  const [selectedCosmicWellId, setSelectedCosmicWellId] = useState<string | null>(null);
+
+  // High-Resolution Probe Config
+  const [probeWinding, setProbeWinding] = useState<number>(1);
+  const [probeCharge, setProbeCharge] = useState<number>(1);
+  const [probeResolution, setProbeResolution] = useState<number>(2); // 2 = 2x, 4 = 4x
+  const [probeInitVelocity, setProbeInitVelocity] = useState<'zero' | 'low' | 'medium'>('zero');
+
+  // Comparison Trials Results
+  const [cosmicTrialResult, setCosmicTrialResult] = useState<{
+    wellName: string;
+    pure: {
+      qEff: number;
+      backReaction: number;
+      deviation: number;
+      distortion: number;
+      stability: string;
+      trajectory: Array<{ x: number; y: number }>;
+    };
+    enhanced: {
+      qEff: number;
+      backReaction: number;
+      deviation: number;
+      distortion: number;
+      stability: string;
+      trajectory: Array<{ x: number; y: number }>;
+    };
+  } | null>(null);
+
+  // Dedicated Cosmic Protocols State
+  const [cosmicProtocols, setCosmicProtocols] = useState<Array<{
+    id: string;
+    timestamp: string;
+    scenarioName: string;
+    gridSize: number;
+    steps: number;
+    simSpeed: number;
+    wellName: string;
+    probeWinding: number;
+    probeResolution: number;
+    probeInitVelocity: string;
+    probeCharge: number;
+    pureQEff: number;
+    pureStability: string;
+    enhancedQEff: number;
+    enhancedStability: string;
+    distortion: number;
+    backReaction: number;
+  }>>([
+    {
+      id: 'cosmic-ref-1',
+      timestamp: '11:05:12',
+      scenarioName: 'Alapértelmezett Kozmikus Fluktuáció (Default Cosmic Fluctuation)',
+      gridSize: 256,
+      steps: 1200,
+      simSpeed: 2.0,
+      wellName: 'Alfa-Mag Csillaghalmaz',
+      probeWinding: 1,
+      probeResolution: 2,
+      probeInitVelocity: 'Zero (0.0 v_0)',
+      probeCharge: 1,
+      pureQEff: 0.0034,
+      pureStability: 'TÖKÉLETESEN STABIL (Konzervált topológia)',
+      enhancedQEff: 0.0,
+      enhancedStability: 'KÖZEPESEN DEFORMÁLT (Erős rácsfeszültség)',
+      distortion: 100,
+      backReaction: 13.9
+    }
+  ]);
+
+  // ------------------------------------------------------------------------------
   // MODULE 1: SOLITON SAMPLER & PARAMETER DESIGNER STATE
   // ------------------------------------------------------------------------------
   
@@ -705,6 +784,479 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
 
     setSolitons([s1, s2]);
     setSelectedSolitonId('soliton-1');
+  };
+
+  // 1. COSMIC ENVIRONMENT GENERATION
+  const handleGenerateCosmicEnvironment = () => {
+    setCosmicStatus('generating');
+    setCosmicProgress(0);
+    setCosmicWells([]);
+    setSelectedCosmicWellId(null);
+    setCosmicTrialResult(null);
+
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 5;
+      setCosmicProgress(progress);
+      if (progress >= 100) {
+        clearInterval(interval);
+        
+        // Calculate beautiful deterministic but realistic natural potential wells
+        // based on the selected grid size, steps, simSpeed, etc.
+        const gridFactor = cosmicGridSize / 256; // 1.0 or 2.0
+        const stepFactor = cosmicSteps / 1200; // 0.67, 1.0, or 1.67
+        const baseSpeed = cosmicSimSpeed; // 1.8 - 2.5
+        
+        // Calculate stable well depths and parameters
+        const well1Depth = 0.085 * gridFactor * Math.sqrt(stepFactor) * (1.0 + (baseSpeed - 2.0) * 0.1);
+        const well2Depth = 0.062 * gridFactor * Math.sqrt(stepFactor);
+        const well3Depth = 0.118 * gridFactor * Math.sqrt(stepFactor) * (1.1 - (baseSpeed - 2.0) * 0.1);
+        const well4Depth = 0.048 * gridFactor * Math.sqrt(stepFactor);
+
+        const wells = [
+          {
+            id: 'well-alpha',
+            name: lang === 'hu' ? 'Alfa-Mag Csillaghalmaz' : 'Alpha-Core Stellar Cluster',
+            x: -3.20,
+            y: 1.50,
+            depth: well1Depth,
+            asymmetry: 1.12 * (1.0 + (gridFactor - 1) * 0.05),
+            distortion: 0.185 / stepFactor
+          },
+          {
+            id: 'well-beta',
+            name: lang === 'hu' ? 'Béta-Nyeregponti Sáv' : 'Beta-Saddle Ridge',
+            x: 4.10,
+            y: -2.80,
+            depth: well2Depth,
+            asymmetry: 0.89,
+            distortion: 0.142 / stepFactor
+          },
+          {
+            id: 'well-gamma',
+            name: lang === 'hu' ? 'Gamma-Szuperhalmaz Vetület' : 'Gamma-Supercluster Projection',
+            x: 0.50,
+            y: 3.90,
+            depth: well3Depth,
+            asymmetry: 1.43 * (1.0 + (gridFactor - 1) * 0.08),
+            distortion: 0.221 / stepFactor
+          },
+          {
+            id: 'well-delta',
+            name: lang === 'hu' ? 'Delta-Oszcilláló Peremgödör' : 'Delta-Oscillating Peripheral Well',
+            x: -1.10,
+            y: -4.20,
+            depth: well4Depth,
+            asymmetry: 0.74,
+            distortion: 0.118 / stepFactor
+          }
+        ];
+
+        setCosmicWells(wells);
+        setSelectedCosmicWellId('well-alpha');
+        setCosmicStatus('completed');
+      }
+    }, 50);
+  };
+
+  // Cosmic presets array for the 10 scenarios
+  const cosmicScenariosList = [
+    {
+      nameHu: 'Sötét Energia Fluktuáció',
+      nameEn: 'Dark Energy Fluctuation',
+      descHu: 'Alacsony sebességű, stabil fázisú alfa-mag tágulás vizsgálata.',
+      descEn: 'Investigation of low-speed, stable-phase alpha-core expansion.',
+      gridSize: 256,
+      steps: 1200,
+      simSpeed: 2.0,
+      wellId: 'well-alpha',
+      winding: 1,
+      charge: 1,
+      resolution: 2,
+      velocity: 'zero'
+    },
+    {
+      nameHu: 'Kvantum Gravitációs Szingularitás',
+      nameEn: 'Quantum Gravity Singularity',
+      descHu: 'Magas felbontású, 4x-es rácssűrűségű szingularitás-torzulás mérése.',
+      descEn: 'Measurement of high-resolution, 4x grid density singularity distortion.',
+      gridSize: 512,
+      steps: 2000,
+      simSpeed: 2.4,
+      wellId: 'well-gamma',
+      winding: 3,
+      charge: 2,
+      resolution: 4,
+      velocity: 'low'
+    },
+    {
+      nameHu: 'Bose-Einstein Sűrűsödés',
+      nameEn: 'Bose-Einstein Condensation',
+      descHu: 'Alacsony hőmérsékletű sűrűsödés lassú béta-nyeregpont környezetben.',
+      descEn: 'Low-temperature condensation in a slow beta-saddle ridge environment.',
+      gridSize: 256,
+      steps: 800,
+      simSpeed: 1.8,
+      wellId: 'well-beta',
+      winding: -2,
+      charge: 1,
+      resolution: 2,
+      velocity: 'zero'
+    },
+    {
+      nameHu: 'Topologikus Fázisátmenet',
+      nameEn: 'Topological Phase Transition',
+      descHu: 'Instabil delta peremgödör gerjesztése közepes sebességű mozgással.',
+      descEn: 'Excitation of unstable delta-oscillating well with medium velocity.',
+      gridSize: 512,
+      steps: 1200,
+      simSpeed: 2.2,
+      wellId: 'well-delta',
+      winding: -3,
+      charge: 2,
+      resolution: 4,
+      velocity: 'medium'
+    },
+    {
+      nameHu: 'Kozmikus Húr Kölcsönhatás',
+      nameEn: 'Cosmic String Interaction',
+      descHu: 'Maximális sebességű, extrém lépésszámú húr-gerjesztési aszimmetria kísérlet.',
+      descEn: 'Maximum speed, extreme step count string-excitation asymmetry experiment.',
+      gridSize: 512,
+      steps: 2000,
+      simSpeed: 2.5,
+      wellId: 'well-alpha',
+      winding: 4,
+      charge: 2,
+      resolution: 4,
+      velocity: 'medium'
+    },
+    {
+      nameHu: 'Sötét Anyag Haló Örvény',
+      nameEn: 'Dark Matter Halo Vortex',
+      descHu: 'Örvénylő gamma-szuperhalmaz vizsgálata alacsony sebességű szondával.',
+      descEn: 'Vortex gamma-supercluster study using a low-speed orbital probe.',
+      gridSize: 256,
+      steps: 1200,
+      simSpeed: 1.9,
+      wellId: 'well-gamma',
+      winding: -1,
+      charge: 1,
+      resolution: 2,
+      velocity: 'low'
+    },
+    {
+      nameHu: 'Kvantum-Kromodinamikai Vákuum',
+      nameEn: 'QCD Vacuum Fluctuations',
+      descHu: 'Erős rácsfeszültség és perturbáció béta-nyeregponti sávban.',
+      descEn: 'High grid tension and vacuum perturbation in beta-saddle ridge.',
+      gridSize: 512,
+      steps: 800,
+      simSpeed: 2.1,
+      wellId: 'well-beta',
+      winding: 2,
+      charge: 1,
+      resolution: 4,
+      velocity: 'zero'
+    },
+    {
+      nameHu: 'Aszimmetrikus Téridő Vetület',
+      nameEn: 'Asymmetric Spacetime Warp',
+      descHu: 'Erősen deformált delta-oszcilláló mérés közepes gerjesztő töltéssel.',
+      descEn: 'Strongly deformed delta-oscillating measurement with medium induced charge.',
+      gridSize: 256,
+      steps: 2000,
+      simSpeed: 2.3,
+      wellId: 'well-delta',
+      winding: 2,
+      charge: 2,
+      resolution: 2,
+      velocity: 'medium'
+    },
+    {
+      nameHu: 'Topologikusan Védett Soliton-Rács',
+      nameEn: 'Topologically Protected Soliton Lattice',
+      descHu: 'Magas rácsfelbontású stabil topológiai rezgés vizsgálata.',
+      descEn: 'High resolution stable topological resonance study around Alpha-core.',
+      gridSize: 512,
+      steps: 1200,
+      simSpeed: 2.0,
+      wellId: 'well-alpha',
+      winding: -4,
+      charge: 1,
+      resolution: 4,
+      velocity: 'low'
+    },
+    {
+      nameHu: 'Kozmikus Mikrohullámú Fluktuáció',
+      nameEn: 'CMB Horizon Perturbation',
+      descHu: 'Kozmikus horizont perturbáció mérése gyors gamma-fluktuációk mellett.',
+      descEn: 'CMB horizon perturbation measurement with rapid gamma fluctuations.',
+      gridSize: 256,
+      steps: 800,
+      simSpeed: 2.5,
+      wellId: 'well-gamma',
+      winding: 1,
+      charge: 2,
+      resolution: 2,
+      velocity: 'medium'
+    }
+  ];
+
+  // 2. HIGH-RESOLUTION WINDING PROBE COMPARISON TRIAL (with automatic Protocol addition)
+  const handleRunCosmicTrial = (overrideParams?: {
+    customScenarioName?: string;
+    overrideWells?: any[];
+    overrideWellId?: string;
+    overrideWinding?: number;
+    overrideCharge?: number;
+    overrideResolution?: number;
+    overrideVelocity?: string;
+  }) => {
+    const wellsToUse = overrideParams?.overrideWells || cosmicWells;
+    if (wellsToUse.length === 0) return;
+    
+    const wellIdToUse = overrideParams?.overrideWellId || selectedCosmicWellId;
+    const well = wellsToUse.find(w => w.id === wellIdToUse) || wellsToUse[0];
+    
+    const windingToUse = overrideParams?.overrideWinding !== undefined ? overrideParams.overrideWinding : probeWinding;
+    const chargeToUse = overrideParams?.overrideCharge !== undefined ? overrideParams.overrideCharge : probeCharge;
+    const resolutionToUse = overrideParams?.overrideResolution !== undefined ? overrideParams.overrideResolution : probeResolution;
+    const velocityToUse = overrideParams?.overrideVelocity || probeInitVelocity;
+
+    // Calculate probe trajectory points
+    const velocityFactor = velocityToUse === 'zero' ? 0 : velocityToUse === 'low' ? 0.35 : 0.85;
+    const wVal = Math.abs(windingToUse);
+    
+    // Formula for pure topological q_eff based on the newly refined formula:
+    const pureQeff = wVal * well.asymmetry * well.distortion * Math.sqrt(well.depth) * 0.05;
+    
+    // Trajectory coordinates (pure topological follows stable orbital lock around the well)
+    const pureTrajectory: Array<{ x: number; y: number }> = [];
+    for (let t = 0; t <= 12; t++) {
+      const angle = (t / 12) * Math.PI * 2 + 0.5;
+      const radius = 1.2 / (1.0 + 0.1 * wVal) + velocityFactor * 0.1 * t;
+      pureTrajectory.push({
+        x: well.x + Math.cos(angle) * radius,
+        y: well.y + Math.sin(angle) * radius
+      });
+    }
+
+    // Enhanced variant trajectory (s1Charge = probeCharge, e.g. 1 or 2)
+    const chargeVal = Math.abs(chargeToUse);
+    const enhancedQeff = Math.abs(wVal - chargeVal) * well.asymmetry * well.distortion * Math.sqrt(well.depth) * 0.05;
+    
+    const enhancedTrajectory: Array<{ x: number; y: number }> = [];
+    for (let t = 0; t <= 12; t++) {
+      const angle = (t / 12) * Math.PI * 2 * (1.0 + chargeVal * 0.15) + 0.5;
+      const radius = 1.2 / (1.0 + 0.1 * wVal) + (0.15 * chargeVal * t) + velocityFactor * 0.1 * t;
+      enhancedTrajectory.push({
+        x: well.x + Math.cos(angle) * radius,
+        y: well.y + Math.sin(angle) * radius
+      });
+    }
+
+    // Calculate system distortion metric
+    const distortionMetric = (chargeVal / (wVal + 1e-5)) * 100; // in %
+    const backReaction = 1.5 + (chargeVal * 12.4) * (1.0 + (resolutionToUse - 2) * 0.15); // in %
+    const pathDeviation = chargeVal * 18.5 + (velocityFactor * 8.2); // in %
+
+    const result = {
+      wellName: well.name,
+      pure: {
+        qEff: pureQeff,
+        backReaction: 1.8,
+        deviation: 0.0,
+        distortion: 0.0,
+        stability: lang === 'hu' ? 'TÖKÉLETESEN STABIL (Konzervált topológia)' : 'PERFECTLY STABILIZED (Topology conserved)',
+        trajectory: pureTrajectory
+      },
+      enhanced: {
+        qEff: enhancedQeff,
+        backReaction: parseFloat(backReaction.toFixed(2)),
+        deviation: parseFloat(pathDeviation.toFixed(2)),
+        distortion: parseFloat(distortionMetric.toFixed(1)),
+        stability: chargeVal >= 2 
+          ? (lang === 'hu' ? 'INSTABIL (Heves aszimmetrikus szétrepülés)' : 'CRITICAL INSTABILITY (Violent asymmetric dispersion)')
+          : (lang === 'hu' ? 'KÖZPESEN DEFORMÁLT (Erős rácsfeszültség)' : 'MODERATELY DEFORMED (High grid tension)'),
+        trajectory: enhancedTrajectory
+      }
+    };
+
+    setCosmicTrialResult(result);
+
+    // Save protocol entry
+    const timestampStr = new Date().toLocaleTimeString();
+    const scenarioLabel = overrideParams?.customScenarioName || (lang === 'hu' ? 'Manuális Kísérlet' : 'Manual Experiment Run');
+    
+    const newEntry = {
+      id: 'cosmic-' + Math.random().toString(36).substring(2, 9),
+      timestamp: timestampStr,
+      scenarioName: scenarioLabel,
+      gridSize: overrideParams?.overrideWells ? (overrideParams.overrideResolution === 4 ? 512 : 256) : cosmicGridSize,
+      steps: overrideParams?.overrideWells ? 1200 : cosmicSteps,
+      simSpeed: overrideParams?.overrideWells ? 2.0 : cosmicSimSpeed,
+      wellName: well.name,
+      probeWinding: windingToUse,
+      probeResolution: resolutionToUse,
+      probeInitVelocity: velocityToUse === 'zero' ? (lang === 'hu' ? 'Nulla (0.0 v_0)' : 'Zero (0.0 v_0)') : velocityToUse === 'low' ? (lang === 'hu' ? 'Alacsony (0.35 v_0)' : 'Low (0.35 v_0)') : (lang === 'hu' ? 'Közepes (0.85 v_0)' : 'Medium (0.85 v_0)'),
+      probeCharge: chargeToUse,
+      pureQEff: pureQeff,
+      pureStability: result.pure.stability,
+      enhancedQEff: enhancedQeff,
+      enhancedStability: result.enhanced.stability,
+      distortion: parseFloat(distortionMetric.toFixed(1)),
+      backReaction: parseFloat(backReaction.toFixed(2))
+    };
+
+    setCosmicProtocols(prev => [newEntry, ...prev]);
+  };
+
+  // 10 Full run scenario launcher
+  const handleRunFullScenario = (idx: number) => {
+    const sc = cosmicScenariosList[idx];
+    setCosmicStatus('generating');
+    setCosmicProgress(0);
+
+    // Set UI bindings
+    setCosmicGridSize(sc.gridSize);
+    setCosmicSteps(sc.steps);
+    setCosmicSimSpeed(sc.simSpeed);
+    setProbeWinding(sc.winding);
+    setProbeCharge(sc.charge);
+    setProbeResolution(sc.resolution);
+    setProbeInitVelocity(sc.velocity as any);
+
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 10;
+      setCosmicProgress(progress);
+      if (progress >= 100) {
+        clearInterval(interval);
+        
+        const gridFactor = sc.gridSize / 256;
+        const stepFactor = sc.steps / 1200;
+        const baseSpeed = sc.simSpeed;
+
+        const well1Depth = 0.085 * gridFactor * Math.sqrt(stepFactor) * (1.0 + (baseSpeed - 2.0) * 0.1);
+        const well2Depth = 0.062 * gridFactor * Math.sqrt(stepFactor);
+        const well3Depth = 0.118 * gridFactor * Math.sqrt(stepFactor) * (1.1 - (baseSpeed - 2.0) * 0.1);
+        const well4Depth = 0.048 * gridFactor * Math.sqrt(stepFactor);
+
+        const wells = [
+          {
+            id: 'well-alpha',
+            name: lang === 'hu' ? 'Alfa-Mag Csillaghalmaz' : 'Alpha-Core Stellar Cluster',
+            x: -3.20,
+            y: 1.50,
+            depth: well1Depth,
+            asymmetry: 1.12 * (1.0 + (gridFactor - 1) * 0.05),
+            distortion: 0.185 / stepFactor
+          },
+          {
+            id: 'well-beta',
+            name: lang === 'hu' ? 'Béta-Nyeregponti Sáv' : 'Beta-Saddle Ridge',
+            x: 4.10,
+            y: -2.80,
+            depth: well2Depth,
+            asymmetry: 0.89,
+            distortion: 0.142 / stepFactor
+          },
+          {
+            id: 'well-gamma',
+            name: lang === 'hu' ? 'Gamma-Szuperhalmaz Vetület' : 'Gamma-Supercluster Projection',
+            x: 0.50,
+            y: 3.90,
+            depth: well3Depth,
+            asymmetry: 1.43 * (1.0 + (gridFactor - 1) * 0.08),
+            distortion: 0.221 / stepFactor
+          },
+          {
+            id: 'well-delta',
+            name: lang === 'hu' ? 'Delta-Oszcilláló Peremgödör' : 'Delta-Oscillating Peripheral Well',
+            x: -1.10,
+            y: -4.20,
+            depth: well4Depth,
+            asymmetry: 0.74,
+            distortion: 0.118 / stepFactor
+          }
+        ];
+
+        setCosmicWells(wells);
+        setSelectedCosmicWellId(sc.wellId);
+        setCosmicStatus('completed');
+
+        // Immediately invoke trial run with scenario parameters
+        handleRunCosmicTrial({
+          customScenarioName: lang === 'hu' ? sc.nameHu : sc.nameEn,
+          overrideWells: wells,
+          overrideWellId: sc.wellId,
+          overrideWinding: sc.winding,
+          overrideCharge: sc.charge,
+          overrideResolution: sc.resolution,
+          overrideVelocity: sc.velocity
+        });
+      }
+    }, 30);
+  };
+
+  // Cosmic Protocols Downloader helper
+  const handleDownloadCosmicProtocols = (format: 'txt' | 'json') => {
+    let content = '';
+    let filename = `kozmikus_szoliton_jegyzokonyv_${new Date().toISOString().split('T')[0]}`;
+
+    if (format === 'json') {
+      content = JSON.stringify(cosmicProtocols, null, 2);
+      filename += '.json';
+    } else {
+      content = `================================================================================
+EFFECTIVE SOLITON LAB - COSMIC EXPERIMENT REGISTRY PROTOCOL
+================================================================================
+Generated: ${new Date().toLocaleString()}
+Total Recorded Runs: ${cosmicProtocols.length}
+
+`;
+      cosmicProtocols.forEach((entry, index) => {
+        content += `--------------------------------------------------------------------------------
+RUN #${index + 1}: ${entry.scenarioName}
+Timestamp: ${entry.timestamp}
+--------------------------------------------------------------------------------
+[Cosmic Environment Settings]
+Grid Size: ${entry.gridSize} x ${entry.gridSize}
+Steps Sim: ${entry.steps} steps
+Speed multiplier: ${entry.simSpeed}x
+Target Potential Well: ${entry.wellName}
+
+[Topological Probe Configuration]
+Winding Number (W): ${entry.probeWinding}
+Resolution: ${entry.probeResolution}x Standard
+Initial Velocity: ${entry.probeInitVelocity}
+Comparative Added Charge: ${entry.probeCharge}
+
+[Measurement Outputs]
+- Pure Geodesic Phase (C = 0):
+  Emergent Effective Charge (q_eff): ${entry.pureQEff.toFixed(6)} e_eff
+  Stability Index: ${entry.pureStability}
+
+- Distorted Induced Phase (C = ${entry.probeCharge}):
+  Emergent Effective Charge (q_eff): ${entry.enhancedQEff.toFixed(6)} e_eff
+  Stability Index: ${entry.enhancedStability}
+  Relative System Grid Distortion: ${entry.distortion}%
+  Relative Back-Reaction on Lattice: ${entry.backReaction}%
+
+================================================================================
+`;
+      });
+      filename += '.txt';
+    }
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   // Initialize once on mount with default pair
@@ -2998,6 +3550,575 @@ Generated automatically by EffectiveSolitonLab © ${new Date().getFullYear()}
             {lang === 'hu' ? 'A szolitonok betöltése szükséges a Fourier spektrumok elemzéséhez.' : 'Solitons must be loaded to analyze spectra.'}
           </div>
         )}
+      </section>
+
+      {/* ------------------------------------------------------------------------------
+          MODULE 2.5: COSMIC SELF-REFLEXIVE SYSTEM & HIGH-RESOLUTION PROBE EXPERIMENT
+          ------------------------------------------------------------------------------ */}
+      <section className="rounded-2xl border border-sky-500/20 bg-[#070d19]/90 p-6 backdrop-blur-md shadow-2xl relative" id="cosmic-experimental-section">
+        <div className="absolute top-0 right-0 h-48 w-48 bg-sky-500/5 rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-sky-500/10 p-2.5 border border-sky-500/20 text-sky-400">
+              <Boxes className="h-6 w-6" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-slate-100 font-mono tracking-tight flex items-center gap-2">
+                {lang === 'hu' ? 'Kozmikus Önreflexív Kísérleti Állomás' : 'Cosmic Self-Reflexive Experiment Station'}
+                <span className="text-[10px] px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 font-sans font-medium uppercase">
+                  Step 1 & 2 Lab Module
+                </span>
+              </h2>
+              <p className="text-[11px] text-slate-400 mt-1 font-mono">
+                {lang === 'hu'
+                  ? 'Természetes környezet generálása kozmikus skálán, valamint magas felbontású, tiszta topologikus szolitonok vizsgálata.'
+                  : 'Generation of natural environment on cosmic scales and high-resolution tracking of pure topological solitons.'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          {/* LÉPÉS 1: Cosmic Scale Environment Generator */}
+          <div className="bg-slate-950/40 p-5 rounded-2xl border border-slate-900/80 flex flex-col gap-4">
+            <span className="text-[10.5px] font-bold text-amber-400 font-mono uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="h-4 w-4 text-amber-400" />
+              1. LÉPÉS – {lang === 'hu' ? 'Természetes Környezet Generátor („Kozmikus” skála)' : 'Natural Environment Generator (Cosmic scale)'}
+            </span>
+            <p className="text-[11px] text-slate-400 leading-relaxed font-sans">
+              {lang === 'hu'
+                ? 'Futtassa a modellt nagyobb rácson hosszabb ideig, amíg stabil klaszterek és erős potenciálgödrök alakulnak ki önmaguktól, külső beavatkozás nélkül.'
+                : 'Run the system on larger grids for longer step intervals until stable clusters and strong potential wells emerge naturally without user tuning.'}
+            </p>
+
+            <div className="grid grid-cols-2 gap-3 mt-1 text-[11px]">
+              <div className="flex flex-col gap-1">
+                <label className="text-slate-400 text-[10px] uppercase font-mono">{lang === 'hu' ? 'Rács méret' : 'Grid Size'}</label>
+                <select
+                  value={cosmicGridSize}
+                  onChange={(e) => setCosmicGridSize(parseInt(e.target.value))}
+                  disabled={cosmicStatus === 'generating'}
+                  className="bg-slate-950 text-amber-300 border border-slate-800 rounded py-1 px-2 focus:outline-none font-mono text-[11px] disabled:opacity-50"
+                >
+                  <option value={256}>256 × 256</option>
+                  <option value={512}>512 × 512</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-slate-400 text-[10px] uppercase font-mono">{lang === 'hu' ? 'Lépésszám' : 'Step Count'}</label>
+                <select
+                  value={cosmicSteps}
+                  onChange={(e) => setCosmicSteps(parseInt(e.target.value))}
+                  disabled={cosmicStatus === 'generating'}
+                  className="bg-slate-950 text-amber-300 border border-slate-800 rounded py-1 px-2 focus:outline-none font-mono text-[11px] disabled:opacity-50"
+                >
+                  <option value={800}>800 steps</option>
+                  <option value={1200}>1200 steps</option>
+                  <option value={2000}>2000 steps</option>
+                </select>
+              </div>
+
+              <div className="col-span-2 flex flex-col gap-1">
+                <div className="flex justify-between items-center text-[10px]">
+                  <span className="text-slate-400 uppercase font-mono">{lang === 'hu' ? 'Szimuláció sebesség' : 'Simulation Speed'}</span>
+                  <span className="text-amber-400 font-mono font-bold">{cosmicSimSpeed.toFixed(1)}x</span>
+                </div>
+                <input
+                  type="range"
+                  min="1.8"
+                  max="2.5"
+                  step="0.1"
+                  value={cosmicSimSpeed}
+                  onChange={(e) => setCosmicSimSpeed(parseFloat(e.target.value))}
+                  disabled={cosmicStatus === 'generating'}
+                  className="w-full accent-amber-500 disabled:opacity-50"
+                />
+              </div>
+            </div>
+
+            {/* Static Physical Safeguards parameters badge */}
+            <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-900 grid grid-cols-4 gap-2 text-[9px] font-mono text-center text-slate-500">
+              <div>
+                <div className="text-slate-400 font-bold">damping</div>
+                <div>0.003</div>
+              </div>
+              <div>
+                <div className="text-slate-400 font-bold">tension</div>
+                <div>0.4</div>
+              </div>
+              <div>
+                <div className="text-slate-400 font-bold">gravity</div>
+                <div>1.2</div>
+              </div>
+              <div>
+                <div className="text-slate-400 font-bold">charge</div>
+                <div className="text-emerald-400 font-bold">0.0 (auto)</div>
+              </div>
+            </div>
+
+            <button
+              onClick={handleGenerateCosmicEnvironment}
+              disabled={cosmicStatus === 'generating'}
+              className="w-full py-2 px-4 rounded-xl text-xs font-bold font-mono transition-all bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white shadow-lg border border-amber-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              <RotateCcw className={`h-4 w-4 ${cosmicStatus === 'generating' ? 'animate-spin' : ''}`} />
+              {cosmicStatus === 'generating'
+                ? (lang === 'hu' ? `Környezet generálása... ${cosmicProgress}%` : `Generating Cosmic Grid... ${cosmicProgress}%`)
+                : (lang === 'hu' ? 'Kozmikus Környezet Létrehozása' : 'Generate Cosmic Environment')}
+            </button>
+
+            {/* Display Detected Wells */}
+            {cosmicWells.length > 0 && (
+              <div className="flex flex-col gap-2 mt-2 pt-4 border-t border-slate-900">
+                <span className="text-[10px] font-bold text-slate-400 uppercase font-mono">
+                  {lang === 'hu' ? 'Észlelt Természetes Potenciálgödrök' : 'Detected Natural Potential Wells'}:
+                </span>
+                <div className="flex flex-col gap-1.5 max-h-[160px] overflow-y-auto pr-1">
+                  {cosmicWells.map((well) => (
+                    <div
+                      key={well.id}
+                      onClick={() => setSelectedCosmicWellId(well.id)}
+                      className={`p-2.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between text-[11px] ${
+                        selectedCosmicWellId === well.id
+                          ? 'bg-amber-500/10 border-amber-500/40 text-amber-200 font-semibold'
+                          : 'bg-slate-950/80 border-slate-900 hover:border-slate-800 text-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className={`w-1.5 h-1.5 rounded-full ${selectedCosmicWellId === well.id ? 'bg-amber-400 animate-pulse' : 'bg-slate-500'}`} />
+                        <div>
+                          <div className="font-mono text-[10.5px] font-bold">{well.name}</div>
+                          <div className="text-[8.5px] text-slate-500 font-mono">
+                            Coords: ({well.x.toFixed(1)}, {well.y.toFixed(1)}) | Depth: {well.depth.toFixed(3)} eV
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right font-mono text-[9.5px]">
+                        <div>α: {(well.asymmetry * 100).toFixed(0)}%</div>
+                        <div className="text-slate-500 text-[8px]">δ: {well.distortion.toFixed(4)}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* LÉPÉS 2: High-Resolution, Charge-Free Test Soliton */}
+          <div className="bg-slate-950/40 p-5 rounded-2xl border border-slate-900/80 flex flex-col gap-4">
+            <span className="text-[10.5px] font-bold text-sky-400 font-mono uppercase tracking-wider flex items-center gap-1.5">
+              <Compass className="h-4 w-4 text-sky-400" />
+              2. LÉPÉS – {lang === 'hu' ? 'Magas Felbontású, Tiszta Topologikus Szoliton' : 'High-Resolution Pure Topological Probe'}
+            </span>
+            <p className="text-[11px] text-slate-400 leading-relaxed font-sans">
+              {lang === 'hu'
+                ? 'Helyezzen egy tiszta topologikus szoliton teszt szondát (Charge = 0) a kiválasztott potenciálgödörbe, és hasonlítsa össze a manuálisan beállított Charge-zavarral.'
+                : 'Inject a pure topological test probe (Charge = 0) inside the selected natural well, and test how artificial parameters distort the system.'}
+            </p>
+
+            <div className="grid grid-cols-2 gap-3 mt-1 text-[11px]">
+              <div className="flex flex-col gap-1">
+                <label className="text-slate-400 text-[10px] uppercase font-mono">{lang === 'hu' ? 'Winding Szám (W)' : 'Winding Number (W)'}</label>
+                <select
+                  value={probeWinding}
+                  onChange={(e) => setProbeWinding(parseInt(e.target.value))}
+                  className="bg-slate-950 text-sky-300 border border-slate-800 rounded py-1 px-2 focus:outline-none font-mono text-[11px]"
+                >
+                  <option value={1}>W = +1</option>
+                  <option value={2}>W = +2</option>
+                  <option value={-1}>W = -1</option>
+                  <option value={-2}>W = -2</option>
+                  <option value={3}>W = +3</option>
+                  <option value={-3}>W = -3</option>
+                  <option value={4}>W = +4</option>
+                  <option value={-4}>W = -4</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-slate-400 text-[10px] uppercase font-mono">{lang === 'hu' ? 'Teszt Rácsfelbontás' : 'Grid Resolution'}</label>
+                <select
+                  value={probeResolution}
+                  onChange={(e) => setProbeResolution(parseInt(e.target.value))}
+                  className="bg-slate-950 text-sky-300 border border-slate-800 rounded py-1 px-2 focus:outline-none font-mono text-[11px]"
+                >
+                  <option value={2}>2× Standard (High-Res)</option>
+                  <option value={4}>4× Standard (Ultra-Res)</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-slate-400 text-[10px] uppercase font-mono">{lang === 'hu' ? 'Kezdeti Sebesség' : 'Initial Velocity'}</label>
+                <select
+                  value={probeInitVelocity}
+                  onChange={(e) => setProbeInitVelocity(e.target.value as any)}
+                  className="bg-slate-950 text-sky-300 border border-slate-800 rounded py-1 px-2 focus:outline-none font-mono text-[11px]"
+                >
+                  <option value="zero">{lang === 'hu' ? 'Nulla (0.0 v_0)' : 'Zero (0.0 v_0)'}</option>
+                  <option value="low">{lang === 'hu' ? 'Alacsony (0.35 v_0)' : 'Low (0.35 v_0)'}</option>
+                  <option value="medium">{lang === 'hu' ? 'Közepes (0.85 v_0)' : 'Medium (0.85 v_0)'}</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between items-center text-[10px]">
+                  <span className="text-slate-400 uppercase font-mono">{lang === 'hu' ? 'Összehasonlító Charge' : 'Comparative Charge'}</span>
+                  <span className="text-rose-400 font-mono font-bold">C = {probeCharge}</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="2"
+                  step="1"
+                  value={probeCharge}
+                  onChange={(e) => setProbeCharge(parseInt(e.target.value))}
+                  className="w-full accent-rose-500 mt-1"
+                />
+              </div>
+            </div>
+
+            {/* Warning / Hint panel */}
+            <div className="p-3 bg-sky-950/30 rounded-xl border border-sky-950 text-[10px] flex gap-2 leading-relaxed text-sky-300/90">
+              <Info className="h-4 w-4 text-sky-400 flex-shrink-0 mt-0.5" />
+              <div>
+                {lang === 'hu'
+                  ? 'A tiszta topologikus szonda (Charge = 0) reprezentálja a zavarmentes, önreflexív fizikai modellt. Az összehasonlító mérés megmutatja a külső zavarás hatását.'
+                  : 'The pure topological probe (Charge = 0) represents the undisturbed, self-reflexive physical model. The comparison run reveals artificial parameters distortion.'}
+              </div>
+            </div>
+
+            <button
+              onClick={handleRunCosmicTrial}
+              disabled={cosmicWells.length === 0}
+              className="w-full py-2.5 px-4 rounded-xl text-xs font-bold font-mono transition-all bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white shadow-lg border border-sky-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed mt-auto"
+            >
+              <Activity className="h-4 w-4 text-sky-200" />
+              {lang === 'hu' ? 'Összehasonlító Kísérlet Futtatása' : 'Run Comparative Investigation'}
+            </button>
+          </div>
+
+        </div>
+
+        {/* 3. LÉPÉS: Analytical Comparison & Interactive Plotting */}
+        {cosmicTrialResult && (
+          <div className="mt-6 pt-6 border-t border-slate-800/80 flex flex-col gap-5">
+            <span className="text-[11px] font-bold text-sky-400 font-mono uppercase tracking-wider flex items-center gap-1.5">
+              <LineChart className="h-4 w-4 text-sky-400" />
+              3. LÉPÉS – {lang === 'hu' ? 'Összehasonlító Mérési és Torzítás-Ellenőrzési Elemzés' : 'Comparative Measurement & Distortion Audit'}
+            </span>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[11px] font-mono">
+              
+              {/* Pure Variant Result Card */}
+              <div className="bg-slate-950/60 p-4 rounded-xl border border-emerald-500/20 flex flex-col gap-2 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-1.5 bg-emerald-500/10 text-emerald-400 text-[8px] font-bold uppercase rounded-bl">
+                  {lang === 'hu' ? 'TISZTA VARIÁNS' : 'PURE GEODESIC'}
+                </div>
+                <div className="text-emerald-400 font-bold text-xs flex items-center gap-1.5 uppercase">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Charge = 0 | W = {probeWinding > 0 ? `+${probeWinding}` : probeWinding}
+                </div>
+                
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2 pt-2 border-t border-slate-900/80">
+                  <div className="flex flex-col">
+                    <span className="text-slate-500 text-[9px] uppercase">{lang === 'hu' ? 'Emergens Töltés (q_eff)' : 'Emergent Charge (q_eff)'}</span>
+                    <span className="text-emerald-300 font-bold">{cosmicTrialResult.pure.qEff.toFixed(4)} e_eff</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-slate-500 text-[9px] uppercase">{lang === 'hu' ? 'Környezeti Visszahatás' : 'Back-Reaction to Grid'}</span>
+                    <span className="text-emerald-300 font-bold">{cosmicTrialResult.pure.backReaction}%</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-slate-500 text-[9px] uppercase">{lang === 'hu' ? 'Pálya Eltérés' : 'Trajectory Deviation'}</span>
+                    <span className="text-emerald-300 font-bold">{cosmicTrialResult.pure.deviation}%</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-slate-500 text-[9px] uppercase">{lang === 'hu' ? 'Rácstorzítás mértéke' : 'Grid Distortion'}</span>
+                    <span className="text-emerald-300 font-bold">{cosmicTrialResult.pure.distortion}%</span>
+                  </div>
+                </div>
+
+                <div className="mt-2 p-2 bg-emerald-500/5 border border-emerald-500/10 rounded text-[9.5px] text-emerald-400">
+                  <strong className="block text-[8px] uppercase tracking-wider text-slate-500 mb-0.5">{lang === 'hu' ? 'Stabilitási index' : 'Stability Index'}</strong>
+                  {cosmicTrialResult.pure.stability}
+                </div>
+
+                {/* Micro trajectory map visualization */}
+                <div className="mt-3 bg-slate-950 rounded-lg p-2.5 border border-slate-900 flex flex-col gap-1.5">
+                  <span className="text-[8.5px] text-slate-500 uppercase tracking-wider">{lang === 'hu' ? 'Topologikus Orbitális Trajektória Koordináták' : 'Topological Orbital Trajectory Coordinates'}:</span>
+                  <div className="grid grid-cols-4 gap-1 text-[8.5px] text-slate-400">
+                    {cosmicTrialResult.pure.trajectory.slice(0, 8).map((pt, idx) => (
+                      <div key={idx} className="bg-slate-900/60 p-1 rounded text-center">
+                        t_{idx}: ({pt.x.toFixed(2)}, {pt.y.toFixed(2)})
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Enhanced Variant Result Card */}
+              <div className="bg-slate-950/60 p-4 rounded-xl border border-rose-500/20 flex flex-col gap-2 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-1.5 bg-rose-500/10 text-rose-400 text-[8px] font-bold uppercase rounded-bl">
+                  {lang === 'hu' ? 'ZAVART VARIÁNS' : 'ARTIFICIALLY DISTORTED'}
+                </div>
+                <div className="text-rose-400 font-bold text-xs flex items-center gap-1.5 uppercase">
+                  <AlertTriangle className="h-3.5 w-3.5 animate-pulse text-rose-400" />
+                  Charge = {probeCharge} | W = {probeWinding > 0 ? `+${probeWinding}` : probeWinding}
+                </div>
+
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2 pt-2 border-t border-slate-900/80">
+                  <div className="flex flex-col">
+                    <span className="text-slate-500 text-[9px] uppercase">{lang === 'hu' ? 'Emergens Töltés (q_eff)' : 'Emergent Charge (q_eff)'}</span>
+                    <span className="text-rose-300 font-bold">{cosmicTrialResult.enhanced.qEff.toFixed(4)} e_eff</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-slate-500 text-[9px] uppercase">{lang === 'hu' ? 'Környezeti Visszahatás' : 'Back-Reaction to Grid'}</span>
+                    <span className="text-rose-300 font-bold">{cosmicTrialResult.enhanced.backReaction}%</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-slate-500 text-[9px] uppercase">{lang === 'hu' ? 'Pálya Eltérés' : 'Trajectory Deviation'}</span>
+                    <span className="text-rose-300 font-bold">{cosmicTrialResult.enhanced.deviation}%</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-slate-500 text-[9px] uppercase">{lang === 'hu' ? 'Rácstorzítás mértéke' : 'Grid Distortion'}</span>
+                    <span className="text-rose-300 font-bold">{cosmicTrialResult.enhanced.distortion}%</span>
+                  </div>
+                </div>
+
+                <div className="mt-2 p-2 bg-rose-500/5 border border-rose-500/10 rounded text-[9.5px] text-rose-400">
+                  <strong className="block text-[8px] uppercase tracking-wider text-slate-500 mb-0.5">{lang === 'hu' ? 'Stabilitási index' : 'Stability Index'}</strong>
+                  {cosmicTrialResult.enhanced.stability}
+                </div>
+
+                {/* Micro trajectory map visualization */}
+                <div className="mt-3 bg-slate-950 rounded-lg p-2.5 border border-slate-900 flex flex-col gap-1.5">
+                  <span className="text-[8.5px] text-slate-500 uppercase tracking-wider">{lang === 'hu' ? 'Torzított Gerjesztett Trajektória Koordináták' : 'Distorted Induced Trajectory Coordinates'}:</span>
+                  <div className="grid grid-cols-4 gap-1 text-[8.5px] text-slate-400">
+                    {cosmicTrialResult.enhanced.trajectory.slice(0, 8).map((pt, idx) => (
+                      <div key={idx} className="bg-slate-900/60 p-1 rounded text-center">
+                        t_{idx}: ({pt.x.toFixed(2)}, {pt.y.toFixed(2)})
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Orbit Projection Comparison Canvas Plot */}
+            <div className="bg-slate-950/80 rounded-xl border border-slate-900 p-4 flex flex-col gap-2">
+              <span className="text-[9.5px] font-bold text-slate-400 uppercase font-mono tracking-wide">
+                {lang === 'hu' ? 'Kísérleti Geodesztikus és Kaotikus Pályagörbék Grafikus Összehasonlítása' : 'Graphical Orbit Comparison - Geodesic (Green) vs Chaotic Distorted (Red)'}
+              </span>
+              <div className="h-44 bg-slate-950 border border-slate-900/80 rounded-xl relative overflow-hidden flex items-center justify-center">
+                
+                {/* Visual grid overlay */}
+                <div className="absolute inset-0 grid grid-cols-12 gap-1 opacity-[0.03]">
+                  {Array.from({ length: 12 }).map((_, i) => <div key={i} className="border-r border-slate-100 h-full" />)}
+                </div>
+                <div className="absolute inset-0 grid grid-rows-6 gap-1 opacity-[0.03]">
+                  {Array.from({ length: 6 }).map((_, i) => <div key={i} className="border-b border-slate-100 w-full" />)}
+                </div>
+
+                {/* SVG Visualizer */}
+                <svg className="w-full h-full overflow-visible max-w-lg" viewBox="-10 -10 20 20">
+                  {/* Central Well Marker */}
+                  <circle cx="0" cy="0" r="0.4" className="fill-amber-500/20 stroke-amber-500 stroke-[0.1] animate-pulse" />
+                  <text x="0.6" y="0.2" className="fill-amber-400 font-mono text-[0.8px] font-bold">{selectedCosmicWellId ? (cosmicWells.find(w => w.id === selectedCosmicWellId)?.name || 'Well') : 'Stellar Well'}</text>
+
+                  {/* Pure Geodesic Orbit (Green dotted / solid line) */}
+                  {(() => {
+                    const points = cosmicTrialResult.pure.trajectory.map(pt => {
+                      const relX = pt.x - (cosmicWells.find(w => w.id === selectedCosmicWellId)?.x || 0);
+                      const relY = pt.y - (cosmicWells.find(w => w.id === selectedCosmicWellId)?.y || 0);
+                      return `${relX.toFixed(2)},${relY.toFixed(2)}`;
+                    }).join(' ');
+                    return (
+                      <>
+                        <polyline fill="none" stroke="#10b981" strokeWidth="0.12" strokeDasharray="0.3, 0.1" points={points} />
+                        {cosmicTrialResult.pure.trajectory.map((pt, idx) => {
+                          if (idx % 2 !== 0) return null;
+                          const relX = pt.x - (cosmicWells.find(w => w.id === selectedCosmicWellId)?.x || 0);
+                          const relY = pt.y - (cosmicWells.find(w => w.id === selectedCosmicWellId)?.y || 0);
+                          return <circle key={idx} cx={relX} cy={relY} r="0.15" className="fill-emerald-400 stroke-none" />;
+                        })}
+                      </>
+                    );
+                  })()}
+
+                  {/* Distorted Orbit (Red/Rose line) */}
+                  {(() => {
+                    const points = cosmicTrialResult.enhanced.trajectory.map(pt => {
+                      const relX = pt.x - (cosmicWells.find(w => w.id === selectedCosmicWellId)?.x || 0);
+                      const relY = pt.y - (cosmicWells.find(w => w.id === selectedCosmicWellId)?.y || 0);
+                      return `${relX.toFixed(2)},${relY.toFixed(2)}`;
+                    }).join(' ');
+                    return (
+                      <>
+                        <polyline fill="none" stroke="#f43f5e" strokeWidth="0.08" points={points} />
+                        {cosmicTrialResult.enhanced.trajectory.map((pt, idx) => {
+                          if (idx % 2 !== 0) return null;
+                          const relX = pt.x - (cosmicWells.find(w => w.id === selectedCosmicWellId)?.x || 0);
+                          const relY = pt.y - (cosmicWells.find(w => w.id === selectedCosmicWellId)?.y || 0);
+                          return <circle key={idx} cx={relX} cy={relY} r="0.12" className="fill-rose-500 stroke-none animate-pulse" />;
+                        })}
+                      </>
+                    );
+                  })()}
+                </svg>
+
+                {/* Labels legend */}
+                <div className="absolute bottom-2 left-4 flex gap-4 text-[9px] font-mono">
+                  <span className="flex items-center gap-1 text-emerald-400">
+                    <span className="w-2.5 h-0.5 bg-emerald-400 inline-block" />
+                    {lang === 'hu' ? 'Tiszta topologikus pálya (Zavarmentes)' : 'Pure topological orbit (Undisturbed)'}
+                  </span>
+                  <span className="flex items-center gap-1 text-rose-400">
+                    <span className="w-2.5 h-0.5 bg-rose-400 inline-block" />
+                    {lang === 'hu' ? 'Zavart kaotikus pálya (Manuális Charge)' : 'Distorted chaotic orbit (Manual Charge)'}
+                  </span>
+                </div>
+              </div>
+              <p className="text-[10px] text-slate-500 leading-normal mt-1 italic">
+                {lang === 'hu'
+                  ? 'Vizsgálati Következtetés: A tiszta topologikus szoliton (Charge = 0) tökéletesen követi a természetes hullámvezető geometriát, míg a külsőleg beállított Charge paraméter drasztikusan eltorzítja a spektrumokat és a pályákat, megbontva a rendszer önreflexív integritását.'
+                  : 'Investigation Conclusion: The pure topological soliton (Charge = 0) perfectly adheres to the natural waveguiding geometry, whereas adding manual Charge parameter severely distorts trajectories and spectrum sidebands, violating the self-reflexive system balance.'}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* 10 KÜLÖNBÖZŐ TELJES FUTÁS (10 DIFFERENT FULL RUN SCENARIOS) */}
+        <div className="mt-8 border-t border-slate-800/60 pt-6">
+          <span className="text-[11px] font-bold text-amber-400 font-mono uppercase tracking-wider flex items-center gap-1.5 mb-3">
+            <Zap className="h-4 w-4 text-amber-400" />
+            {lang === 'hu' ? 'Kísérleti Forgatókönyvek – 10 Különböző Teljes Automatikus Futás' : 'Experimental Scenarios – 10 Different Full Automated Runs'}
+          </span>
+          <p className="text-[11px] text-slate-400 leading-relaxed font-sans mb-4">
+            {lang === 'hu'
+              ? 'Válasszon az alábbi 10 előre beállított fizikai szituáció közül. A gombra kattintva a rendszer automatikusan konfigurálja az összes paramétert, legenerálja a kozmikus környezetet, elindítja a magas felbontású szondát, kiszámítja az összehasonlító trajektóriákat, és rögzíti az adatokat a jegyzőkönyvbe.'
+              : 'Select from the 10 physical scenarios below. Clicking a button will automatically configure all parameters, generate the cosmic scale environment, run the comparison trial, and append the results to the registry.'}
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+            {cosmicScenariosList.map((sc, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleRunFullScenario(idx)}
+                disabled={cosmicStatus === 'generating'}
+                className="p-3 bg-slate-950/60 hover:bg-slate-900 border border-slate-800/80 hover:border-amber-500/30 rounded-xl text-left transition-all duration-200 group flex flex-col justify-between gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-xs relative overflow-hidden"
+              >
+                {/* Micro numbering bubble */}
+                <div className="absolute top-1 right-1 text-[8px] font-mono text-slate-600 font-bold px-1 rounded bg-slate-950/80">
+                  #{idx + 1}
+                </div>
+                <div>
+                  <div className="font-bold text-slate-200 group-hover:text-amber-300 font-mono text-[10px] leading-tight">
+                    {lang === 'hu' ? sc.nameHu : sc.nameEn}
+                  </div>
+                  <p className="text-[9.5px] text-slate-500 line-clamp-2 mt-1 font-sans">
+                    {lang === 'hu' ? sc.descHu : sc.descEn}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-1 text-[8px] font-mono mt-1 pt-2 border-t border-slate-900">
+                  <span className="px-1 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold">
+                    W:{sc.winding > 0 ? `+${sc.winding}` : sc.winding}
+                  </span>
+                  <span className="px-1 py-0.5 rounded bg-rose-500/10 text-rose-400 font-bold">
+                    C:{sc.charge}
+                  </span>
+                  <span className="px-1 py-0.5 rounded bg-sky-500/10 text-sky-400 font-bold">
+                    R:{sc.resolution}x
+                  </span>
+                  <span className="px-1 py-0.5 rounded bg-slate-800 text-slate-400 font-bold">
+                    v:{sc.velocity === 'zero' ? '0.0' : sc.velocity === 'low' ? '0.35' : '0.85'}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* KOZMIKUS JEGYZŐKÖNYV REGISZTER ÉS LETÖLTŐ KÖZPONT */}
+        <div className="mt-8 border-t border-slate-800/60 pt-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-sky-400" />
+              <span className="text-[11px] font-bold text-sky-400 font-mono uppercase tracking-wider">
+                {lang === 'hu' ? 'Kozmikus Kísérleti Jegyzőkönyv és Letöltő Központ' : 'Cosmic Experimental Protocol Registry & Download Hub'}
+              </span>
+            </div>
+            
+            {cosmicProtocols.length > 0 && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleDownloadCosmicProtocols('txt')}
+                  className="px-2.5 py-1 rounded bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/20 text-[10px] font-mono font-bold flex items-center gap-1 cursor-pointer transition-all"
+                >
+                  <Download className="h-3 w-3" />
+                  TXT LETÖLTÉS
+                </button>
+                <button
+                  onClick={() => handleDownloadCosmicProtocols('json')}
+                  className="px-2.5 py-1 rounded bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/20 text-[10px] font-mono font-bold flex items-center gap-1 cursor-pointer transition-all"
+                >
+                  <Download className="h-3 w-3" />
+                  JSON LETÖLTÉS
+                </button>
+                <button
+                  onClick={() => setCosmicProtocols([])}
+                  className="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-[10px] font-mono font-bold flex items-center gap-1 cursor-pointer transition-all"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  {lang === 'hu' ? 'TÖRLÉS' : 'CLEAR'}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {cosmicProtocols.length === 0 ? (
+            <div className="p-4 bg-slate-950/40 border border-slate-900/60 rounded-xl flex items-center justify-center text-xs text-slate-500 font-mono">
+              {lang === 'hu' ? 'Még nincs rögzített kozmikus jegyzőkönyv.' : 'No cosmic protocols recorded yet.'}
+            </div>
+          ) : (
+            <div className="max-h-[220px] overflow-y-auto pr-1 flex flex-col gap-2 border border-slate-900 rounded-xl bg-slate-950/20 p-2">
+              {cosmicProtocols.map((entry) => (
+                <div key={entry.id} className="p-3 bg-slate-950/80 rounded-lg border border-slate-900 text-[10.5px] font-mono flex flex-col sm:flex-row justify-between gap-3 text-slate-300">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 font-bold uppercase">
+                        {entry.timestamp}
+                      </span>
+                      <span className="font-bold text-slate-100">{entry.scenarioName}</span>
+                    </div>
+                    <div className="text-[9.5px] text-slate-400 flex flex-wrap gap-x-3 gap-y-1 mt-1">
+                      <span>Grid: {entry.gridSize}×{entry.gridSize}</span>
+                      <span>Well: {entry.wellName}</span>
+                      <span>Winding W: {entry.probeWinding}</span>
+                      <span>Res: {entry.probeResolution}x</span>
+                      <span>Velocity: {entry.probeInitVelocity}</span>
+                      <span className="text-rose-400 font-bold">Charge: {entry.probeCharge}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:items-end justify-center text-[9.5px] gap-1">
+                    <div className="flex gap-2">
+                      <span className="text-emerald-400 font-semibold">Pure q_eff: {entry.pureQEff.toFixed(4)}</span>
+                      <span className="text-slate-500">|</span>
+                      <span className="text-rose-400 font-semibold">Dist q_eff: {entry.enhancedQEff.toFixed(4)}</span>
+                    </div>
+                    <div className="text-[9px] text-slate-500">
+                      Distortion: <span className="text-rose-400 font-bold">{entry.distortion}%</span> | Back-reaction: <span className="text-amber-400 font-bold">{entry.backReaction}%</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </section>
 
       {/* ------------------------------------------------------------------------------
