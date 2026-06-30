@@ -291,7 +291,20 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
         addNotesPlaceholder: 'Írja ide a kísérleti megfigyeléseit...',
         scientificAnalysis: 'Automatizált Elméleti Fizikai Elemzés',
         interpretation: 'Interpretáció és Fizikai Következtetések',
-        referenceData: 'Jegyzőkönyvi adatok'
+        referenceData: 'Jegyzőkönyvi adatok',
+        researchGuideTitle: 'Ajánlott Tudományos Vizsgálatok & Kísérleti Útmutató',
+        researchGuideDesc: 'Hajtson végre célzott méréseket az alábbi kutatási javaslatok alapján. Kattintson a gombokra az adott feltételek azonnali betöltéséhez, futtassa a szimulációt, majd rögzítse az eredményt a jegyzőkönyvbe!',
+        researchTask1: '1. Finomítás: Távolságok & Sebességek',
+        researchTask1Desc: 'Próbálja ki a W+/W- párt különböző kiinduló távolságokkal és relatív sebességekkel. Mérje és hasonlítsa össze a Fourier-spektrumot az ütközés előtt és után!',
+        researchTask2: '2. Kötési Küszöb Vizsgálata',
+        researchTask2Desc: 'Keresse meg a határvonalat, ahol a kinetikus és átfedési energia egyensúlya miatt a rendszer kötött állapotból szórásba (scattering) megy át (E_total ≈ 0).',
+        researchTask3: '3. Különböző Winding Számok (1 vs 2)',
+        researchTask3Desc: 'Vizsgálja meg, hogyan befolyásolja a magasabb topológiai töltés (Q2 = ±2) a rezonáns befogást és a tiszta topológiai taszítás potenciálgátját.',
+        researchTask4: '4. Tömegarányok & Tehetetlenség',
+        researchTask4Desc: 'Állítson be eltérő tömegarányokat (például egy nagy és egy kis méretű szoliton). Figyelje meg a tehetetlenségi modulációt és a tömegközéppont precesszióját!',
+        researchTask5: '5. Csillapítás & Feszültség',
+        researchTask5Desc: 'Kísérletezzen magasabb csillapítással (damping) és feszültséggel (tension). Hogyan hat a disszipáció a topológiailag nem védett módusokra?',
+        loadPreset: 'Kísérlet betöltése'
       },
       en: {
         title: 'Soliton Spectral & Dynamics Laboratory',
@@ -363,7 +376,20 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
         addNotesPlaceholder: 'Write your experimental observations here...',
         scientificAnalysis: 'Automated Theoretical Physics Analysis',
         interpretation: 'Interpretation & Physical Conclusions',
-        referenceData: 'Protocol Data'
+        referenceData: 'Protocol Data',
+        researchGuideTitle: 'Recommended Scientific Investigations & Challenge Guide',
+        researchGuideDesc: 'Perform systematic experiments based on these core researcher prompts. Click any button to instantly configure the simulation space, run the trial, and log the diagnostics!',
+        researchTask1: '1. Finetuning: Distances & Velocities',
+        researchTask1Desc: 'Test the W+/W- pair under varying initial offsets and relative speeds. Monitor and compare the Fourier spectra before, during, and after collision!',
+        researchTask2: '2. Bound-to-Scattering Threshold',
+        researchTask2Desc: 'Pinpoint the physical barrier where the balance of kinetic energy and overlap potential shifts total energy positive (E_total ≈ 0), turning a bound orbit into scattering.',
+        researchTask3: '3. Winding Numbers (1 vs 2)',
+        researchTask3Desc: 'Examine how higher topological charges (Q2 = ±2) alter the deep attractive potential wells, and check for fine-structure harmonic Fourier splitting.',
+        researchTask4: '4. Mass Ratios & Inertia',
+        researchTask4Desc: 'Design highly asymmetric mass ratios (e.g. a small light envelope colliding with a huge heavy core) and map the orbital center of mass shifts.',
+        researchTask5: '5. Damping & Tension Sheaths',
+        researchTask5Desc: 'Inject heavy viscous damping or high hypersheet tension. Track the decay rate of non-topological wave structures relative to protected solitons.',
+        loadPreset: 'Load Experiment'
       },
       de: {
         title: 'Spektral- und Dynamiklabor für Solitonen',
@@ -435,7 +461,20 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
         addNotesPlaceholder: 'Schreiben Sie hier Ihre experimentellen Beobachtungen...',
         scientificAnalysis: 'Automatisierte theoretisch-physikalische Analyse',
         interpretation: 'Interpretation & physikalische Schlussfolgerungen',
-        referenceData: 'Protokolldaten'
+        referenceData: 'Protokolldaten',
+        researchGuideTitle: 'Empfohlene wissenschaftliche Untersuchungen & Forschungsleitfaden',
+        researchGuideDesc: 'Führen Sie gezielte Messungen gemäß den folgenden Vorschlägen durch. Klicken Sie auf eine Schaltfläche, um die Parameter sofort zu laden, das Experiment zu starten und zu protokollieren!',
+        researchTask1: '1. Feineinstellung: Abstände & Geschwindigkeiten',
+        researchTask1Desc: 'Testen Sie das W+/W--Paar bei unterschiedlichen Startabständen und Relativgeschwindigkeiten. Vergleichen Sie die Fourier-Spektren vor und nach der Kollision!',
+        researchTask2: '2. Bindungs- und Streuschwelle',
+        researchTask2Desc: 'Finden Sie den Übergangspunkt, an dem das Gesetz von kinetischer Energie und Überlappungspotenzial die Gesamtenergie positiv macht (E_total ≈ 0) und ein gebundener Orbit kollabiert.',
+        researchTask3: '3. Winding-Zahlen (1 vs. 2)',
+        researchTask3Desc: 'Untersuchen Sie, wie höhere topologische Ladungen (Q2 = ±2) die Potenzialtöpfe verändern, und beobachten Sie die harmonische Fourier-Aufspaltung.',
+        researchTask4: '4. Massenverhältnisse & Trägheit',
+        researchTask4Desc: 'Konfigurieren Sie stark asymmetrische Massenverhältnisse (z. B. ein leichtes Paket vs. ein schweres Zentrum) und beobachten Sie die Präzession des Schwerpunkts.',
+        researchTask5: '5. Dämpfung & Spannung',
+        researchTask5Desc: 'Experimentieren Sie mit hoher Dämpfung und Hyperflächenspannung. Wie wirkt sich die viskose Dissipation auf die nicht-topologischen Moden aus?',
+        loadPreset: 'Experiment laden'
       }
     };
     return translations[lang] || translations.en;
@@ -542,6 +581,93 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
       defProfile2,
       fourier2,
       s2Winding
+    );
+
+    setSolitons([s1, s2]);
+    setSelectedSolitonId('soliton-1');
+  };
+
+  const handleLoadSpecificConfiguration = (cfg: {
+    s1Winding: number;
+    s1Radius: number;
+    s1Energy: number;
+    s1KMode: number;
+    s1Pos: [number, number, number, number];
+    s1Vel: [number, number, number, number];
+    s2Winding: number;
+    s2Radius: number;
+    s2Energy: number;
+    s2KMode: number;
+    s2Pos: [number, number, number, number];
+    s2Vel: [number, number, number, number];
+    dampingVal?: number;
+    tensionVal?: number;
+    gravityVal?: number;
+    speedVal?: number;
+  }) => {
+    // 1. Sync React States so UI controls match
+    setS1Winding(cfg.s1Winding);
+    setS1Radius(cfg.s1Radius);
+    setS1Energy(cfg.s1Energy);
+    setS1KMode(cfg.s1KMode);
+    setS1X(cfg.s1Pos[0]);
+    setS1Y(cfg.s1Pos[1]);
+    setS1W(cfg.s1Pos[3]);
+    setS1Vx(cfg.s1Vel[0]);
+    setS1Vy(cfg.s1Vel[1]);
+    setS1Vw(cfg.s1Vel[3]);
+
+    setS2Winding(cfg.s2Winding);
+    setS2Radius(cfg.s2Radius);
+    setS2Energy(cfg.s2Energy);
+    setS2KMode(cfg.s2KMode);
+    setS2X(cfg.s2Pos[0]);
+    setS2Y(cfg.s2Pos[1]);
+    setS2W(cfg.s2Pos[3]);
+    setS2Vx(cfg.s2Vel[0]);
+    setS2Vy(cfg.s2Vel[1]);
+    setS2Vw(cfg.s2Vel[3]);
+
+    if (cfg.dampingVal !== undefined) setDamping(cfg.dampingVal);
+    if (cfg.tensionVal !== undefined) setTension(cfg.tensionVal);
+    if (cfg.gravityVal !== undefined) setGravityScale(cfg.gravityVal);
+    if (cfg.speedVal !== undefined) setSimSpeed(cfg.speedVal);
+
+    setS1Preset('custom');
+    setS2Preset('custom');
+
+    // 2. Instantiate and set immediately
+    setSelectedSolitonId(null);
+    setObstacles([]);
+    setTimelineData([]);
+    timelineStepRef.current = 0;
+
+    const defProfile1 = [1.0, 0.85, 0.6, 0.4, 0.22, 0.1, 0.04, 0.01].map(v => v * (cfg.s1KMode * 1.1));
+    const defProfile2 = [1.0, 0.85, 0.6, 0.4, 0.22, 0.1, 0.04, 0.01].map(v => v * (cfg.s2KMode * 1.1));
+
+    const fourier1 = [0.15 * cfg.s1KMode, 0.08 * cfg.s1KMode, 0.04 * cfg.s1KMode, 0.01];
+    const fourier2 = [0.15 * cfg.s2KMode, 0.08 * cfg.s2KMode, 0.04 * cfg.s2KMode, 0.01];
+
+    const s1 = new EffectiveSoliton(
+      'soliton-1',
+      cfg.s1Pos,
+      cfg.s1Vel,
+      cfg.s1Radius,
+      cfg.s1Energy,
+      defProfile1,
+      fourier1,
+      cfg.s1Winding
+    );
+
+    const s2 = new EffectiveSoliton(
+      'soliton-2',
+      cfg.s2Pos,
+      cfg.s2Vel,
+      cfg.s2Radius,
+      cfg.s2Energy,
+      defProfile2,
+      fourier2,
+      cfg.s2Winding
     );
 
     setSolitons([s1, s2]);
@@ -2512,6 +2638,186 @@ Generated automatically by EffectiveSolitonLab © ${new Date().getFullYear()}
               );
             })()}
           </div>
+        </div>
+      </section>
+
+      {/* Recommended Scientific Investigations Card */}
+      <section className="bg-slate-900/40 border border-indigo-500/10 rounded-2xl p-5 md:p-6 flex flex-col gap-4 mt-6" id="scientific-investigations-guide">
+        <div className="flex items-center gap-2.5 pb-3 border-b border-indigo-500/10">
+          <Sparkles className="h-5 w-5 text-indigo-400" />
+          <div>
+            <h3 className="text-sm font-bold text-slate-100 font-mono uppercase tracking-wider">{text.researchGuideTitle}</h3>
+            <p className="text-[11px] text-slate-400 leading-relaxed">{text.researchGuideDesc}</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          
+          {/* Task 1 */}
+          <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-900 flex flex-col justify-between gap-3 hover:border-slate-800 transition-all">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[11.5px] font-bold text-amber-400 font-mono">{text.researchTask1}</span>
+              <p className="text-[11px] text-slate-400 leading-relaxed font-sans">{text.researchTask1Desc}</p>
+            </div>
+            <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-900">
+              <button
+                onClick={() => handleLoadSpecificConfiguration({
+                  s1Winding: 1, s1Radius: 2.4, s1Energy: 1.2e6, s1KMode: 0.8,
+                  s1Pos: [-5.0, 0.1, 0, 0.05], s1Vel: [0.8, 1.2, 0, 0],
+                  s2Winding: -1, s2Radius: 2.4, s2Energy: 1.2e6, s2KMode: 0.8,
+                  s2Pos: [5.0, -0.1, 0, -0.05], s2Vel: [-0.8, -1.2, 0, 0]
+                })}
+                className="text-[10px] font-mono font-bold text-indigo-300 hover:text-indigo-200 bg-indigo-500/10 hover:bg-indigo-500/20 px-2 py-1 rounded border border-indigo-500/20 cursor-pointer transition-all"
+              >
+                {lang === 'hu' ? 'Lassú ütközés' : 'Slow collision'}
+              </button>
+              <button
+                onClick={() => handleLoadSpecificConfiguration({
+                  s1Winding: 1, s1Radius: 2.4, s1Energy: 1.2e6, s1KMode: 0.8,
+                  s1Pos: [-6.5, 0.1, 0, 0.05], s1Vel: [4.5, 0.5, 0, 0],
+                  s2Winding: -1, s2Radius: 2.4, s2Energy: 1.2e6, s2KMode: 0.8,
+                  s2Pos: [6.5, -0.1, 0, -0.05], s2Vel: [-4.5, -0.5, 0, 0]
+                })}
+                className="text-[10px] font-mono font-bold text-indigo-300 hover:text-indigo-200 bg-indigo-500/10 hover:bg-indigo-500/20 px-2 py-1 rounded border border-indigo-500/20 cursor-pointer transition-all"
+              >
+                {lang === 'hu' ? 'Gyors ütközés' : 'Fast collision'}
+              </button>
+            </div>
+          </div>
+
+          {/* Task 2 */}
+          <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-900 flex flex-col justify-between gap-3 hover:border-slate-800 transition-all">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[11.5px] font-bold text-cyan-400 font-mono">{text.researchTask2}</span>
+              <p className="text-[11px] text-slate-400 leading-relaxed font-sans">{text.researchTask2Desc}</p>
+            </div>
+            <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-900">
+              <button
+                onClick={() => handleLoadSpecificConfiguration({
+                  s1Winding: 1, s1Radius: 2.4, s1Energy: 1.2e6, s1KMode: 0.8,
+                  s1Pos: [-4.0, 0.5, 0, 0.05], s1Vel: [1.2, 0.8, 0, 0],
+                  s2Winding: -1, s2Radius: 2.4, s2Energy: 1.2e6, s2KMode: 0.8,
+                  s2Pos: [4.0, -0.5, 0, -0.05], s2Vel: [-1.2, -0.8, 0, 0]
+                })}
+                className="text-[10px] font-mono font-bold text-cyan-300 hover:text-cyan-200 bg-cyan-500/10 hover:bg-cyan-500/20 px-2 py-1 rounded border border-cyan-500/20 cursor-pointer transition-all"
+                title="E_total < 0 (Kötött állapot)"
+              >
+                {lang === 'hu' ? 'Kötött (E < 0)' : 'Bound (E < 0)'}
+              </button>
+              <button
+                onClick={() => handleLoadSpecificConfiguration({
+                  s1Winding: 1, s1Radius: 2.4, s1Energy: 1.2e6, s1KMode: 0.8,
+                  s1Pos: [-4.0, 0.5, 0, 0.05], s1Vel: [2.15, 0.8, 0, 0],
+                  s2Winding: -1, s2Radius: 2.4, s2Energy: 1.2e6, s2KMode: 0.8,
+                  s2Pos: [4.0, -0.5, 0, -0.05], s2Vel: [-2.15, -0.8, 0, 0]
+                })}
+                className="text-[10px] font-mono font-bold text-cyan-300 hover:text-cyan-200 bg-cyan-500/10 hover:bg-cyan-500/20 px-2 py-1 rounded border border-cyan-500/20 cursor-pointer transition-all"
+                title="E_total ≈ 0 (Átmeneti küszöb)"
+              >
+                {lang === 'hu' ? 'Küszöb (E ≈ 0)' : 'Threshold (E ≈ 0)'}
+              </button>
+              <button
+                onClick={() => handleLoadSpecificConfiguration({
+                  s1Winding: 1, s1Radius: 2.4, s1Energy: 1.2e6, s1KMode: 0.8,
+                  s1Pos: [-4.0, 0.5, 0, 0.05], s1Vel: [3.5, 0.8, 0, 0],
+                  s2Winding: -1, s2Radius: 2.4, s2Energy: 1.2e6, s2KMode: 0.8,
+                  s2Pos: [4.0, -0.5, 0, -0.05], s2Vel: [-3.5, -0.8, 0, 0]
+                })}
+                className="text-[10px] font-mono font-bold text-cyan-300 hover:text-cyan-200 bg-cyan-500/10 hover:bg-cyan-500/20 px-2 py-1 rounded border border-cyan-500/20 cursor-pointer transition-all"
+                title="E_total > 0 (Szóródás)"
+              >
+                {lang === 'hu' ? 'Szórás (E > 0)' : 'Scatter (E > 0)'}
+              </button>
+            </div>
+          </div>
+
+          {/* Task 3 */}
+          <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-900 flex flex-col justify-between gap-3 hover:border-slate-800 transition-all">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[11.5px] font-bold text-rose-400 font-mono">{text.researchTask3}</span>
+              <p className="text-[11px] text-slate-400 leading-relaxed font-sans">{text.researchTask3Desc}</p>
+            </div>
+            <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-900">
+              <button
+                onClick={() => handleLoadSpecificConfiguration({
+                  s1Winding: 1, s1Radius: 2.4, s1Energy: 1.2e6, s1KMode: 0.8,
+                  s1Pos: [-4.0, 0.0, 0, 0.05], s1Vel: [1.2, 0.5, 0, 0],
+                  s2Winding: -2, s2Radius: 2.4, s2Energy: 1.2e6, s2KMode: 0.8,
+                  s2Pos: [4.0, 0.0, 0, -0.05], s2Vel: [-1.2, -0.5, 0, 0]
+                })}
+                className="text-[10px] font-mono font-bold text-rose-300 hover:text-rose-200 bg-rose-500/10 hover:bg-rose-500/20 px-2 py-1 rounded border border-rose-500/20 cursor-pointer transition-all"
+              >
+                {lang === 'hu' ? 'Aszimmetrikus Q' : 'Asymmetric Q'}
+              </button>
+              <button
+                onClick={() => handleLoadSpecificConfiguration({
+                  s1Winding: 2, s1Radius: 2.4, s1Energy: 1.2e6, s1KMode: 0.8,
+                  s1Pos: [-4.5, 0.0, 0, 0.05], s1Vel: [1.5, 0.0, 0, 0],
+                  s2Winding: 2, s2Radius: 2.4, s2Energy: 1.2e6, s2KMode: 0.8,
+                  s2Pos: [4.5, 0.0, 0, -0.05], s2Vel: [-1.5, 0.0, 0, 0]
+                })}
+                className="text-[10px] font-mono font-bold text-rose-300 hover:text-rose-200 bg-rose-500/10 hover:bg-rose-500/20 px-2 py-1 rounded border border-rose-500/20 cursor-pointer transition-all"
+              >
+                {lang === 'hu' ? 'Kettős taszítás' : 'Double Repulsion'}
+              </button>
+            </div>
+          </div>
+
+          {/* Task 4 */}
+          <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-900 flex flex-col justify-between gap-3 hover:border-slate-800 transition-all">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[11.5px] font-bold text-emerald-400 font-mono">{text.researchTask4}</span>
+              <p className="text-[11px] text-slate-400 leading-relaxed font-sans">{text.researchTask4Desc}</p>
+            </div>
+            <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-900">
+              <button
+                onClick={() => handleLoadSpecificConfiguration({
+                  s1Winding: 1, s1Radius: 1.4, s1Energy: 4e5, s1KMode: 1.2,
+                  s1Pos: [-4.5, 0.0, 0, 0.02], s1Vel: [1.8, 1.0, 0, 0],
+                  s2Winding: -1, s2Radius: 3.6, s2Energy: 2.4e6, s2KMode: 0.4,
+                  s2Pos: [4.5, 0.0, 0, -0.1], s2Vel: [-0.3, -0.1, 0, 0]
+                })}
+                className="text-[10px] font-mono font-bold text-emerald-300 hover:text-emerald-200 bg-emerald-500/10 hover:bg-emerald-500/20 px-2 py-1 rounded border border-emerald-500/20 cursor-pointer transition-all"
+              >
+                {lang === 'hu' ? 'Könnyű + Nehéz' : 'Light + Heavy'}
+              </button>
+            </div>
+          </div>
+
+          {/* Task 5 */}
+          <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-900 flex flex-col justify-between gap-3 hover:border-slate-800 transition-all">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[11.5px] font-bold text-violet-400 font-mono">{text.researchTask5}</span>
+              <p className="text-[11px] text-slate-400 leading-relaxed font-sans">{text.researchTask5Desc}</p>
+            </div>
+            <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-900">
+              <button
+                onClick={() => handleLoadSpecificConfiguration({
+                  s1Winding: 1, s1Radius: 2.4, s1Energy: 1.2e6, s1KMode: 0.8,
+                  s1Pos: [-4.0, 0.2, 0, 0.05], s1Vel: [1.6, 1.2, 0, 0],
+                  s2Winding: -1, s2Radius: 2.4, s2Energy: 1.2e6, s2KMode: 0.8,
+                  s2Pos: [4.0, -0.2, 0, -0.05], s2Vel: [-1.6, -1.2, 0, 0],
+                  dampingVal: 0.04, tensionVal: 0.8
+                })}
+                className="text-[10px] font-mono font-bold text-violet-300 hover:text-violet-200 bg-violet-500/10 hover:bg-violet-500/20 px-2 py-1 rounded border border-violet-500/20 cursor-pointer transition-all"
+              >
+                {lang === 'hu' ? 'Magas csillapítás' : 'High Damping'}
+              </button>
+              <button
+                onClick={() => handleLoadSpecificConfiguration({
+                  s1Winding: 1, s1Radius: 2.4, s1Energy: 1.2e6, s1KMode: 0.8,
+                  s1Pos: [-4.0, 0.2, 0, 0.05], s1Vel: [1.6, 1.2, 0, 0],
+                  s2Winding: -1, s2Radius: 2.4, s2Energy: 1.2e6, s2KMode: 0.8,
+                  s2Pos: [4.0, -0.2, 0, -0.05], s2Vel: [-1.6, -1.2, 0, 0],
+                  dampingVal: 0.001, tensionVal: 2.2
+                })}
+                className="text-[10px] font-mono font-bold text-violet-300 hover:text-violet-200 bg-violet-500/10 hover:bg-violet-500/20 px-2 py-1 rounded border border-violet-500/20 cursor-pointer transition-all"
+              >
+                {lang === 'hu' ? 'Erős w-feszültség' : 'High Tension'}
+              </button>
+            </div>
+          </div>
+
         </div>
       </section>
 
