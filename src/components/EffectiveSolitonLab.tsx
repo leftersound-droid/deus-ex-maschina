@@ -12,17 +12,20 @@ import {
   Plus,
   Trash2,
   Zap,
-  Download,
-  Upload,
   Activity,
   Compass,
   Cpu,
   HelpCircle,
-  Info,
   Layers,
   Settings,
   Boxes,
-  Maximize2
+  ArrowRightLeft,
+  Info,
+  Sliders,
+  Scale,
+  TrendingUp,
+  Flame,
+  LineChart
 } from 'lucide-react';
 import { GrowingR4Model, Coord4D } from '../model/toyModel';
 import { EffectiveSoliton, SolitonObstacle } from '../model/EffectiveSoliton';
@@ -34,363 +37,367 @@ interface EffectiveSolitonLabProps {
 }
 
 export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model, lang }) => {
-  // Simulator state
+  // Main simulator state for the effective environment
   const [solitons, setSolitons] = useState<EffectiveSoliton[]>([]);
   const [obstacles, setObstacles] = useState<SolitonObstacle[]>([]);
   const [selectedSolitonId, setSelectedSolitonId] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState<boolean>(true);
   
-  // Physics parameters
+  // Physics environment constants
   const [simSpeed, setSimSpeed] = useState<number>(1.2);
-  const [damping, setDamping] = useState<number>(0.005);
+  const [damping, setDamping] = useState<number>(0.003);
   const [tension, setTension] = useState<number>(0.4);
   const [gravityScale, setGravityScale] = useState<number>(1.2);
-  const [activePreset, setActivePreset] = useState<string>('dual');
 
-  // Analyzer / Parameter state
+  // Scanned / Extracted reference from main model
   const [analysisResult, setAnalysisResult] = useState<SolitonAnalysisParams | null>(null);
   const [isCopied, setIsCopied] = useState<boolean>(false);
-  const [jsonInput, setJsonInput] = useState<string>('');
-  const [showJsonPanel, setShowJsonPanel] = useState<boolean>(false);
 
-  // Canvas and interaction controls
-  const [placeMode, setPlaceMode] = useState<'none' | 'soliton_pos' | 'soliton_neg' | 'well' | 'barrier'>('none');
+  // ------------------------------------------------------------------------------
+  // MODULE 1: SOLITON SAMPLER & PARAMETER DESIGNER STATE
+  // ------------------------------------------------------------------------------
+  
+  // Soliton 1 config
+  const [s1Preset, setS1Preset] = useState<string>('alpha');
+  const [s1Winding, setS1Winding] = useState<number>(1);
+  const [s1Radius, setS1Radius] = useState<number>(2.4);
+  const [s1Energy, setS1Energy] = useState<number>(1.2e6);
+  const [s1KMode, setS1KMode] = useState<number>(0.8);
+  const [s1X, setS1X] = useState<number>(-3.5);
+  const [s1Y, setS1Y] = useState<number>(0.0);
+  const [s1W, setS1W] = useState<number>(0.05);
+  const [s1Vx, setS1Vx] = useState<number>(0.0);
+  const [s1Vy, setS1Vy] = useState<number>(1.6);
+  const [s1Vw, setS1Vw] = useState<number>(0.1);
+
+  // Soliton 2 config
+  const [s2Preset, setS2Preset] = useState<string>('beta');
+  const [s2Winding, setS2Winding] = useState<number>(-1);
+  const [s2Radius, setS2Radius] = useState<number>(2.4);
+  const [s2Energy, setS2Energy] = useState<number>(1.2e6);
+  const [s2KMode, setS2KMode] = useState<number>(0.8);
+  const [s2X, setS2X] = useState<number>(3.5);
+  const [s2Y, setS2Y] = useState<number>(0.0);
+  const [s2W, setS2W] = useState<number>(-0.05);
+  const [s2Vx, setS2Vx] = useState<number>(0.0);
+  const [s2Vy, setS2Vy] = useState<number>(-1.6);
+  const [s2Vw, setS2Vw] = useState<number>(-0.1);
+
+  // Canvas ref and interaction state
+  const [placeMode, setPlaceMode] = useState<'none' | 'well' | 'barrier'>('none');
   const xyCanvasRef = useRef<HTMLCanvasElement>(null);
   const zwCanvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number | null>(null);
   const lastUpdateTimeRef = useRef<number>(0);
 
-  // Localization labels
+  // Live simulation history tracking for charts (scrolling timeline)
+  const [timelineData, setTimelineData] = useState<{
+    step: number;
+    distance: number;
+    relVel: number;
+    overlapPot: number;
+    eKin: number;
+    eTotal: number;
+  }[]>([]);
+  const timelineStepRef = useRef<number>(0);
+
+  // Bilingual translation dictionary
   const text = useMemo(() => {
     const translations = {
       hu: {
-        title: 'Effektív Szoliton Laboratórium',
-        subtitle: 'Lokalizált ℝ⁴ hullámcsomagok, emergens vonzás és topológiai megmaradás',
-        extractBtn: 'Paraméterek kinyerése a fő rácsból',
-        extractDesc: 'Meghívja a solitonAnalyzer-t a futó 4D rács aktuális állapotára a szoliton belső profiljának és hullámmódusainak letapogatásához.',
-        noAnalysis: 'Még nincs kinyert adat. Nyomd meg a fenti gombot az R⁴ rács analizálásához!',
-        radialProfile: 'Radiális Potenciálprofil V(r)',
-        fourierSpectrum: 'Frekvencia Spektrum (Belső rezgés)',
-        applyParams: 'Átültetés a szimulációba',
-        applyParamsDesc: 'A kinyert valós rácsparamétereket betölti az aktív szolitonba.',
-        effectiveRadius: 'Effektív sugár (R_eff):',
-        maxPotential: 'Középponti feszültség (V_max):',
-        wavefrontGini: 'Wavefront fluktuáció (Gini):',
-        stepMeasured: 'Mért lépésnél:',
-        exportJson: 'JSON paraméterek másolása',
-        importJson: 'Paraméterek Importálása / Betöltése',
-        simSettings: 'Fizikai Konstansok',
+        title: 'Szoliton Spektrál- és Dinamikai Laboratórium',
+        subtitle: 'Két-szoliton szórás, kötött állapotok és fázis-hullámfrekvencia moduláció ℝ⁴-ben',
+        extractBtn: 'Szkennelés a fő rácsból',
+        extractSuccess: 'Sikeresen kinyerve!',
+        noAnalysis: 'Még nincs kinyert adat. Nyomja meg a gombot az aktív rács letapogatásához!',
+        radialProfile: 'Projektált Sugár-Potenciál V(r)',
+        fourierSpectrum: 'Frekvencia Spektrum (Fourier)',
+        
+        // Sampler labels
+        samplerTitle: '1. Modul: Szoliton Mintavételező & Paraméter Tervező',
+        samplerDesc: 'Válassza ki vagy konfigurálja a két vizsgálandó szoliton tulajdonságait és kiindulási pályáját.',
+        soliton1: '1. Szoliton (Rózsaszín)',
+        soliton2: '2. Szoliton (Smaragdzöld)',
+        presetLabel: 'Minta-Sablon:',
+        chargeLabel: 'Topológiai Töltés (Q):',
+        radiusLabel: 'Effektív sugár (R_eff):',
+        energyLabel: 'Középponti Feszültség (V_max):',
+        kModeLabel: 'Belső Hullámhossz (k_mode):',
+        positionLabel: 'Kezdeti Pozíció (X, Y, W):',
+        velocityLabel: 'Kezdeti Sebesség (Vx, Vy, Vw):',
+        loadPairBtn: 'Kiválasztott Pár Betöltése a Szimulátorba',
+        
+        // Lab labels
+        labTitle: '2. Modul: Effektív Kontrollált Környezet (ℝ⁴ Szimulátor)',
+        labDesc: 'A szolitonok 100%-ban az eredeti téregyenletek gradiens-áramlása szerint lépnek kölcsönhatásba.',
         simSpeed: 'Szimulációs sebesség:',
-        dampingLabel: 'Közegellenállás (Damping):',
-        tensionLabel: 'Hipertér feszülés (Tension):',
-        gravityScaleLabel: 'Emergens vonzási erő:',
-        presetLabel: 'Kísérleti Presetek:',
-        presetDual: 'Dual Szoliton Keringés',
-        presetDualDesc: 'Két ellentétes topológiai töltésű szoliton egymás körüli stabil pályája.',
-        presetScattering: 'Hullám-Részecske Elhajlás',
-        presetScatteringDesc: 'Egy szoliton elhajlása akadályok és potenciálgödrök mellett.',
-        presetChaos: 'Kaotikus Kozmikus Hullámzás',
-        presetChaosDesc: 'Erős 4. dimenziós w-oszcilláció és Mach-féle tömegfluktuáció okozta kaotikus pálya.',
-        presetLoaded: 'Kinyert Rács-Szoliton',
-        presetLoadedDesc: 'A fő R⁴ rácsból mért adatok alapján felépített egyedi szoliton viselkedése.',
-        canvasXYTitle: 'ℝ² Vetületi Sík (X-Y dimenziók)',
-        canvasZWTitle: 'ℝ² Hipersík Oszcilláció (Z-W dimenziók)',
-        canvasClickDesc: 'Kattints a bal oldali koordinátarendszerbe új objektum elhelyezéséhez.',
-        placeSolitonPos: 'Szoliton elhelyezése (+ Winding)',
-        placeSolitonNeg: 'Szoliton elhelyezése (- Winding)',
-        placeWell: 'Vonzó potenciálgödör lehelyezése',
-        placeBarrier: 'Taszító potenciálgát lehelyezése',
-        placeClear: 'Interakció leállítása',
-        clearBtn: 'Minden törlése',
-        pulseBtn: 'Perturbációs lökés indítása',
-        selectedSoliton: 'Kiválasztott Szoliton adatai',
-        pos: 'Pozíció (X, Y, Z, w):',
-        vel: 'Sebesség (Vx, Vy, Vz, Vw):',
-        mass: 'Dinamikus tehetetlen tömeg (Mach):',
-        charge: 'Topológiai winding szám:',
-        limitsTitle: 'Fizikai Magyarázat és Korlátok',
-        limitsText: 'A szolitonok (magános hullámok) nem pontszerű tömegek, hanem kiterjedt hullámcsomagok. Az egyenletben a vonzás nem távolsági erő, hanem az egymás potenciálterén való elmozdulás gradienséből fakad. A 4. dimenziós w-tengely menti kitérés feszültséget generál, és a Mach-elv alapján a szoliton belső fázis-oszcillációival együtt folyamatosan modulálja a szoliton effektív tömegét (tehetetlenségét).'
+        dampingLabel: 'Közegellenállás / Disszipáció:',
+        tensionLabel: 'Hipertér Feszülés:',
+        gravityScaleLabel: 'Emergens Csatolási Erő (G):',
+        canvasXYTitle: 'ℝ² Vetületi Sík (X-Y)',
+        canvasZWTitle: 'ℝ² Hipersík Rezgés (Z-W)',
+        placeWell: 'Vonzó potenciálgödör',
+        placeBarrier: 'Taszító potenciálgát',
+        clearBtn: 'Reset / Alaphelyzet',
+        pulseBtn: 'Perturbációs lökés',
+        
+        // Diagnostics
+        diagnosticsTitle: 'Valós Idejű Ütközés-Dinamika Diagnosztika',
+        distance: 'Távolság (d):',
+        relVel: 'Relatív sebesség (v_rel):',
+        overlapPot: 'Csatolási Potenciál (V_overlap):',
+        kineticEnergy: 'Relatív Kinetikus Energia (E_kin):',
+        totalEnergy: 'Teljes Relatív Energia (E_tot):',
+        stateLabel: 'Kölcsönhatási Állapot:',
+        stateBound: 'KÖTÖTT PÁLYA / ORBIT (E_tot < 0)',
+        stateScattering: 'SZÓRÁSI MEZŐ (E_tot >= 0)',
+        stateAnnihilation: 'KÖZELI ANNIHILÁCIÓS SÁV!',
+        stateDecoupled: 'NINCS KAPCSOLAT (Távoli)',
+        mass: 'Dinamikus tehetetlen tömeg:',
+        
+        timelineTitle: 'Dinamikai Idővonal (Utolsó 100 lépés)',
+        timelineDesc: 'Távolság (Rózsaszín) és Relatív Sebesség (Cián) folyamatos regisztrációja',
+        fourierCompTitle: 'Belső Hullám-Spektrumok Összehasonlítása',
+        fourierCompDesc: 'Az 1. (Rózsaszín) és 2. (Smaragd) szolitonok fázis-rezgési spektrumának eloszlása',
+        
+        limitsTitle: 'Fizikai Hatásmechanizmus & Magyarázat',
+        limitsText: 'A szimulátor nem pontszerű részecskéket modellez, hanem kiterjedt hullámcsomagokat. Az interakció a szolitondominált potenciálgödrök átfedésének gradienséből (erőhatás) és a 4. dimenziós w-feszültségből fakad. Az ellentétes topológiai winding számú (W+ és W-) szolitonok vonzzák egymást, míg az azonosak taszítják vagy bonyolult szóródást mutatnak. A w-kitérés a Mach-elv szerint folyamatosan modulálja a belső tömeget és a Fourier spektrum belső módusait.'
       },
       en: {
-        title: 'Effective Soliton Laboratory',
-        subtitle: 'Localized ℝ⁴ wave packets, emergent attraction and topological conservation',
-        extractBtn: 'Extract Parameters from Main Grid',
-        extractDesc: 'Invokes the solitonAnalyzer on the active 4D lattice state to scan the internal profile and wave modes of the soliton.',
-        noAnalysis: 'No analysis data extracted yet. Click the button above to scan the running R⁴ lattice!',
-        radialProfile: 'Radial Potential Profile V(r)',
-        fourierSpectrum: 'Frequency Spectrum (Internal vibration)',
-        applyParams: 'Transplant to Lab Simulation',
-        applyParamsDesc: 'Loads the extracted real lattice parameters into the active laboratory soliton.',
-        effectiveRadius: 'Effective Radius (R_eff):',
-        maxPotential: 'Central potential (V_max):',
-        wavefrontGini: 'Wavefront fluctuation (Gini):',
-        stepMeasured: 'Measured at step:',
-        exportJson: 'Copy JSON Parameters',
-        importJson: 'Import / Load Parameters',
-        simSettings: 'Physical Constants',
-        simSpeed: 'Simulation speed:',
-        dampingLabel: 'Viscosity (Damping):',
+        title: 'Soliton Spectral & Dynamics Laboratory',
+        subtitle: 'Two-soliton scattering, bound states, and phase-wave frequency modulation in ℝ⁴',
+        extractBtn: 'Scan Main Grid Parameters',
+        extractSuccess: 'Successfully Extracted!',
+        noAnalysis: 'No scanned data yet. Click the button above to probe the active 4D lattice!',
+        radialProfile: 'Projected Radial Potential V(r)',
+        fourierSpectrum: 'Frequency Spectrum (Fourier)',
+        
+        // Sampler labels
+        samplerTitle: 'Module 1: Soliton Sampler & Parameter Designer',
+        samplerDesc: 'Select or custom design the physical criteria and initial orbital trajectories for two test solitons.',
+        soliton1: 'Soliton 1 (Pink / W+)',
+        soliton2: 'Soliton 2 (Emerald / W-)',
+        presetLabel: 'Sample Preset:',
+        chargeLabel: 'Topological Charge (Q):',
+        radiusLabel: 'Effective Radius (R_eff):',
+        energyLabel: 'Core Central Potential (V_max):',
+        kModeLabel: 'Internal Wavelength (k_mode):',
+        positionLabel: 'Initial Position (X, Y, W):',
+        velocityLabel: 'Initial Velocity (Vx, Vy, Vw):',
+        loadPairBtn: 'Load Configured Pair to Simulation',
+        
+        // Lab labels
+        labTitle: 'Module 2: Effective Controlled Environment (ℝ⁴ Simulator)',
+        labDesc: 'Simulates the two solitons interacting 100% via gradient flow of overlapping potential wave-packets.',
+        simSpeed: 'Simulation Speed:',
+        dampingLabel: 'Viscosity / Damping:',
         tensionLabel: 'Hyperspace Tension:',
-        gravityScaleLabel: 'Emergent Gravity Scale:',
-        presetLabel: 'Experimental Presets:',
-        presetDual: 'Dual Soliton Orbit',
-        presetDualDesc: 'A stable orbital dance of two solitons with opposite topological winding charges.',
-        presetScattering: 'Wave-Particle Scattering',
-        presetScatteringDesc: 'A soliton scattering and deflecting around attractive wells and potential barriers.',
-        presetChaos: 'Chaotic Cosmic Wave',
-        presetChaosDesc: 'Chaotic trajectory induced by strong 4D w-oscillations and Machian mass fluctuations.',
-        presetLoaded: 'Extracted Lattice Soliton',
-        presetLoadedDesc: 'Custom soliton behavior constructed purely from parameters scanned in the main R⁴ grid.',
-        canvasXYTitle: 'ℝ² Projected Plane (X-Y dimensions)',
-        canvasZWTitle: 'ℝ² Hypersheet Oscillation (Z-W dimensions)',
-        canvasClickDesc: 'Click on the left canvas to place objects into the space.',
-        placeSolitonPos: 'Place Soliton (+ Winding)',
-        placeSolitonNeg: 'Place Soliton (- Winding)',
-        placeWell: 'Place Attractive Potential Well',
-        placeBarrier: 'Place Repulsive Potential Barrier',
-        placeClear: 'Cancel Interaction',
-        clearBtn: 'Clear All',
-        pulseBtn: 'Inject Perturbation Pulse',
-        selectedSoliton: 'Selected Soliton Telemetry',
-        pos: 'Position (X, Y, Z, w):',
-        vel: 'Velocity (Vx, Vy, Vz, Vw):',
-        mass: 'Dynamic inertial mass (Mach):',
-        charge: 'Topological winding number:',
-        limitsTitle: 'Physical Intuition & Limitations',
-        limitsText: 'Solitons are extended wave packets rather than point masses. In this emergent model, attraction is not an artificial force but arises from solitons sliding down each other\'s overlapping potential slopes. Movement in the 4th dimension (w-axis) creates tension, which dynamically scales the inertial mass based on Mach\'s principle and internal phase-wave ripples.'
+        gravityScaleLabel: 'Emergent Gravity Scale (G):',
+        canvasXYTitle: 'ℝ² Projected Plane (X-Y)',
+        canvasZWTitle: 'ℝ² Hypersheet Oscillation (Z-W)',
+        placeWell: 'Place Potential Well',
+        placeBarrier: 'Place Potential Barrier',
+        clearBtn: 'Reset All',
+        pulseBtn: 'Pulse Perturbation',
+        
+        // Diagnostics
+        diagnosticsTitle: 'Real-Time Collision & Dynamics Diagnostics',
+        distance: 'Distance (d):',
+        relVel: 'Relative velocity (v_rel):',
+        overlapPot: 'Overlap Potential (V_overlap):',
+        kineticEnergy: 'Relative Kinetic Energy (E_kin):',
+        totalEnergy: 'Total Relative Energy (E_tot):',
+        stateLabel: 'Interaction State:',
+        stateBound: 'BOUND ORBIT / LOCK (E_tot < 0)',
+        stateScattering: 'SCATTERING ZONE (E_tot >= 0)',
+        stateAnnihilation: 'CLOSE ANNIHILATION BAND!',
+        stateDecoupled: 'DECOUPLED (Far apart)',
+        mass: 'Dynamic inertial mass:',
+        
+        timelineTitle: 'Dynamics Timeline (Last 100 steps)',
+        timelineDesc: 'Continuous tracking of Distance (Pink) and Relative Velocity (Cyan)',
+        fourierCompTitle: 'Internal Wave Spectrum Comparison',
+        fourierCompDesc: 'Fourier vibration spectra of Soliton 1 (Pink) vs. Soliton 2 (Emerald)',
+        
+        limitsTitle: 'Physical Mechanism & Intuition',
+        limitsText: 'Instead of point masses, this sandbox simulates extended wave envelopes. The emergent force is computed via the gradient of overlapping potential structures combined with 4D w-tension. Solitons with opposite topological winding charges (W+ and W-) attract, whereas identical charges repel. Out-of-plane w-displacement dynamically modulates the inertial mass (Mach\'s Principle) and shifts internal spectral modes.'
       },
       de: {
-        title: 'Effektives Soliton-Laboratorium',
-        subtitle: 'Lokalisierte ℝ⁴-Wellenpakete, emergente Anziehung und topologische Erhaltung',
-        extractBtn: 'Parameter aus Hauptgitter extrahieren',
-        extractDesc: 'Ruft den solitonAnalyzer für den aktiven 4D-Gitterzustand auf, um das interne Profil und die Wellenmoden des Solitons zu scannen.',
-        noAnalysis: 'Noch keine Analysedaten extrahiert. Klicken Sie oben, um das laufende R⁴-Gitter zu analysieren!',
-        radialProfile: 'Radiales Potenzialprofil V(r)',
-        fourierSpectrum: 'Frequenzspektrum (Interne Schwingung)',
-        applyParams: 'In Laborsimulation einsetzen',
-        applyParamsDesc: 'Lädt die extrahierten realen Gitterparameter in das aktive Labor-Soliton.',
-        effectiveRadius: 'Effektiver Radius (R_eff):',
-        maxPotential: 'Zentrales Potenzial (V_max):',
-        wavefrontGini: 'Wellenfront-Fluktuation (Gini):',
-        stepMeasured: 'Gemessen bei Schritt:',
-        exportJson: 'JSON-Parameter kopieren',
-        importJson: 'Parameter importieren / laden',
-        simSettings: 'Physikalische Konstanten',
+        title: 'Spektral- und Dynamiklabor für Solitonen',
+        subtitle: 'Zwei-Solitonen-Streuung, gebundene Zustände und Phasenwellenmodulation in ℝ⁴',
+        extractBtn: 'Hauptgitter scannen',
+        extractSuccess: 'Erfolgreich extrahiert!',
+        noAnalysis: 'Noch keine Scandaten. Klicken Sie auf die Schaltfläche oben, um das aktive Gitter zu scannen!',
+        radialProfile: 'Projiziertes radiales Potenzial V(r)',
+        fourierSpectrum: 'Frequenzspektrum (Fourier)',
+        
+        // Sampler labels
+        samplerTitle: 'Modul 1: Solitonen-Sampler & Parameterdesigner',
+        samplerDesc: 'Wählen oder entwerfen Sie die physikalischen Kriterien und orbitalen Trajektorien zweier Testsolitonen.',
+        soliton1: 'Soliton 1 (Rosa / W+)',
+        soliton2: 'Soliton 2 (Smaragd / W-)',
+        presetLabel: 'Muster-Vorlage:',
+        chargeLabel: 'Topologische Ladung (Q):',
+        radiusLabel: 'Effektiver Radius (R_eff):',
+        energyLabel: 'Zentrales Potenzial (V_max):',
+        kModeLabel: 'Interne Wellenlänge (k_mode):',
+        positionLabel: 'Startposition (X, Y, W):',
+        velocityLabel: 'Startgeschwindigkeit (Vx, Vy, Vw):',
+        loadPairBtn: 'Ausgewähltes Paar in Simulator laden',
+        
+        // Lab labels
+        labTitle: 'Modul 2: Effektive kontrollierte Umgebung (ℝ⁴ Simulator)',
+        labDesc: 'Simuliert die Interaktion zweier Solitonen basierend auf dem Gradientenfluss überlappender Wellenpakete.',
         simSpeed: 'Simulationsgeschwindigkeit:',
-        dampingLabel: 'Medium-Dämpfung (Viskosität):',
+        dampingLabel: 'Viskosität / Dämpfung:',
         tensionLabel: 'Hyperraum-Spannung:',
-        gravityScaleLabel: 'Emergenter Gravitationsmaßstab:',
-        presetLabel: 'Experimentelle Presets:',
-        presetDual: 'Duales Soliton-Orbit',
-        presetDualDesc: 'Ein stabiles Orbital-Tanzverhalten zweier Solitonen mit entgegengesetzten topologischen Ladungen.',
-        presetScattering: 'Welle-Teilchen-Streuung',
-        presetScatteringDesc: 'Streuung und Ablenkung eines Solitons an Potenzialbarrieren und -trichtern.',
-        presetChaos: 'Chaotische kosmische Welle',
-        presetChaosDesc: 'Chaotische Flugbahn, verursacht durch starke 4D-w-Oszillationen und Machsche Massenfluktuationen.',
-        presetLoaded: 'Extrahiertes Gitter-Soliton',
-        presetLoadedDesc: 'Spezifisches Soliton-Verhalten, das rein aus den im R⁴-Gitter gemessenen Parametern rekonstruiert wurde.',
-        canvasXYTitle: 'ℝ² Projektionsebene (X-Y-Dimensionen)',
-        canvasZWTitle: 'ℝ² Hyperflächen-Oszillation (Z-W-Dimensionen)',
-        canvasClickDesc: 'Klicken Sie auf das linke Gitter, um Objekte im Raum zu platzieren.',
-        placeSolitonPos: 'Soliton platzieren (+ Winding)',
-        placeSolitonNeg: 'Soliton platzieren (- Winding)',
-        placeWell: 'Anziehenden Potenzialtrichter platzieren',
-        placeBarrier: 'Abstoßende Potenzialbarriere platzieren',
-        placeClear: 'Interaktion abbrechen',
-        clearBtn: 'Alles löschen',
-        pulseBtn: 'Störungsimpuls injizieren',
-        selectedSoliton: 'Ausgewählte Solitonen-Telemetrie',
-        pos: 'Position (X, Y, Z, w):',
-        vel: 'Geschwindigkeit (Vx, Vy, Vz, Vw):',
-        mass: 'Dynamische träge Masse (Mach):',
-        charge: 'Topologische Winding-Zahl:',
-        limitsTitle: 'Physikalische Erklärung & Grenzen',
-        limitsText: 'Solitonen sind ausgedehnte Wellenpakete statt Punktmassen. In diesem emergenten Modell ist die Anziehung keine Fernwirkungskraft, sondern resultiert daraus, dass Solitonen die Potenzialhänge des anderen hinabgleiten. Die Auslenkung in der 4. Dimension (w-Achse) erzeugt eine kosmische Spannung, die die träge Masse basierend auf dem Machschen Prinzip und internen Wellenmodulationen skaliert.'
+        gravityScaleLabel: 'Emergente Gravitationsstärke (G):',
+        canvasXYTitle: 'ℝ² Projektionsebene (X-Y)',
+        canvasZWTitle: 'ℝ² Hyperflächen-Schwingung (Z-W)',
+        placeWell: 'Potenzialtrichter platzieren',
+        placeBarrier: 'Potenzialbarriere platzieren',
+        clearBtn: 'Zurücksetzen',
+        pulseBtn: 'Perturbationsimpuls',
+        
+        // Diagnostics
+        diagnosticsTitle: 'Echtzeit-Kollisionsdiagnostik',
+        distance: 'Abstand (d):',
+        relVel: 'Relative Geschwindigkeit (v_rel):',
+        overlapPot: 'Überlappungspotenzial (V_overlap):',
+        kineticEnergy: 'Relative kinetische Energie (E_kin):',
+        totalEnergy: 'Gesamtenergie (E_tot):',
+        stateLabel: 'Interaktionszustand:',
+        stateBound: 'GEBUNDENER ORBIT (E_tot < 0)',
+        stateScattering: 'STREUUNGSBEREICH (E_tot >= 0)',
+        stateAnnihilation: 'KRITISCHER ANNIHILATIONSBEREICH!',
+        stateDecoupled: 'ENTKOPPELT (Zu weit entfernt)',
+        mass: 'Dynamische träge Masse:',
+        
+        timelineTitle: 'Dynamik-Zeitachse (Letzte 100 Schritte)',
+        timelineDesc: 'Laufende Aufzeichnung von Abstand (Rosa) und relativer Geschwindigkeit (Cyan)',
+        fourierCompTitle: 'Vergleich der internen Wellenspektren',
+        fourierCompDesc: 'Fourier-Schwingungsspektrum von Soliton 1 (Rosa) im Vergleich zu Soliton 2 (Smaragd)',
+        
+        limitsTitle: 'Physikalische Erklärung & Gesetzmäßigkeiten',
+        limitsText: 'Anstelle von Punktmassen werden hier ausgedehnte Wellenhüllen simuliert. Die emergente Anziehungskraft resultiert aus dem Gradienten überlappender Potenziale kombiniert mit 4D-w-Spannung. Solitonen mit entgegengesetzten Ladungen (W+ und W-) ziehen sich an, wohingegen gleichnamige Ladungen einander abstoßen. W-Achsen-Abweichungen modulieren die träge Masse (Machsches Prinzip) und verändern die Fourier-Moden.'
       }
     };
     return translations[lang] || translations.en;
   }, [lang]);
 
-  // Initializing active presets
-  const applyPreset = (presetId: string, params?: SolitonAnalysisParams) => {
-    setActivePreset(presetId);
-    setSelectedSolitonId(null);
-    setObstacles([]);
-
-    const defProfile = [1.0, 0.85, 0.6, 0.4, 0.22, 0.1, 0.04, 0.01];
-    const defFourier = [0.12, 0.06, 0.03, 0.01];
-
-    if (presetId === 'dual') {
-      const s1 = new EffectiveSoliton('soliton-1', [-3.0, 0, 0, 0.05], [0, 1.8, 0, 0.2], 2.4, 1e6, defProfile, defFourier, 1);
-      const s2 = new EffectiveSoliton('soliton-2', [3.0, 0, 0, -0.05], [0, -1.8, 0, -0.2], 2.4, 1e6, defProfile, defFourier, -1);
-      setSolitons([s1, s2]);
-      setSelectedSolitonId('soliton-1');
-      setDamping(0.002);
-      setTension(0.3);
-      setGravityScale(1.1);
-    } else if (presetId === 'scattering') {
-      const s1 = new EffectiveSoliton('soliton-scatter', [-7.0, -1.0, 0, 0], [4.5, 0.5, 0, 0], 2.0, 8e5, defProfile, defFourier, 1);
-      
-      const obs1: SolitonObstacle = {
-        id: 'barrier-1',
-        position: [0.0, 1.5, 0, 0],
-        potential: 1.5e6, // Barrier (Repulsive)
-        radius: 1.8,
-        type: 'barrier'
-      };
-      const obs2: SolitonObstacle = {
-        id: 'well-1',
-        position: [1.0, -2.5, 0, 0],
-        potential: -1.2e6, // Well (Attractive)
-        radius: 2.2,
-        type: 'well'
-      };
-
-      setSolitons([s1]);
-      setObstacles([obs1, obs2]);
-      setSelectedSolitonId('soliton-scatter');
-      setDamping(0.0);
-      setTension(0.1);
-      setGravityScale(1.0);
-    } else if (presetId === 'chaos') {
-      const s1 = new EffectiveSoliton('soliton-chaos', [-2.0, 1.0, 0, 0.8], [1.0, -1.5, 0, 2.5], 2.2, 1.2e6, defProfile, defFourier, 1);
-      setSolitons([s1]);
-      setSelectedSolitonId('soliton-chaos');
-      setDamping(0.001);
-      setTension(1.5); // High tension triggers crazy w oscillations!
-      setGravityScale(1.0);
-    } else if (presetId === 'loaded' && params) {
-      const profile = params.radialProfile.length > 0 ? params.radialProfile : defProfile;
-      const fourier = params.fourierAmplitudes.length > 0 ? params.fourierAmplitudes : defFourier;
-      const radius = params.effectiveRadius > 0.5 ? params.effectiveRadius : 2.5;
-      const maxPot = params.maxPotential > 0 ? params.maxPotential : 1e6;
-
-      const s1 = new EffectiveSoliton(
-        'soliton-loaded',
-        [-2.0, 0.0, 0, 0.1],
-        [0.5, 2.0, 0, 0.1],
-        radius,
-        maxPot,
-        profile,
-        fourier,
-        params.wavefrontGini > 0.5 ? -1 : 1
-      );
-      setSolitons([s1]);
-      setSelectedSolitonId('soliton-loaded');
-      setDamping(0.004);
-      setTension(0.4);
-      setGravityScale(1.2);
-    }
-  };
-
-  // Run on mount
+  // Handle preset selection for Soliton 1
   useEffect(() => {
-    applyPreset('dual');
-  }, []);
+    if (s1Preset === 'alpha') {
+      setS1Winding(1); setS1Radius(2.4); setS1Energy(1.2e6); setS1KMode(0.8);
+      setS1X(-3.5); setS1Y(0.0); setS1W(0.05); setS1Vx(0.0); setS1Vy(1.6); setS1Vw(0.1);
+    } else if (s1Preset === 'beta') {
+      setS1Winding(-1); setS1Radius(2.4); setS1Energy(1.2e6); setS1KMode(0.8);
+      setS1X(-3.5); setS1Y(0.0); setS1W(0.05); setS1Vx(0.0); setS1Vy(1.6); setS1Vw(0.1);
+    } else if (s1Preset === 'scatter') {
+      setS1Winding(1); setS1Radius(1.6); setS1Energy(8e5); setS1KMode(1.2);
+      setS1X(-7.0); setS1Y(-1.0); setS1W(0.0); setS1Vx(4.2); setS1Vy(0.5); setS1Vw(0.0);
+    } else if (s1Preset === 'coaxial') {
+      setS1Winding(1); setS1Radius(3.2); setS1Energy(2.0e6); setS1KMode(0.4);
+      setS1X(-2.0); setS1Y(2.0); setS1W(0.3); setS1Vx(-0.5); setS1Vy(-1.0); setS1Vw(0.4);
+    } else if (s1Preset === 'scanned' && analysisResult) {
+      setS1Winding(1);
+      setS1Radius(Number(analysisResult.effectiveRadius.toFixed(2)) || 2.4);
+      setS1Energy(analysisResult.maxPotential || 1.2e6);
+      setS1KMode(0.8); // reference baseline
+      setS1X(-3.0); setS1Y(0.0); setS1W(0.1); setS1Vx(0.2); setS1Vy(1.2); setS1Vw(0.05);
+    }
+  }, [s1Preset, analysisResult]);
 
-  // Extraction trigger
-  const handleExtract = () => {
+  // Handle preset selection for Soliton 2
+  useEffect(() => {
+    if (s2Preset === 'alpha') {
+      setS2Winding(1); setS2Radius(2.4); setS2Energy(1.2e6); setS2KMode(0.8);
+      setS2X(3.5); setS2Y(0.0); setS2W(-0.05); setS2Vx(0.0); setS2Vy(-1.6); setS2Vw(-0.1);
+    } else if (s2Preset === 'beta') {
+      setS2Winding(-1); setS2Radius(2.4); setS2Energy(1.2e6); setS2KMode(0.8);
+      setS2X(3.5); setS2Y(0.0); setS2W(-0.05); setS2Vx(0.0); setS2Vy(-1.6); setS2Vw(-0.1);
+    } else if (s2Preset === 'scatter') {
+      setS2Winding(-1); setS2Radius(2.0); setS2Energy(1e6); setS2KMode(1.0);
+      setS2X(1.0); setS2Y(-2.5); setS2W(0.0); setS2Vx(-1.0); setS2Vy(1.0); setS2Vw(0.0);
+    } else if (s2Preset === 'coaxial') {
+      setS2Winding(-1); setS2Radius(3.2); setS2Energy(2.0e6); setS2KMode(0.4);
+      setS2X(2.0); setS2Y(-2.0); setS2W(-0.3); setS2Vx(0.5); setS2Vy(1.0); setS2Vw(-0.4);
+    } else if (s2Preset === 'scanned' && analysisResult) {
+      setS2Winding(-1);
+      setS2Radius(Number(analysisResult.effectiveRadius.toFixed(2)) || 2.4);
+      setS2Energy(analysisResult.maxPotential || 1.2e6);
+      setS2KMode(0.8);
+      setS2X(3.0); setS2Y(0.0); setS2W(-0.1); setS2Vx(-0.2); setS2Vy(-1.2); setS2Vw(-0.05);
+    }
+  }, [s2Preset, analysisResult]);
+
+  // Probe main grid to scan real soliton parameters
+  const handleExtractFromGrid = () => {
     const params = extractSolitonParameters(model);
     if (params) {
       setAnalysisResult(params);
-      setJsonInput(JSON.stringify(params, null, 2));
-      
-      // Auto blink the visual copy
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
-    }
-  };
-
-  // Transplant parameters
-  const handleTransplant = () => {
-    if (analysisResult) {
-      applyPreset('loaded', analysisResult);
-    }
-  };
-
-  // Import custom JSON
-  const handleImportJson = () => {
-    try {
-      const parsed = JSON.parse(jsonInput) as SolitonAnalysisParams;
-      if (parsed && typeof parsed.effectiveRadius === 'number' && typeof parsed.maxPotential === 'number') {
-        setAnalysisResult(parsed);
-        applyPreset('loaded', parsed);
-        setShowJsonPanel(false);
-      } else {
-        alert(lang === 'hu' ? 'Hibás JSON struktúra!' : 'Invalid JSON structure!');
+      
+      // Auto switch custom configurations to let the user select scanned parameters
+      if (s1Preset === 'scanned') {
+        setS1Radius(Number(params.effectiveRadius.toFixed(2)) || 2.4);
+        setS1Energy(params.maxPotential || 1.2e6);
       }
-    } catch (e) {
-      alert(lang === 'hu' ? 'Nem sikerült beolvasni a JSON-t. Kérlek ellenőrizd a szintaxist!' : 'Failed to parse JSON. Please check syntax!');
+      if (s2Preset === 'scanned') {
+        setS2Radius(Number(params.effectiveRadius.toFixed(2)) || 2.4);
+        setS2Energy(params.maxPotential || 1.2e6);
+      }
     }
   };
 
-  // Push perturbation
-  const handlePulse = () => {
-    if (selectedSolitonId) {
-      setSolitons(prev => prev.map(s => {
-        if (s.id === selectedSolitonId) {
-          const cloned = s.clone();
-          // Apply a randomized impulse in 4D
-          const impulse: Coord4D = [
-            (Math.random() - 0.5) * 3.5,
-            (Math.random() - 0.5) * 3.5,
-            0,
-            (Math.random() - 0.5) * 2.0
-          ];
-          cloned.applyPulse(impulse);
-          return cloned;
-        }
-        return s;
-      }));
-    }
+  // Load Sampler pair into active simulator
+  const handleLoadPair = () => {
+    setSelectedSolitonId(null);
+    setObstacles([]);
+    setTimelineData([]);
+    timelineStepRef.current = 0;
+
+    // Build energy profiles based on R_eff and maxPotential
+    const defProfile1 = [1.0, 0.85, 0.6, 0.4, 0.22, 0.1, 0.04, 0.01].map(v => v * (s1KMode * 1.1));
+    const defProfile2 = [1.0, 0.85, 0.6, 0.4, 0.22, 0.1, 0.04, 0.01].map(v => v * (s2KMode * 1.1));
+
+    // Fourier modes are determined by internal wavelength (k_mode)
+    const fourier1 = [0.15 * s1KMode, 0.08 * s1KMode, 0.04 * s1KMode, 0.01];
+    const fourier2 = [0.15 * s2KMode, 0.08 * s2KMode, 0.04 * s2KMode, 0.01];
+
+    const s1 = new EffectiveSoliton(
+      'soliton-1',
+      [s1X, s1Y, 0, s1W],
+      [s1Vx, s1Vy, 0, s1Vw],
+      s1Radius,
+      s1Energy,
+      defProfile1,
+      fourier1,
+      s1Winding
+    );
+
+    const s2 = new EffectiveSoliton(
+      'soliton-2',
+      [s2X, s2Y, 0, s2W],
+      [s2Vx, s2Vy, 0, s2Vw],
+      s2Radius,
+      s2Energy,
+      defProfile2,
+      fourier2,
+      s2Winding
+    );
+
+    setSolitons([s1, s2]);
+    setSelectedSolitonId('soliton-1');
   };
 
-  // Click on XY canvas to place objects
-  const handleXYCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (placeMode === 'none') return;
-    const canvas = xyCanvasRef.current;
-    if (!canvas) return;
+  // Initialize once on mount with default pair
+  useEffect(() => {
+    handleLoadPair();
+  }, []);
 
-    const rect = canvas.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const clickY = e.clientY - rect.top;
-
-    // Convert pixel coordinates back to simulation units (-10 to 10 range)
-    const simX = ((clickX / canvas.width) * 20) - 10;
-    const simY = (10 - (clickY / canvas.height) * 20); // inverted Y axis for math correctness
-
-    if (placeMode === 'soliton_pos' || placeMode === 'soliton_neg') {
-      const charge = placeMode === 'soliton_pos' ? 1 : -1;
-      const newId = `soliton-${Date.now()}`;
-      const newSoliton = new EffectiveSoliton(
-        newId,
-        [simX, simY, 0, 0.02],
-        [(Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 1.5, 0, 0.05],
-        2.2,
-        1e6,
-        analysisResult?.radialProfile || [1.0, 0.8, 0.5, 0.2, 0.05],
-        analysisResult?.fourierAmplitudes || [0.1, 0.04],
-        charge
-      );
-
-      setSolitons(prev => [...prev, newSoliton]);
-      setSelectedSolitonId(newId);
-    } else if (placeMode === 'well' || placeMode === 'barrier') {
-      const pot = placeMode === 'barrier' ? 1.5e6 : -1.2e6;
-      const newObstacle: SolitonObstacle = {
-        id: `obs-${Date.now()}`,
-        position: [simX, simY, 0, 0],
-        potential: pot,
-        radius: placeMode === 'barrier' ? 1.5 : 2.0,
-        type: placeMode === 'barrier' ? 'barrier' : 'well'
-      };
-      setObstacles(prev => [...prev, newObstacle]);
-    }
-
-    setPlaceMode('none');
-  };
-
-  // Main Loop logic using requestAnimationFrame for smooth 60fps renders
+  // Run physical update steps and sync canvas renderings
   useEffect(() => {
     const updatePhysics = (timestamp: number) => {
       if (!lastUpdateTimeRef.current) lastUpdateTimeRef.current = timestamp;
@@ -398,19 +405,64 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
       lastUpdateTimeRef.current = timestamp;
 
       if (isRunning && elapsed > 0) {
-        // Limit dt to avoid massive leaps on frame drop
-        const dt = Math.min(0.03, elapsed) * simSpeed;
+        // Safe time step bound to avoid numerical overflows
+        const dt = Math.min(0.025, elapsed) * simSpeed;
 
         setSolitons(prev => {
-          return prev.map(s => {
-            const cloned = s.clone();
-            cloned.step(obstacles, prev, dt, tension, damping, gravityScale);
-            return cloned;
-          });
+          if (prev.length < 2) return prev;
+          
+          const s1_new = prev[0].clone();
+          const s2_new = prev[1].clone();
+
+          // Step each relative to the environment and the other
+          s1_new.step(obstacles, prev, dt, tension, damping, gravityScale);
+          s2_new.step(obstacles, prev, dt, tension, damping, gravityScale);
+
+          // Track telemetry stats in scrolling history log once every 3 updates to be efficient
+          timelineStepRef.current += 1;
+          if (timelineStepRef.current % 3 === 0) {
+            const dx = s1_new.position[0] - s2_new.position[0];
+            const dy = s1_new.position[1] - s2_new.position[1];
+            const dz = s1_new.position[2] - s2_new.position[2];
+            const dw = s1_new.position[3] - s2_new.position[3];
+            const dist = Math.sqrt(dx*dx + dy*dy + dz*dz + dw*dw);
+
+            const dxV = s1_new.velocity[0] - s2_new.velocity[0];
+            const dyV = s1_new.velocity[1] - s2_new.velocity[1];
+            const dzV = s1_new.velocity[2] - s2_new.velocity[2];
+            const dwV = s1_new.velocity[3] - s2_new.velocity[3];
+            const relVel = Math.sqrt(dxV*dxV + dyV*dyV + dzV*dzV + dwV*dwV);
+
+            // Compute overlapping binding potential energy V_overlap
+            const beta = 1.2 / ((s1_new.radius + s2_new.radius) / 2);
+            const G = 0.15 * gravityScale;
+            const signMultiplier = s1_new.topologicalCharge * s2_new.topologicalCharge < 0 ? -1.0 : (s1_new.topologicalCharge === 0 || s2_new.topologicalCharge === 0 ? -0.2 : 1.0);
+            const overlapPot = signMultiplier * G * Math.sqrt(s1_new.maxPotential * s2_new.maxPotential) / (Math.cosh(beta * dist) ** 2);
+
+            // Kinetic energy in relative coordinate system: E_kin = 0.5 * mu * v_rel^2
+            const mu = (s1_new.mass * s2_new.mass) / (s1_new.mass + s2_new.mass + 1e-5);
+            const eKin = 0.5 * mu * (relVel * relVel);
+            const eTotal = eKin + overlapPot;
+
+            setTimelineData(h => {
+              const updated = [...h, {
+                step: timelineStepRef.current,
+                distance: dist,
+                relVel: relVel,
+                overlapPot: overlapPot,
+                eKin: eKin,
+                eTotal: eTotal
+              }];
+              if (updated.length > 100) updated.shift();
+              return updated;
+            });
+          }
+
+          return [s1_new, s2_new];
         });
       }
 
-      // Draw frames
+      // Re-draw stages
       drawXYCanvas();
       drawZWCanvas();
 
@@ -426,69 +478,68 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
     };
   }, [isRunning, obstacles, simSpeed, tension, damping, gravityScale]);
 
-  // Drawing the XY projected plane
+  // Render the XY projection membrane
   const drawXYCanvas = () => {
     const canvas = xyCanvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Clear and background
-    ctx.fillStyle = '#050811';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     const w = canvas.width;
     const h = canvas.height;
 
-    // Grid coordinates helper: map [-10, 10] to [0, w]
+    // Dark sleek workspace bg
+    ctx.fillStyle = '#030712';
+    ctx.fillRect(0, 0, w, h);
+
+    // Map [-10, 10] coordinate box to pixels
     const mapX = (x: number) => ((x + 10) / 20) * w;
     const mapY = (y: number) => ((10 - y) / 20) * h;
     const mapRadius = (r: number) => (r / 20) * w;
 
-    // Draw coordinate grid lines
-    ctx.strokeStyle = '#1e293b';
-    ctx.lineWidth = 0.5;
+    // Coordinate grid overlay
+    ctx.strokeStyle = '#111827';
+    ctx.lineWidth = 1.0;
     for (let i = -10; i <= 10; i += 2) {
       if (i === 0) continue;
-      // vertical
+      // Verticals
       ctx.beginPath();
       ctx.moveTo(mapX(i), 0);
       ctx.lineTo(mapX(i), h);
       ctx.stroke();
 
-      // horizontal
+      // Horizontals
       ctx.beginPath();
       ctx.moveTo(0, mapY(i));
       ctx.lineTo(w, mapY(i));
       ctx.stroke();
     }
 
-    // Axes
-    ctx.strokeStyle = '#334155';
-    ctx.lineWidth = 1.0;
+    // Centered physical axes
+    ctx.strokeStyle = '#1f2937';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(mapX(0), 0); ctx.lineTo(mapX(0), h);
     ctx.moveTo(0, mapY(0)); ctx.lineTo(w, mapY(0));
     ctx.stroke();
 
-    // Draw Obstacles
+    // Render obstacles (Wells & Barriers)
     obstacles.forEach(obs => {
       const x = mapX(obs.position[0]);
       const y = mapY(obs.position[1]);
       const r = mapRadius(obs.radius);
 
-      // Gradient representing the potential field well or barrier
       const radGrad = ctx.createRadialGradient(x, y, 0, x, y, r);
       if (obs.type === 'barrier') {
-        radGrad.addColorStop(0, 'rgba(239, 68, 68, 0.45)');
-        radGrad.addColorStop(0.5, 'rgba(239, 68, 68, 0.15)');
+        radGrad.addColorStop(0, 'rgba(239, 68, 68, 0.4)');
+        radGrad.addColorStop(0.6, 'rgba(239, 68, 68, 0.12)');
         radGrad.addColorStop(1, 'rgba(239, 68, 68, 0.0)');
-        ctx.strokeStyle = 'rgba(239, 68, 68, 0.5)';
+        ctx.strokeStyle = 'rgba(239, 68, 68, 0.45)';
       } else {
-        radGrad.addColorStop(0, 'rgba(56, 189, 248, 0.45)');
-        radGrad.addColorStop(0.5, 'rgba(56, 189, 248, 0.15)');
-        radGrad.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+        radGrad.addColorStop(0, 'rgba(14, 165, 233, 0.4)');
+        radGrad.addColorStop(0.6, 'rgba(14, 165, 233, 0.12)');
+        radGrad.addColorStop(1, 'rgba(14, 165, 233, 0.0)');
+        ctx.strokeStyle = 'rgba(14, 165, 233, 0.45)';
       }
 
       ctx.fillStyle = radGrad;
@@ -496,117 +547,86 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
       ctx.arc(x, y, r, 0, 2 * Math.PI);
       ctx.fill();
 
-      // Border ring
-      ctx.setLineDash([4, 4]);
+      ctx.setLineDash([3, 3]);
       ctx.beginPath();
-      ctx.arc(x, y, r * 0.8, 0, 2 * Math.PI);
+      ctx.arc(x, y, r * 0.85, 0, 2 * Math.PI);
       ctx.stroke();
       ctx.setLineDash([]);
-
-      // Label
-      ctx.fillStyle = obs.type === 'barrier' ? '#f87171' : '#38bdf8';
-      ctx.font = '8px monospace';
-      ctx.fillText(obs.type === 'barrier' ? 'BARRIER' : 'WELL', x - 18, y + 3);
     });
 
-    // Draw Solitons
-    solitons.forEach(sol => {
+    // Render Solitons
+    solitons.forEach((sol, idx) => {
       const x = mapX(sol.position[0]);
       const y = mapY(sol.position[1]);
       const r = mapRadius(sol.radius);
-      const isSelected = sol.id === selectedSolitonId;
+      const isS1 = idx === 0;
 
-      // Draw trajectory history (Tail)
+      // Trajectory tail
       if (sol.history.length > 1) {
-        ctx.lineWidth = isSelected ? 2.0 : 1.2;
         ctx.beginPath();
         ctx.moveTo(mapX(sol.history[0][0]), mapY(sol.history[0][1]));
         for (let i = 1; i < sol.history.length; i++) {
-          const hX = mapX(sol.history[i][0]);
-          const hY = mapY(sol.history[i][1]);
-          ctx.lineTo(hX, hY);
+          ctx.lineTo(mapX(sol.history[i][0]), mapY(sol.history[i][1]));
         }
-        
-        // Dynamic glowing tail gradient
-        const tailGrad = ctx.createLinearGradient(
-          mapX(sol.history[0][0]), mapY(sol.history[0][1]),
-          x, y
-        );
-        const col = sol.topologicalCharge > 0 ? 'rgba(244, 63, 94, ' : 'rgba(16, 185, 129, ';
-        tailGrad.addColorStop(0, col + '0.01)');
-        tailGrad.addColorStop(0.5, col + '0.15)');
-        tailGrad.addColorStop(1, col + '0.65)');
-        
-        ctx.strokeStyle = tailGrad;
+        ctx.strokeStyle = isS1 ? 'rgba(244, 63, 94, 0.45)' : 'rgba(16, 185, 129, 0.45)';
+        ctx.lineWidth = 1.8;
         ctx.stroke();
       }
 
-      // Draw soliton envelope (Glowing Radial Profile)
-      const solGrad = ctx.createRadialGradient(x, y, 0, x, y, r * 1.5);
-      const colorHex = sol.topologicalCharge > 0 ? '244, 63, 94' : '16, 185, 129'; // Rose vs Emerald
-
-      solGrad.addColorStop(0, `rgba(${colorHex}, 0.7)`);
-      solGrad.addColorStop(0.3, `rgba(${colorHex}, 0.3)`);
-      solGrad.addColorStop(0.7, `rgba(${colorHex}, 0.08)`);
-      solGrad.addColorStop(1, `rgba(${colorHex}, 0.0)`);
+      // Outer wave envelope glow
+      const solGrad = ctx.createRadialGradient(x, y, 0, x, y, r * 1.6);
+      const colorHex = isS1 ? '244, 63, 94' : '16, 185, 129';
+      solGrad.addColorStop(0, `rgba(${colorHex}, 0.65)`);
+      solGrad.addColorStop(0.4, `rgba(${colorHex}, 0.22)`);
+      solGrad.addColorStop(0.8, `rgba(${colorHex}, 0.05)`);
+      solGrad.addColorStop(1, 'rgba(0,0,0,0)');
 
       ctx.fillStyle = solGrad;
       ctx.beginPath();
-      ctx.arc(x, y, r * 1.5, 0, 2 * Math.PI);
+      ctx.arc(x, y, r * 1.6, 0, 2 * Math.PI);
       ctx.fill();
 
-      // Sharp central core
-      ctx.fillStyle = sol.topologicalCharge > 0 ? '#f43f5e' : '#10b981';
+      // Sharp localized core
+      ctx.fillStyle = isS1 ? '#f43f5e' : '#10b981';
       ctx.beginPath();
-      ctx.arc(x, y, Math.max(2, r * 0.12), 0, 2 * Math.PI);
+      ctx.arc(x, y, Math.max(3, r * 0.15), 0, 2 * Math.PI);
       ctx.fill();
 
-      // Selection indicator circle
-      if (isSelected) {
-        ctx.strokeStyle = '#f59e0b';
-        ctx.lineWidth = 1.0;
-        ctx.setLineDash([2, 2]);
-        ctx.beginPath();
-        ctx.arc(x, y, r * 1.8, 0, 2 * Math.PI);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        
-        // Compass crosshairs
-        ctx.strokeStyle = 'rgba(245, 158, 11, 0.25)';
-        ctx.lineWidth = 0.5;
-        ctx.beginPath();
-        ctx.moveTo(x - r * 2.5, y); ctx.lineTo(x + r * 2.5, y);
-        ctx.moveTo(x, y - r * 2.5); ctx.lineTo(x, y + r * 2.5);
-        ctx.stroke();
-      }
+      // Halo ring representing core limits
+      ctx.strokeStyle = isS1 ? 'rgba(244, 63, 94, 0.35)' : 'rgba(16, 185, 129, 0.35)';
+      ctx.lineWidth = 1.0;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, 2 * Math.PI);
+      ctx.stroke();
 
-      // Topological winding symbol (+ / -) in center
+      // Labeling the topological state
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 9px sans-serif';
+      ctx.font = 'bold 9px monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(sol.topologicalCharge > 0 ? 'W+' : 'W-', x, y - r * 0.6);
+      const qSign = sol.topologicalCharge > 0 ? `+${sol.topologicalCharge}` : `${sol.topologicalCharge}`;
+      ctx.fillText(`Soliton ${idx+1} [Q=${qSign}]`, x, y - r * 1.1 - 5);
     });
   };
 
-  // Drawing the Z-W hypersheet canvas
+  // Render the ZW hyperspace oscillation (Z dimension as horizontal, W coordinate as vertical)
   const drawZWCanvas = () => {
     const canvas = zwCanvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.fillStyle = '#050811';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     const w = canvas.width;
     const h = canvas.height;
 
-    // Coordinates mapping: Z range [-10, 10] -> X-pixel, W range [-2, 2] -> Y-pixel
-    const mapZ = (z: number) => ((z + 10) / 20) * w;
-    const mapW = (wv: number) => ((2 - wv) / 4) * h;
+    ctx.fillStyle = '#030712';
+    ctx.fillRect(0, 0, w, h);
 
-    // Draw central flat membrane (w = 0)
+    // Lateral mapping: map X coord from [-10, 10] to horizontal pixels, W coord from [-1.5, 1.5] to vertical pixels
+    const mapZ = (z: number) => ((z + 10) / 20) * w;
+    const mapW = (wv: number) => ((1.5 - wv) / 3) * h;
+
+    // Membrane sheets (flat references at w = 0)
     ctx.strokeStyle = 'rgba(56, 189, 248, 0.15)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
@@ -614,51 +634,50 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
     ctx.lineTo(w, mapW(0));
     ctx.stroke();
 
-    // Horizontal helper dotted lines
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-    ctx.setLineDash([3, 5]);
+    // Helper bounds
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+    ctx.setLineDash([4, 4]);
     ctx.beginPath();
-    ctx.moveTo(0, mapW(1)); ctx.lineTo(w, mapW(1));
-    ctx.moveTo(0, mapW(-1)); ctx.lineTo(w, mapW(-1));
+    ctx.moveTo(0, mapW(0.5)); ctx.lineTo(w, mapW(0.5));
+    ctx.moveTo(0, mapW(-0.5)); ctx.lineTo(w, mapW(-0.5));
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Draw Solitons in Z-W slice
-    solitons.forEach(sol => {
-      const zVal = sol.position[2]; // Z coord (usually close to 0 or fluctuating)
-      const wVal = sol.position[3]; // W coord (hyperspace fluctuation!)
+    // Render Solitons
+    solitons.forEach((sol, idx) => {
+      const zVal = sol.position[0]; // using X-coord projection as lateral horizontal
+      const wVal = sol.position[3]; // out-of-membrane fluctuation (W-coord)
+      const isS1 = idx === 0;
 
-      const x = mapZ(sol.position[0]); // projection: using X position as lateral coordinate for clarity
+      const x = mapZ(zVal);
       const y = mapW(wVal);
-      const isSelected = sol.id === selectedSolitonId;
 
-      // Glowing vertical connector to membrane (Gravity attraction source)
-      ctx.strokeStyle = sol.topologicalCharge > 0 ? 'rgba(244, 63, 94, 0.15)' : 'rgba(16, 185, 129, 0.15)';
-      ctx.lineWidth = 1.0;
+      // Vertical tension thread connecting back to membrane w = 0
+      ctx.strokeStyle = isS1 ? 'rgba(244, 63, 94, 0.18)' : 'rgba(16, 185, 129, 0.18)';
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.moveTo(x, mapW(0));
       ctx.lineTo(x, y);
       ctx.stroke();
 
-      // Trajectory in Z-W
+      // ZW Trajectory tail
       if (sol.history.length > 1) {
         ctx.beginPath();
         ctx.moveTo(mapZ(sol.history[0][0]), mapW(sol.history[0][3]));
         for (let i = 1; i < sol.history.length; i++) {
           ctx.lineTo(mapZ(sol.history[i][0]), mapW(sol.history[i][3]));
         }
-        ctx.strokeStyle = sol.topologicalCharge > 0 ? 'rgba(244, 63, 94, 0.3)' : 'rgba(16, 185, 129, 0.3)';
+        ctx.strokeStyle = isS1 ? 'rgba(244, 63, 94, 0.28)' : 'rgba(16, 185, 129, 0.28)';
         ctx.lineWidth = 1.0;
         ctx.stroke();
       }
 
-      // Soliton sphere representing its 4D mass and thickness
-      const rPx = Math.max(4, (sol.radius / 20) * w);
-      
+      // Fluctuation packet
+      const rPx = Math.max(5, (sol.radius / 20) * w);
       const zwGrad = ctx.createRadialGradient(x, y, 0, x, y, rPx * 1.5);
-      const col = sol.topologicalCharge > 0 ? '244, 63, 94' : '16, 185, 129';
-      zwGrad.addColorStop(0, `rgba(${col}, 0.85)`);
-      zwGrad.addColorStop(0.4, `rgba(${col}, 0.3)`);
+      const col = isS1 ? '244, 63, 94' : '16, 185, 129';
+      zwGrad.addColorStop(0, `rgba(${col}, 0.8)`);
+      zwGrad.addColorStop(0.4, `rgba(${col}, 0.25)`);
       zwGrad.addColorStop(1, 'rgba(0,0,0,0)');
 
       ctx.fillStyle = zwGrad;
@@ -666,18 +685,116 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
       ctx.arc(x, y, rPx * 1.5, 0, 2 * Math.PI);
       ctx.fill();
 
-      // Selected glow
-      if (isSelected) {
-        ctx.strokeStyle = '#f59e0b';
-        ctx.lineWidth = 1.2;
-        ctx.beginPath();
-        ctx.arc(x, y, rPx * 1.8, 0, 2 * Math.PI);
-        ctx.stroke();
-      }
+      // Central core dot
+      ctx.fillStyle = isS1 ? '#f43f5e' : '#10b981';
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, 2 * Math.PI);
+      ctx.fill();
     });
   };
 
-  const selectedSoliton = solitons.find(s => s.id === selectedSolitonId);
+  // Add customized obstacle wells/barriers via click
+  const handleXYCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (placeMode === 'none') return;
+    const canvas = xyCanvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+
+    const simX = ((clickX / canvas.width) * 20) - 10;
+    const simY = (10 - (clickY / canvas.height) * 20);
+
+    const isWell = placeMode === 'well';
+    const newObstacle: SolitonObstacle = {
+      id: `obs-${Date.now()}`,
+      position: [simX, simY, 0, 0],
+      potential: isWell ? -1.2e6 : 1.5e6,
+      radius: isWell ? 2.4 : 1.6,
+      type: isWell ? 'well' : 'barrier'
+    };
+
+    setObstacles(prev => [...prev, newObstacle]);
+    setPlaceMode('none');
+  };
+
+  // Apply localized perturbation pulse to selected soliton
+  const handleTriggerPulse = () => {
+    if (solitons.length > 0) {
+      setSolitons(prev => prev.map((s, idx) => {
+        const cloned = s.clone();
+        // Give a strong opposing impulse to spark chaotic interaction
+        const sign = idx === 0 ? 1 : -1;
+        cloned.applyPulse([
+          sign * (Math.random() * 2.5 + 1.0),
+          (Math.random() - 0.5) * 3.0,
+          0.0,
+          (Math.random() - 0.5) * 1.5
+        ]);
+        return cloned;
+      }));
+    }
+  };
+
+  // Compute live diagnostic metrics for Module 2
+  const liveDiagnostics = useMemo(() => {
+    if (solitons.length < 2) return null;
+    const s1 = solitons[0];
+    const s2 = solitons[1];
+
+    const dx = s1.position[0] - s2.position[0];
+    const dy = s1.position[1] - s2.position[1];
+    const dz = s1.position[2] - s2.position[2];
+    const dw = s1.position[3] - s2.position[3];
+    const d = Math.sqrt(dx*dx + dy*dy + dz*dz + dw*dw);
+
+    const dxV = s1.velocity[0] - s2.velocity[0];
+    const dyV = s1.velocity[1] - s2.velocity[1];
+    const dzV = s1.velocity[2] - s2.velocity[2];
+    const dwV = s1.velocity[3] - s2.velocity[3];
+    const vRel = Math.sqrt(dxV*dxV + dyV*dyV + dzV*dzV + dwV*dwV);
+
+    const beta = 1.2 / ((s1.radius + s2.radius) / 2);
+    const G = 0.15 * gravityScale;
+    const qProd = s1.topologicalCharge * s2.topologicalCharge;
+    const signMultiplier = qProd < 0 ? -1.0 : (s1.topologicalCharge === 0 || s2.topologicalCharge === 0 ? -0.2 : 1.0);
+    const overlapPot = signMultiplier * G * Math.sqrt(s1.maxPotential * s2.maxPotential) / (Math.cosh(beta * d) ** 2);
+
+    const mu = (s1.mass * s2.mass) / (s1.mass + s2.mass + 1e-5);
+    const eKin = 0.5 * mu * (vRel * vRel);
+    const eTotal = eKin + overlapPot;
+
+    let interactionStateStr = text.stateDecoupled;
+    if (d < 1.0) {
+      interactionStateStr = text.stateAnnihilation;
+    } else if (eTotal < 0 && d < 6.5) {
+      interactionStateStr = text.stateBound;
+    } else if (d < 7.0) {
+      interactionStateStr = text.stateScattering;
+    }
+
+    return {
+      distance: d,
+      vRel: vRel,
+      overlapPot: overlapPot,
+      eKin: eKin,
+      eTotal: eTotal,
+      stateStr: interactionStateStr,
+      isBound: eTotal < 0 && d < 6.5,
+      isCritical: d < 1.0,
+      mass1: s1.mass,
+      mass2: s2.mass
+    };
+  }, [solitons, gravityScale, text]);
+
+  // Clean both sampler and simulator to starting values
+  const handleResetSimulator = () => {
+    setObstacles([]);
+    setTimelineData([]);
+    timelineStepRef.current = 0;
+    handleLoadPair();
+  };
 
   return (
     <div className="flex flex-col gap-6" id="effective-soliton-lab-tab">
@@ -695,7 +812,7 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
               <h2 className="text-sm font-bold text-slate-200 uppercase tracking-wide font-mono flex items-center gap-2">
                 {text.title}
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono">
-                  SOLITON WAVEFRONT
+                  SOLITON WAVEFRONT SCANNER
                 </span>
               </h2>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
@@ -706,7 +823,7 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
 
           <div className="flex gap-2 w-full md:w-auto">
             <button
-              onClick={handleExtract}
+              onClick={handleExtractFromGrid}
               className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer border ${
                 isCopied 
                   ? 'bg-emerald-600/20 border-emerald-500/30 text-emerald-400' 
@@ -714,64 +831,35 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
               }`}
             >
               <Cpu className="h-4 w-4" />
-              {text.extractBtn}
-            </button>
-            <button
-              onClick={() => setShowJsonPanel(!showJsonPanel)}
-              className="px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-850 cursor-pointer"
-              title="JSON Parameters Console"
-            >
-              <Settings className="h-4 w-4" />
+              {isCopied ? text.extractSuccess : text.extractBtn}
             </button>
           </div>
         </div>
-
-        {/* JSON Import/Export Console */}
-        {showJsonPanel && (
-          <div className="mt-4 border-t border-slate-800 pt-4 flex flex-col gap-3 font-mono">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400">{text.importJson}</span>
-              <button
-                onClick={handleImportJson}
-                className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-xs font-bold rounded-lg cursor-pointer transition-all"
-              >
-                Load JSON
-              </button>
-            </div>
-            <textarea
-              value={jsonInput}
-              onChange={(e) => setJsonInput(e.target.value)}
-              placeholder='Paste Soliton parameters JSON here...'
-              className="w-full h-32 bg-slate-950 text-sky-400 text-xs p-3 rounded-xl border border-slate-800 focus:outline-none focus:border-sky-500 font-mono"
-            />
-          </div>
-        )}
 
         {/* Dynamic Scan Result Display */}
         {analysisResult ? (
           <div className="mt-4 grid grid-cols-1 lg:grid-cols-12 gap-4 border-t border-slate-800/60 pt-4 animate-fade-in">
             {/* Measured Numeric telemetry */}
             <div className="lg:col-span-4 flex flex-col justify-center gap-2 text-xs font-mono bg-slate-950/40 p-3.5 rounded-xl border border-slate-900">
-              <div className="text-[10px] text-slate-500 uppercase tracking-wider">{text.stepMeasured} <span className="text-slate-400 font-bold">#{analysisResult.stepCount}</span></div>
+              <div className="text-[10px] text-slate-500 uppercase tracking-wider">
+                {lang === 'hu' ? 'Mért rácslépés:' : 'Measured step:'} <span className="text-slate-400 font-bold">#{analysisResult.stepCount}</span>
+              </div>
               <div className="flex justify-between items-center py-1">
-                <span className="text-slate-400">{text.effectiveRadius}</span>
-                <span className="text-sky-400 font-bold text-sm">{analysisResult.effectiveRadius.toFixed(4)}</span>
+                <span className="text-slate-400">{lang === 'hu' ? 'Mért effektív sugár:' : 'Measured radius:'}</span>
+                <span className="text-sky-400 font-bold text-sm">{analysisResult.effectiveRadius.toFixed(3)}</span>
               </div>
               <div className="flex justify-between items-center py-1 border-t border-slate-900/50">
-                <span className="text-slate-400">{text.maxPotential}</span>
+                <span className="text-slate-400">{lang === 'hu' ? 'Középponti amplitúdó:' : 'Max central potential:'}</span>
                 <span className="text-amber-400 font-bold">{analysisResult.maxPotential.toLocaleString(lang === 'hu' ? 'hu-HU' : 'en-US')}</span>
               </div>
               <div className="flex justify-between items-center py-1 border-t border-slate-900/50">
-                <span className="text-slate-400">{text.wavefrontGini}</span>
+                <span className="text-slate-400">{lang === 'hu' ? 'Belső fluktuáció (Gini):' : 'Fluctuation (Gini):'}</span>
                 <span className="text-rose-400 font-bold">{(analysisResult.wavefrontGini * 100).toFixed(2)}%</span>
               </div>
-              <button
-                onClick={handleTransplant}
-                className="mt-3 w-full py-2 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 hover:text-white border border-indigo-500/25 text-[11px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <Zap className="h-3.5 w-3.5" />
-                {text.applyParams}
-              </button>
+              <div className="text-[10px] text-amber-300 mt-2 font-mono flex items-center gap-1">
+                <Sparkles className="h-3 w-3" />
+                {lang === 'hu' ? 'Betölthető sablonként a lenti Szoliton Mintavételezőbe!' : 'Available to select as template in Sampler below!'}
+              </div>
             </div>
 
             {/* Radial profile vector graph */}
@@ -780,15 +868,14 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
                 <Layers className="h-3.5 w-3.5" /> {text.radialProfile}
               </span>
               <div className="h-24 flex items-end gap-1.5 pb-1">
-                {analysisResult.radialProfile.map((v, i) => (
+                {analysisResult.radialProfile.slice(0, 10).map((v, i) => (
                   <div key={i} className="flex-1 flex flex-col items-center justify-end h-full group relative">
-                    {/* Tooltip */}
                     <div className="absolute bottom-full mb-1 bg-slate-950 border border-slate-800 text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 font-mono text-amber-400">
-                      {(v * 100).toFixed(1)}%
+                      {v.toFixed(3)}
                     </div>
                     <div 
                       className="w-full rounded-t bg-sky-500/20 group-hover:bg-sky-400/30 border-t border-sky-400/40 transition-all"
-                      style={{ height: `${v * 100}%` }}
+                      style={{ height: `${Math.min(100, v * 100)}%` }}
                     />
                     <span className="text-[8px] text-slate-600 mt-1 font-mono">{i}</span>
                   </div>
@@ -802,15 +889,14 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
                 <Activity className="h-3.5 w-3.5" /> {text.fourierSpectrum}
               </span>
               <div className="h-24 flex items-end gap-2 pb-1">
-                {analysisResult.fourierAmplitudes.map((v, i) => (
+                {analysisResult.fourierAmplitudes.slice(0, 5).map((v, i) => (
                   <div key={i} className="flex-1 flex flex-col items-center justify-end h-full group relative">
-                    {/* Tooltip */}
                     <div className="absolute bottom-full mb-1 bg-slate-950 border border-slate-800 text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 font-mono text-pink-400">
-                      {v.toFixed(5)}
+                      {v.toFixed(4)}
                     </div>
                     <div 
                       className="w-full rounded-t bg-pink-500/20 group-hover:bg-pink-400/30 border-t border-pink-400/40 transition-all"
-                      style={{ height: `${Math.min(100, v * 350)}%` }} // Scaled for visibility
+                      style={{ height: `${Math.min(100, v * 200)}%` }}
                     />
                     <span className="text-[8px] text-slate-600 mt-1 font-mono">f{i+1}</span>
                   </div>
@@ -825,316 +911,731 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
         )}
       </section>
 
-      {/* Main Sandbox Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        {/* LEFT: Rendering Stage (8 cols) */}
-        <div className="lg:col-span-8 flex flex-col gap-4">
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Canvas 1: XY Projection */}
-            <div className="flex flex-col bg-slate-950/80 border border-slate-900 rounded-2xl p-4 overflow-hidden relative group">
-              <div className="absolute top-4 right-4 text-[9px] font-mono text-slate-500 bg-slate-950/60 px-2 py-0.5 rounded border border-slate-800">
-                XY MEMBRANE
-              </div>
-              <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <Compass className="h-4 w-4 text-sky-400" /> {text.canvasXYTitle}
-              </h3>
-              
-              <canvas
-                ref={xyCanvasRef}
-                width={500}
-                height={380}
-                onClick={handleXYCanvasClick}
-                className={`w-full aspect-[5/3.8] rounded-xl border border-slate-900 bg-[#020409] shadow-inner transition-all ${
-                  placeMode !== 'none' ? 'cursor-crosshair border-amber-500/40' : 'cursor-pointer'
-                }`}
-              />
-              <span className="text-[10px] text-slate-500 mt-2 font-mono">{text.canvasClickDesc}</span>
-            </div>
-
-            {/* Canvas 2: ZW Projection (4D extra dimensions) */}
-            <div className="flex flex-col bg-slate-950/80 border border-slate-900 rounded-2xl p-4 overflow-hidden relative group">
-              <div className="absolute top-4 right-4 text-[9px] font-mono text-slate-500 bg-slate-950/60 px-2 py-0.5 rounded border border-slate-800">
-                ZW HYPERSPACE
-              </div>
-              <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <Layers className="h-4 w-4 text-indigo-400" /> {text.canvasZWTitle}
-              </h3>
-              
-              <canvas
-                ref={zwCanvasRef}
-                width={500}
-                height={380}
-                className="w-full aspect-[5/3.8] rounded-xl border border-slate-900 bg-[#020409] shadow-inner"
-              />
-              <span className="text-[10px] text-slate-500 mt-2 font-mono">X0 vs X3 (lateral coordinate mapped to hyperspace elevation)</span>
-            </div>
-          </div>
-
-          {/* Placement Toolbar */}
-          <div className="flex flex-wrap gap-2 p-3 bg-slate-900/20 border border-slate-850/80 rounded-2xl">
-            <button
-              onClick={() => setPlaceMode(placeMode === 'soliton_pos' ? 'none' : 'soliton_pos')}
-              className={`px-3 py-2 rounded-xl text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1.5 border ${
-                placeMode === 'soliton_pos' 
-                  ? 'bg-rose-500/20 border-rose-400/50 text-rose-300 shadow-md shadow-rose-500/5' 
-                  : 'bg-slate-950 border-slate-850 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-              }`}
-            >
-              <Plus className="h-3.5 w-3.5 text-rose-500" /> {text.placeSolitonPos}
-            </button>
-            <button
-              onClick={() => setPlaceMode(placeMode === 'soliton_neg' ? 'none' : 'soliton_neg')}
-              className={`px-3 py-2 rounded-xl text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1.5 border ${
-                placeMode === 'soliton_neg' 
-                  ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300 shadow-md shadow-emerald-500/5' 
-                  : 'bg-slate-950 border-slate-850 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-              }`}
-            >
-              <Plus className="h-3.5 w-3.5 text-emerald-500" /> {text.placeSolitonNeg}
-            </button>
-            <button
-              onClick={() => setPlaceMode(placeMode === 'well' ? 'none' : 'well')}
-              className={`px-3 py-2 rounded-xl text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1.5 border ${
-                placeMode === 'well' 
-                  ? 'bg-sky-500/20 border-sky-400/50 text-sky-300 shadow-md shadow-sky-500/5' 
-                  : 'bg-slate-950 border-slate-850 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-              }`}
-            >
-              <Plus className="h-3.5 w-3.5 text-sky-500" /> {text.placeWell}
-            </button>
-            <button
-              onClick={() => setPlaceMode(placeMode === 'barrier' ? 'none' : 'barrier')}
-              className={`px-3 py-2 rounded-xl text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1.5 border ${
-                placeMode === 'barrier' 
-                  ? 'bg-red-500/20 border-red-400/50 text-red-300 shadow-md shadow-red-500/5' 
-                  : 'bg-slate-950 border-slate-850 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-              }`}
-            >
-              <Plus className="h-3.5 w-3.5 text-red-500" /> {text.placeBarrier}
-            </button>
-            
-            {placeMode !== 'none' && (
-              <button
-                onClick={() => setPlaceMode('none')}
-                className="px-3 py-2 rounded-xl bg-slate-950 text-amber-500 hover:text-amber-400 border border-amber-500/20 text-[11px] font-mono cursor-pointer ml-auto"
-              >
-                {text.placeClear}
-              </button>
-            )}
+      {/* ------------------------------------------------------------------------------
+          MODULE 1: SOLITON SAMPLER (SZOLITON MINTAVÉTELEZŐ)
+          ------------------------------------------------------------------------------ */}
+      <section className="rounded-2xl border border-slate-800/80 bg-slate-900/20 p-5 backdrop-blur-md">
+        <div className="flex items-center gap-2 border-b border-slate-800/60 pb-3 mb-4">
+          <Scale className="h-5 w-5 text-indigo-400" />
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-300 font-mono">
+              {text.samplerTitle}
+            </h2>
+            <p className="text-[11px] text-slate-500 font-mono mt-0.5">
+              {text.samplerDesc}
+            </p>
           </div>
         </div>
 
-        {/* RIGHT: Physics Controller & Presets (4 cols) */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-mono">
           
-          {/* Main Controls Card */}
-          <section className="rounded-2xl border border-slate-800/80 bg-slate-900/20 p-5 backdrop-blur-md">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center justify-between font-mono">
-              <span className="flex items-center gap-2">
-                <Settings className="h-3.5 w-3.5 text-sky-500" />
-                {text.simSettings}
-              </span>
-            </h2>
+          {/* Soliton 1 Designer */}
+          <div className="p-4 rounded-xl border border-rose-500/15 bg-rose-500/5 flex flex-col gap-3.5 relative">
+            <div className="absolute top-3 right-3 text-[9px] font-mono font-bold text-rose-400 bg-rose-400/10 px-2 py-0.5 rounded border border-rose-400/20">
+              SOLITON 1 (W+)
+            </div>
+            <h3 className="font-bold text-slate-200 text-sm flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
+              {text.soliton1}
+            </h3>
 
-            <div className="flex flex-col gap-4 text-xs font-mono">
-              {/* Simulator state play button */}
-              <div className="grid grid-cols-2 gap-2 pb-3 border-b border-slate-800/50">
-                <button
-                  onClick={() => setIsRunning(!isRunning)}
-                  className={`py-2 px-3 rounded-xl font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                    isRunning 
-                      ? 'bg-amber-500 text-slate-950 hover:bg-amber-400' 
-                      : 'bg-emerald-600 text-white hover:bg-emerald-500'
-                  }`}
-                >
-                  {isRunning ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-                  {isRunning ? 'PAUSE' : 'RUN'}
-                </button>
-                <button
-                  onClick={() => applyPreset(activePreset, analysisResult || undefined)}
-                  className="py-2 px-3 rounded-xl bg-slate-950 text-slate-400 hover:text-slate-200 hover:bg-slate-850 transition-all border border-slate-800 cursor-pointer flex items-center justify-center gap-1.5"
-                >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  RESET
-                </button>
+            {/* Presets */}
+            <div className="flex flex-col gap-1">
+              <label className="text-slate-400 text-[10px]">{text.presetLabel}</label>
+              <select
+                value={s1Preset}
+                onChange={(e) => setS1Preset(e.target.value)}
+                className="bg-slate-950 text-rose-300 border border-slate-800 rounded py-1 px-2 focus:outline-none"
+              >
+                <option value="alpha">G-Soliton Alpha (Stable W+)</option>
+                <option value="scatter">Scattered Singularity (Fast, Light)</option>
+                <option value="coaxial">Co-axial Massive Packet (Broad, Heavy)</option>
+                <option value="scanned" disabled={!analysisResult}>
+                  {lang === 'hu' ? 'Kinyert Sablon a Rácsból' : 'Scanned from Grid'} {!analysisResult ? '(Nem beolvasott)' : ''}
+                </option>
+              </select>
+            </div>
+
+            {/* Grid properties */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-slate-400 text-[10px]">{text.chargeLabel}</label>
+                <div className="flex gap-1.5">
+                  {[-1, 0, 1].map((val) => (
+                    <button
+                      key={val}
+                      onClick={() => { setS1Winding(val); setS1Preset('custom'); }}
+                      className={`flex-1 py-1 rounded border text-[10px] font-bold ${
+                        s1Winding === val 
+                          ? 'bg-rose-500 text-slate-950 border-rose-400' 
+                          : 'bg-slate-950 text-slate-400 border-slate-800'
+                      }`}
+                    >
+                      {val > 0 ? `+${val}` : val}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {/* Damping Rate Slider */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex justify-between text-slate-400 text-[11px]">
-                  <span>{text.dampingLabel}</span>
-                  <span className="text-sky-400 font-bold">{(damping * 100).toFixed(2)}%</span>
-                </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-slate-400 text-[10px]">{text.radiusLabel}</label>
                 <input
-                  type="range"
-                  min="0.0"
-                  max="0.05"
-                  step="0.001"
-                  value={damping}
-                  onChange={(e) => setDamping(parseFloat(e.target.value))}
-                  className="w-full accent-sky-500 bg-slate-950 h-1.5 rounded-lg appearance-none cursor-pointer"
+                  type="range" min="0.5" max="5.0" step="0.1"
+                  value={s1Radius}
+                  onChange={(e) => { setS1Radius(parseFloat(e.target.value)); setS1Preset('custom'); }}
+                  className="w-full accent-rose-500 h-1 bg-slate-950 rounded"
+                />
+                <span className="text-[10px] text-rose-300 text-right">{s1Radius.toFixed(1)} r_0</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-slate-400 text-[10px]">{text.energyLabel}</label>
+                <input
+                  type="range" min="1e5" max="3e6" step="5e4"
+                  value={s1Energy}
+                  onChange={(e) => { setS1Energy(parseInt(e.target.value)); setS1Preset('custom'); }}
+                  className="w-full accent-rose-500 h-1 bg-slate-950 rounded"
+                />
+                <span className="text-[10px] text-rose-300 text-right">{(s1Energy / 1e6).toFixed(2)} MeV</span>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-slate-400 text-[10px]">{text.kModeLabel}</label>
+                <input
+                  type="range" min="0.1" max="1.8" step="0.05"
+                  value={s1KMode}
+                  onChange={(e) => { setS1KMode(parseFloat(e.target.value)); setS1Preset('custom'); }}
+                  className="w-full accent-rose-500 h-1 bg-slate-950 rounded"
+                />
+                <span className="text-[10px] text-rose-300 text-right">{s1KMode.toFixed(2)} k_0</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-1.5 border-t border-rose-500/10 pt-2">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[9px] text-slate-500">X_start</span>
+                <input
+                  type="number" step="0.5" value={s1X}
+                  onChange={(e) => { setS1X(parseFloat(e.target.value) || 0); setS1Preset('custom'); }}
+                  className="bg-slate-950 text-rose-300 text-center rounded border border-slate-850 p-0.5"
                 />
               </div>
-
-              {/* Hyperspace Tension Slider */}
-              <div className="flex flex-col gap-1.5 pt-2 border-t border-slate-900/40">
-                <div className="flex justify-between text-slate-400 text-[11px]">
-                  <span>{text.tensionLabel}</span>
-                  <span className="text-indigo-400 font-bold">{tension.toFixed(2)}</span>
-                </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[9px] text-slate-500">Y_start</span>
                 <input
-                  type="range"
-                  min="0.0"
-                  max="2.0"
-                  step="0.05"
-                  value={tension}
-                  onChange={(e) => setTension(parseFloat(e.target.value))}
-                  className="w-full accent-indigo-500 bg-slate-950 h-1.5 rounded-lg appearance-none cursor-pointer"
+                  type="number" step="0.5" value={s1Y}
+                  onChange={(e) => { setS1Y(parseFloat(e.target.value) || 0); setS1Preset('custom'); }}
+                  className="bg-slate-950 text-rose-300 text-center rounded border border-slate-850 p-0.5"
                 />
               </div>
-
-              {/* Emergent Gravity Force scale */}
-              <div className="flex flex-col gap-1.5 pt-2 border-t border-slate-900/40">
-                <div className="flex justify-between text-slate-400 text-[11px]">
-                  <span>{text.gravityScaleLabel}</span>
-                  <span className="text-pink-400 font-bold">{gravityScale.toFixed(2)}x</span>
-                </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[9px] text-slate-500">W_start</span>
                 <input
-                  type="range"
-                  min="0.0"
-                  max="3.0"
-                  step="0.1"
-                  value={gravityScale}
-                  onChange={(e) => setGravityScale(parseFloat(e.target.value))}
-                  className="w-full accent-pink-500 bg-slate-950 h-1.5 rounded-lg appearance-none cursor-pointer"
-                />
-              </div>
-
-              {/* Speed Slider */}
-              <div className="flex flex-col gap-1.5 pt-2 border-t border-slate-900/40">
-                <div className="flex justify-between text-slate-400 text-[11px]">
-                  <span>{text.simSpeed}</span>
-                  <span className="text-amber-400 font-bold">{simSpeed.toFixed(1)}x</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.1"
-                  max="4.0"
-                  step="0.1"
-                  value={simSpeed}
-                  onChange={(e) => setSimSpeed(parseFloat(e.target.value))}
-                  className="w-full accent-amber-500 bg-slate-950 h-1.5 rounded-lg appearance-none cursor-pointer"
+                  type="number" step="0.05" value={s1W}
+                  onChange={(e) => { setS1W(parseFloat(e.target.value) || 0); setS1Preset('custom'); }}
+                  className="bg-slate-950 text-rose-300 text-center rounded border border-slate-850 p-0.5"
                 />
               </div>
             </div>
-          </section>
 
-          {/* Presets Selector Card */}
-          <section className="rounded-2xl border border-slate-800/80 bg-slate-900/20 p-5 backdrop-blur-md flex flex-col gap-3">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-2 font-mono">
-              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-              {text.presetLabel}
-            </h2>
-
-            <div className="flex flex-col gap-2 text-xs">
-              {[
-                { id: 'dual', label: text.presetDual, desc: text.presetDualDesc },
-                { id: 'scattering', label: text.presetScattering, desc: text.presetScatteringDesc },
-                { id: 'chaos', label: text.presetChaos, desc: text.presetChaosDesc },
-                { id: 'loaded', label: text.presetLoaded, desc: text.presetLoadedDesc, disabled: !analysisResult },
-              ].map((preset) => (
-                <button
-                  key={preset.id}
-                  disabled={preset.disabled}
-                  onClick={() => applyPreset(preset.id, analysisResult || undefined)}
-                  className={`flex flex-col p-2.5 rounded-xl border text-left transition-all ${
-                    preset.disabled ? 'opacity-30 cursor-not-allowed border-transparent bg-slate-950/20 text-slate-600' : 'cursor-pointer'
-                  } ${
-                    activePreset === preset.id
-                      ? 'bg-indigo-500/10 border-indigo-500/40 text-indigo-400'
-                      : 'bg-slate-950/60 border-slate-850 text-slate-400 hover:border-slate-750'
-                  }`}
-                >
-                  <span className="font-semibold block">{preset.label}</span>
-                  <span className="text-[10px] text-slate-500 mt-0.5 leading-snug">{preset.desc}</span>
-                </button>
-              ))}
+            <div className="grid grid-cols-3 gap-1.5">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[9px] text-slate-500">Vx_start</span>
+                <input
+                  type="number" step="0.1" value={s1Vx}
+                  onChange={(e) => { setS1Vx(parseFloat(e.target.value) || 0); setS1Preset('custom'); }}
+                  className="bg-slate-950 text-rose-300 text-center rounded border border-slate-850 p-0.5"
+                />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[9px] text-slate-500">Vy_start</span>
+                <input
+                  type="number" step="0.1" value={s1Vy}
+                  onChange={(e) => { setS1Vy(parseFloat(e.target.value) || 0); setS1Preset('custom'); }}
+                  className="bg-slate-950 text-rose-300 text-center rounded border border-slate-850 p-0.5"
+                />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[9px] text-slate-500">Vw_start</span>
+                <input
+                  type="number" step="0.05" value={s1Vw}
+                  onChange={(e) => { setS1Vw(parseFloat(e.target.value) || 0); setS1Preset('custom'); }}
+                  className="bg-slate-950 text-rose-300 text-center rounded border border-slate-850 p-0.5"
+                />
+              </div>
             </div>
-          </section>
+          </div>
 
-          {/* Active Soliton Telemetry Panel */}
-          {selectedSoliton && (
-            <section className="rounded-2xl border border-slate-800/80 bg-[#070b14] p-5 backdrop-blur-md flex flex-col gap-3 font-mono">
-              <div className="flex items-center justify-between border-b border-slate-900 pb-2">
-                <span className="text-xs font-bold uppercase text-slate-300 flex items-center gap-2">
-                  <Cpu className="h-3.5 w-3.5 text-amber-500" />
-                  {text.selectedSoliton}
+          {/* Soliton 2 Designer */}
+          <div className="p-4 rounded-xl border border-emerald-500/15 bg-emerald-500/5 flex flex-col gap-3.5 relative">
+            <div className="absolute top-3 right-3 text-[9px] font-mono font-bold text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded border border-emerald-400/20">
+              SOLITON 2 (W-)
+            </div>
+            <h3 className="font-bold text-slate-200 text-sm flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              {text.soliton2}
+            </h3>
+
+            {/* Presets */}
+            <div className="flex flex-col gap-1">
+              <label className="text-slate-400 text-[10px]">{text.presetLabel}</label>
+              <select
+                value={s2Preset}
+                onChange={(e) => setS2Preset(e.target.value)}
+                className="bg-slate-950 text-emerald-300 border border-slate-800 rounded py-1 px-2 focus:outline-none"
+              >
+                <option value="beta">G-Soliton Beta (Stable W-)</option>
+                <option value="alpha">G-Soliton Alpha (Stable W+)</option>
+                <option value="scatter">Scattered Well (Target Obstacle)</option>
+                <option value="coaxial">Co-axial Massive Packet (Heavy opposing)</option>
+                <option value="scanned" disabled={!analysisResult}>
+                  {lang === 'hu' ? 'Kinyert Sablon a Rácsból' : 'Scanned from Grid'} {!analysisResult ? '(Nem beolvasott)' : ''}
+                </option>
+              </select>
+            </div>
+
+            {/* Grid properties */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-slate-400 text-[10px]">{text.chargeLabel}</label>
+                <div className="flex gap-1.5">
+                  {[-1, 0, 1].map((val) => (
+                    <button
+                      key={val}
+                      onClick={() => { setS2Winding(val); setS2Preset('custom'); }}
+                      className={`flex-1 py-1 rounded border text-[10px] font-bold ${
+                        s2Winding === val 
+                          ? 'bg-emerald-500 text-slate-950 border-emerald-400' 
+                          : 'bg-slate-950 text-slate-400 border-slate-800'
+                      }`}
+                    >
+                      {val > 0 ? `+${val}` : val}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-slate-400 text-[10px]">{text.radiusLabel}</label>
+                <input
+                  type="range" min="0.5" max="5.0" step="0.1"
+                  value={s2Radius}
+                  onChange={(e) => { setS2Radius(parseFloat(e.target.value)); setS2Preset('custom'); }}
+                  className="w-full accent-emerald-500 h-1 bg-slate-950 rounded"
+                />
+                <span className="text-[10px] text-emerald-300 text-right">{s2Radius.toFixed(1)} r_0</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-slate-400 text-[10px]">{text.energyLabel}</label>
+                <input
+                  type="range" min="1e5" max="3e6" step="5e4"
+                  value={s2Energy}
+                  onChange={(e) => { setS2Energy(parseInt(e.target.value)); setS2Preset('custom'); }}
+                  className="w-full accent-emerald-500 h-1 bg-slate-950 rounded"
+                />
+                <span className="text-[10px] text-emerald-300 text-right">{(s2Energy / 1e6).toFixed(2)} MeV</span>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-slate-400 text-[10px]">{text.kModeLabel}</label>
+                <input
+                  type="range" min="0.1" max="1.8" step="0.05"
+                  value={s2KMode}
+                  onChange={(e) => { setS2KMode(parseFloat(e.target.value)); setS2Preset('custom'); }}
+                  className="w-full accent-emerald-500 h-1 bg-slate-950 rounded"
+                />
+                <span className="text-[10px] text-emerald-300 text-right">{s2KMode.toFixed(2)} k_0</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-1.5 border-t border-emerald-500/10 pt-2">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[9px] text-slate-500">X_start</span>
+                <input
+                  type="number" step="0.5" value={s2X}
+                  onChange={(e) => { setS2X(parseFloat(e.target.value) || 0); setS2Preset('custom'); }}
+                  className="bg-slate-950 text-emerald-300 text-center rounded border border-slate-850 p-0.5"
+                />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[9px] text-slate-500">Y_start</span>
+                <input
+                  type="number" step="0.5" value={s2Y}
+                  onChange={(e) => { setS2Y(parseFloat(e.target.value) || 0); setS2Preset('custom'); }}
+                  className="bg-slate-950 text-emerald-300 text-center rounded border border-slate-850 p-0.5"
+                />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[9px] text-slate-500">W_start</span>
+                <input
+                  type="number" step="0.05" value={s2W}
+                  onChange={(e) => { setS2W(parseFloat(e.target.value) || 0); setS2Preset('custom'); }}
+                  className="bg-slate-950 text-emerald-300 text-center rounded border border-slate-850 p-0.5"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-1.5">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[9px] text-slate-500">Vx_start</span>
+                <input
+                  type="number" step="0.1" value={s2Vx}
+                  onChange={(e) => { setS2Vx(parseFloat(e.target.value) || 0); setS2Preset('custom'); }}
+                  className="bg-slate-950 text-emerald-300 text-center rounded border border-slate-850 p-0.5"
+                />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[9px] text-slate-500">Vy_start</span>
+                <input
+                  type="number" step="0.1" value={s2Vy}
+                  onChange={(e) => { setS2Vy(parseFloat(e.target.value) || 0); setS2Preset('custom'); }}
+                  className="bg-slate-950 text-emerald-300 text-center rounded border border-slate-850 p-0.5"
+                />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[9px] text-slate-500">Vw_start</span>
+                <input
+                  type="number" step="0.05" value={s2Vw}
+                  onChange={(e) => { setS2Vw(parseFloat(e.target.value) || 0); setS2Preset('custom'); }}
+                  className="bg-slate-950 text-emerald-300 text-center rounded border border-slate-850 p-0.5"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={handleLoadPair}
+          className="mt-4 w-full py-3 bg-gradient-to-r from-rose-600 to-emerald-600 hover:from-rose-500 hover:to-emerald-500 text-slate-950 font-bold rounded-xl text-xs transition-all cursor-pointer shadow-lg shadow-indigo-500/10 flex items-center justify-center gap-2 uppercase font-mono tracking-wider"
+        >
+          <ArrowRightLeft className="h-4 w-4" />
+          {text.loadPairBtn}
+        </button>
+      </section>
+
+      {/* ------------------------------------------------------------------------------
+          MODULE 2: EFFECTIVE CONTROLLED ENVIRONMENT
+          ------------------------------------------------------------------------------ */}
+      <section className="rounded-2xl border border-slate-800/80 bg-slate-900/20 p-5 backdrop-blur-md">
+        
+        <div className="flex items-center gap-2 border-b border-slate-800/60 pb-3 mb-4">
+          <Activity className="h-5 w-5 text-emerald-400" />
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-300 font-mono">
+              {text.labTitle}
+            </h2>
+            <p className="text-[11px] text-slate-500 font-mono mt-0.5">
+              {text.labDesc}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* LEFT: Render Canvas Arenas (8 cols) */}
+          <div className="lg:col-span-8 flex flex-col gap-4">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+              {/* XY Canvas */}
+              <div className="flex flex-col bg-slate-950 border border-slate-900 rounded-2xl p-4 overflow-hidden relative group">
+                <div className="absolute top-4 right-4 text-[9px] font-mono text-slate-500 bg-slate-950/60 px-2 py-0.5 rounded border border-slate-800">
+                  ℝ² XY PROJECTION
+                </div>
+                <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-1.5 font-mono">
+                  <Compass className="h-4 w-4 text-rose-400" /> {text.canvasXYTitle}
+                </h3>
+                
+                <canvas
+                  ref={xyCanvasRef}
+                  width={500}
+                  height={380}
+                  onClick={handleXYCanvasClick}
+                  className={`w-full aspect-[5/3.8] rounded-xl border border-slate-900 bg-[#020409] shadow-inner transition-all ${
+                    placeMode !== 'none' ? 'cursor-crosshair border-amber-500/40 animate-pulse' : 'cursor-pointer'
+                  }`}
+                />
+                <span className="text-[9.5px] text-slate-500 mt-2 font-mono leading-normal">
+                  {lang === 'hu' ? 'A szolitonok valós ütközési és szórási pályáját mutatja.' : 'Shows real soliton scattering trajectory.'}
                 </span>
-                <span className="text-[9px] text-slate-500 uppercase tracking-wide">ID: {selectedSoliton.id.slice(0, 10)}</span>
               </div>
 
-              <div className="flex flex-col gap-2.5 text-xs">
-                {/* Position */}
-                <div>
-                  <span className="text-slate-500 text-[10px] uppercase block">{text.pos}</span>
-                  <span className="text-slate-300">
-                    X: <span className="text-sky-400 font-bold">{selectedSoliton.position[0].toFixed(3)}</span>, 
-                    Y: <span className="text-sky-400 font-bold">{selectedSoliton.position[1].toFixed(3)}</span>, 
-                    Z: <span className="text-slate-500">{selectedSoliton.position[2].toFixed(3)}</span>, 
-                    w: <span className="text-indigo-400 font-bold">{selectedSoliton.position[3].toFixed(3)}</span>
-                  </span>
+              {/* ZW Canvas */}
+              <div className="flex flex-col bg-slate-950 border border-slate-900 rounded-2xl p-4 overflow-hidden relative group">
+                <div className="absolute top-4 right-4 text-[9px] font-mono text-slate-500 bg-slate-950/60 px-2 py-0.5 rounded border border-slate-800">
+                  ℝ² ZW OSCILLATION
                 </div>
+                <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-1.5 font-mono">
+                  <Layers className="h-4 w-4 text-emerald-400" /> {text.canvasZWTitle}
+                </h3>
+                
+                <canvas
+                  ref={zwCanvasRef}
+                  width={500}
+                  height={380}
+                  className="w-full aspect-[5/3.8] rounded-xl border border-slate-900 bg-[#020409] shadow-inner"
+                />
+                <span className="text-[9.5px] text-slate-500 mt-2 font-mono leading-normal">
+                  {lang === 'hu' ? 'X tengely menti kitérés (vízszintes) vs. 4. dimenziós w-feszültség kitérés (függőleges).' : 'X coordinate (lateral) vs. out-of-membrane 4D w-tension deflection (vertical).'}
+                </span>
+              </div>
+            </div>
 
-                {/* Velocity */}
-                <div>
-                  <span className="text-slate-500 text-[10px] uppercase block">{text.vel}</span>
-                  <span className="text-slate-300">
-                    Vx: <span className="text-sky-400 font-bold">{selectedSoliton.velocity[0].toFixed(3)}</span>, 
-                    Vy: <span className="text-sky-400 font-bold">{selectedSoliton.velocity[1].toFixed(3)}</span>, 
-                    Vw: <span className="text-indigo-400 font-bold">{selectedSoliton.velocity[3].toFixed(3)}</span>
-                  </span>
-                </div>
+            {/* Placement Toolbar for obstacles */}
+            <div className="flex flex-wrap items-center gap-2 p-3 bg-slate-950 border border-slate-850/80 rounded-2xl">
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider font-mono mr-1">
+                {lang === 'hu' ? 'Akadályok:' : 'Obstacles:'}
+              </span>
+              <button
+                onClick={() => setPlaceMode(placeMode === 'well' ? 'none' : 'well')}
+                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1.5 border ${
+                  placeMode === 'well' 
+                    ? 'bg-sky-500/20 border-sky-400/50 text-sky-300' 
+                    : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Plus className="h-3 w-3 text-sky-500" /> {text.placeWell}
+              </button>
+              <button
+                onClick={() => setPlaceMode(placeMode === 'barrier' ? 'none' : 'barrier')}
+                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1.5 border ${
+                  placeMode === 'barrier' 
+                    ? 'bg-red-500/20 border-red-400/50 text-red-300' 
+                    : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Plus className="h-3 w-3 text-red-500" /> {text.placeBarrier}
+              </button>
+              
+              {placeMode !== 'none' && (
+                <span className="text-[10.5px] text-amber-400 animate-pulse font-mono ml-2">
+                  {lang === 'hu' ? 'Kattintson az X-Y vetület síkba az elhelyezéshez!' : 'Click in the X-Y Projection to place!'}
+                </span>
+              )}
 
-                {/* Mass / Mach */}
-                <div>
-                  <span className="text-slate-500 text-[10px] uppercase block">{text.mass}</span>
-                  <span className="text-rose-400 font-bold text-sm">
-                    {selectedSoliton.mass.toFixed(4)} <span className="text-[10px] text-slate-500">eV (norm)</span>
-                  </span>
-                </div>
-
-                {/* Charge */}
-                <div>
-                  <span className="text-slate-500 text-[10px] uppercase block">{text.charge}</span>
-                  <span className="text-amber-400 font-bold">
-                    {selectedSoliton.topologicalCharge > 0 ? '+1 (Clockwise Phase)' : '-1 (Counter-Clockwise Phase)'}
-                  </span>
-                </div>
-
-                {/* Impulse perturbation trigger */}
+              <div className="ml-auto flex gap-1.5">
                 <button
-                  onClick={handlePulse}
-                  className="mt-2 w-full py-2 bg-rose-600 hover:bg-rose-500 text-slate-950 font-bold rounded-lg text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  onClick={handleTriggerPulse}
+                  className="px-3 py-1.5 rounded-lg bg-rose-600/10 hover:bg-rose-600/20 border border-rose-500/20 text-rose-400 text-[10px] font-bold cursor-pointer transition-all flex items-center gap-1"
                 >
-                  <Zap className="h-3.5 w-3.5" />
+                  <Zap className="h-3 w-3" />
                   {text.pulseBtn}
                 </button>
+                <button
+                  onClick={handleResetSimulator}
+                  className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-850 hover:border-slate-700 text-slate-400 hover:text-slate-200 text-[10px] font-mono cursor-pointer flex items-center gap-1"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  {text.clearBtn}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT: Physics Controller & Real-Time Data (4 cols) */}
+          <div className="lg:col-span-4 flex flex-col gap-6">
+            
+            {/* Control Panel */}
+            <section className="rounded-2xl border border-slate-850 bg-slate-950 p-4 font-mono text-xs">
+              <h3 className="font-bold text-slate-400 text-[11px] uppercase tracking-wider mb-3.5 flex items-center gap-1.5">
+                <Settings className="h-3.5 w-3.5 text-indigo-400" />
+                {lang === 'hu' ? 'Környezeti Paraméterek' : 'Environment Physics'}
+              </h3>
+
+              <div className="flex flex-col gap-3.5">
+                {/* Play/Pause */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setIsRunning(!isRunning)}
+                    className={`py-2 px-3 rounded-lg font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      isRunning 
+                        ? 'bg-amber-500 text-slate-950 hover:bg-amber-400' 
+                        : 'bg-emerald-600 text-white hover:bg-emerald-500'
+                    }`}
+                  >
+                    {isRunning ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+                    {isRunning ? 'PAUSE' : 'RUN'}
+                  </button>
+                  <button
+                    onClick={handleResetSimulator}
+                    className="py-2 px-3 rounded-lg bg-slate-900 text-slate-300 hover:bg-slate-850 border border-slate-800 transition-all cursor-pointer"
+                  >
+                    RESET ALL
+                  </button>
+                </div>
+
+                {/* Physics Constants */}
+                <div className="flex flex-col gap-2.5 pt-2 border-t border-slate-900">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-slate-500">{text.simSpeed}</span>
+                      <span className="text-sky-400 font-bold">{simSpeed.toFixed(1)}x</span>
+                    </div>
+                    <input
+                      type="range" min="0.2" max="3.0" step="0.1" value={simSpeed}
+                      onChange={(e) => setSimSpeed(parseFloat(e.target.value))}
+                      className="w-full accent-sky-400 h-1 bg-slate-900 rounded"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-slate-500">{text.dampingLabel}</span>
+                      <span className="text-sky-400 font-bold">{(damping * 100).toFixed(2)}%</span>
+                    </div>
+                    <input
+                      type="range" min="0.0" max="0.05" step="0.001" value={damping}
+                      onChange={(e) => setDamping(parseFloat(e.target.value))}
+                      className="w-full accent-sky-400 h-1 bg-slate-900 rounded"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-slate-500">{text.tensionLabel}</span>
+                      <span className="text-sky-400 font-bold">{tension.toFixed(2)} k_T</span>
+                    </div>
+                    <input
+                      type="range" min="0.0" max="2.0" step="0.05" value={tension}
+                      onChange={(e) => setTension(parseFloat(e.target.value))}
+                      className="w-full accent-sky-400 h-1 bg-slate-900 rounded"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-slate-500">{text.gravityScaleLabel}</span>
+                      <span className="text-sky-400 font-bold">{gravityScale.toFixed(2)} G</span>
+                    </div>
+                    <input
+                      type="range" min="0.1" max="3.0" step="0.1" value={gravityScale}
+                      onChange={(e) => setGravityScale(parseFloat(e.target.value))}
+                      className="w-full accent-sky-400 h-1 bg-slate-900 rounded"
+                    />
+                  </div>
+                </div>
               </div>
             </section>
-          )}
 
-          {/* Clean Slate Button */}
-          <button
-            onClick={() => { setSolitons([]); setObstacles([]); setSelectedSolitonId(null); }}
-            className="w-full py-2 bg-slate-950 hover:bg-red-950/20 text-slate-500 hover:text-red-400 border border-slate-900 hover:border-red-950/40 rounded-xl text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-            {text.clearBtn}
-          </button>
+            {/* Dynamic Telemetry & State Monitor */}
+            {liveDiagnostics && (
+              <section className="rounded-2xl border border-slate-850 bg-slate-950 p-4 font-mono text-xs flex flex-col gap-3">
+                <h3 className="font-bold text-slate-400 text-[11px] uppercase tracking-wider pb-2 border-b border-slate-900 flex items-center gap-1.5">
+                  <Sliders className="h-3.5 w-3.5 text-emerald-400" />
+                  {text.diagnosticsTitle}
+                </h3>
+
+                <div className="flex justify-between py-1 border-b border-slate-900/50">
+                  <span className="text-slate-500">{text.distance}</span>
+                  <span className="text-slate-200 font-bold">{liveDiagnostics.distance.toFixed(4)} r_0</span>
+                </div>
+
+                <div className="flex justify-between py-1 border-b border-slate-900/50">
+                  <span className="text-slate-500">{text.relVel}</span>
+                  <span className="text-slate-200 font-bold">{liveDiagnostics.vRel.toFixed(4)} c</span>
+                </div>
+
+                <div className="flex justify-between py-1 border-b border-slate-900/50">
+                  <span className="text-slate-500">{text.overlapPot}</span>
+                  <span className="text-amber-400 font-bold">{liveDiagnostics.overlapPot.toExponential(3)} eV</span>
+                </div>
+
+                <div className="flex justify-between py-1 border-b border-slate-900/50">
+                  <span className="text-slate-500">{text.kineticEnergy}</span>
+                  <span className="text-cyan-400 font-bold">{liveDiagnostics.eKin.toExponential(3)} eV</span>
+                </div>
+
+                <div className="flex justify-between py-1 border-b border-slate-900/50">
+                  <span className="text-slate-500">{text.totalEnergy}</span>
+                  <span className={`font-bold ${liveDiagnostics.eTotal < 0 ? 'text-emerald-400' : 'text-slate-300'}`}>
+                    {liveDiagnostics.eTotal.toExponential(3)} eV
+                  </span>
+                </div>
+
+                {/* State classifier */}
+                <div className="flex flex-col gap-1.5 pt-1">
+                  <span className="text-slate-500 text-[10px]">{text.stateLabel}</span>
+                  <div className={`p-2 rounded text-center text-[10px] font-bold ${
+                    liveDiagnostics.isCritical 
+                      ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30 animate-pulse' 
+                      : liveDiagnostics.isBound 
+                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' 
+                      : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
+                  }`}>
+                    {liveDiagnostics.stateStr}
+                  </div>
+                </div>
+
+                {/* Inertial Mass details (Mach's principle visualization) */}
+                <div className="grid grid-cols-2 gap-2 mt-1 pt-2 border-t border-slate-900 text-[9.5px]">
+                  <div className="bg-rose-500/5 p-2 rounded border border-rose-500/10">
+                    <span className="text-slate-500 block uppercase mb-1">SOLITON 1 MASS</span>
+                    <span className="text-rose-400 font-bold">{liveDiagnostics.mass1.toFixed(3)} eV_m</span>
+                  </div>
+                  <div className="bg-emerald-500/5 p-2 rounded border border-emerald-500/10">
+                    <span className="text-slate-500 block uppercase mb-1">SOLITON 2 MASS</span>
+                    <span className="text-emerald-400 font-bold">{liveDiagnostics.mass2.toFixed(3)} eV_m</span>
+                  </div>
+                </div>
+              </section>
+            )}
+
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* ------------------------------------------------------------------------------
+          DYNAMIC SCROLLING TIMELINE GRAPH
+          ------------------------------------------------------------------------------ */}
+      <section className="rounded-2xl border border-slate-800/80 bg-slate-900/20 p-5 backdrop-blur-md">
+        <div className="flex items-center gap-2 mb-4 font-mono">
+          <LineChart className="h-5 w-5 text-pink-400" />
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+              {text.timelineTitle}
+            </h3>
+            <p className="text-[10px] text-slate-500 mt-0.5">
+              {text.timelineDesc}
+            </p>
+          </div>
+        </div>
+
+        {timelineData.length > 0 ? (
+          <div className="h-36 bg-slate-950/80 rounded-xl border border-slate-900/60 p-4 relative overflow-hidden flex flex-col justify-between">
+            {/* Legend */}
+            <div className="absolute top-2 right-4 flex gap-4 text-[9px] font-mono">
+              <span className="flex items-center gap-1.5 text-rose-400">
+                <span className="w-2.5 h-0.5 bg-rose-400 inline-block" />
+                {lang === 'hu' ? 'Távolság (d)' : 'Distance (d)'}
+              </span>
+              <span className="flex items-center gap-1.5 text-cyan-400">
+                <span className="w-2.5 h-0.5 bg-cyan-400 inline-block" />
+                {lang === 'hu' ? 'Relatív Sebesség (v_rel)' : 'Relative Velocity (v_rel)'}
+              </span>
+            </div>
+
+            {/* Custom SVG Line Graph */}
+            <svg className="w-full h-24 overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
+              {/* Horizontal Reference Line at 0 */}
+              <line x1="0" y1="100" x2="100" y2="100" stroke="#1f2937" strokeWidth="0.5" />
+              <line x1="0" y1="50" x2="100" y2="50" stroke="#111827" strokeDasharray="3,3" strokeWidth="0.5" />
+
+              {/* Path for Distance */}
+              {(() => {
+                const maxD = Math.max(...timelineData.map(d => d.distance), 10);
+                const points = timelineData.map((d, idx) => {
+                  const x = (idx / (timelineData.length - 1)) * 100;
+                  const y = 100 - (d.distance / maxD) * 90; // scale so it fits nicely
+                  return `${x},${y}`;
+                }).join(' ');
+                return <polyline fill="none" stroke="#f43f5e" strokeWidth="1.8" points={points} />;
+              })()}
+
+              {/* Path for Relative Velocity */}
+              {(() => {
+                const maxV = Math.max(...timelineData.map(d => d.relVel), 4);
+                const points = timelineData.map((d, idx) => {
+                  const x = (idx / (timelineData.length - 1)) * 100;
+                  const y = 100 - (d.relVel / maxV) * 90;
+                  return `${x},${y}`;
+                }).join(' ');
+                return <polyline fill="none" stroke="#22d3ee" strokeWidth="1.2" strokeDasharray="1,1" points={points} />;
+              })()}
+            </svg>
+
+            {/* Scale readings */}
+            <div className="flex justify-between text-[8px] text-slate-500 font-mono pt-2 border-t border-slate-900/50">
+              <span>{lang === 'hu' ? 'Kezdet' : 'Start'}</span>
+              <span>{lang === 'hu' ? 'Időbeli szórás tenger' : 'Spacetime scatter history'}</span>
+              <span>{lang === 'hu' ? 'Most' : 'Now'}</span>
+            </div>
+          </div>
+        ) : (
+          <div className="h-36 bg-slate-950/40 border border-slate-900/60 rounded-xl flex items-center justify-center text-xs text-slate-500 font-mono">
+            {lang === 'hu' ? 'Futtassa a szimulációt az adatok rögzítéséhez!' : 'Run the simulation to log spacetime history.'}
+          </div>
+        )}
+      </section>
+
+      {/* ------------------------------------------------------------------------------
+          FOURIER SPECTRUM SEPARATE COMPARISON (KÜLÖNÁLLÓ SPECTRA)
+          ------------------------------------------------------------------------------ */}
+      <section className="rounded-2xl border border-slate-800/80 bg-slate-900/20 p-5 backdrop-blur-md">
+        <div className="flex items-center gap-2 mb-4 font-mono">
+          <Activity className="h-5 w-5 text-indigo-400" />
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+              {text.fourierCompTitle}
+            </h3>
+            <p className="text-[10px] text-slate-500 mt-0.5">
+              {text.fourierCompDesc}
+            </p>
+          </div>
+        </div>
+
+        {solitons.length >= 2 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+            
+            {/* Soliton 1 Spectrum */}
+            <div className="p-4 bg-slate-950/80 rounded-xl border border-rose-500/10 flex flex-col gap-3">
+              <span className="text-[10px] font-bold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                Soliton 1 Internal Vibrational Modes
+              </span>
+              <div className="flex flex-col gap-2.5">
+                {solitons[0].fourierAmplitudes.map((amp, idx) => (
+                  <div key={idx} className="flex flex-col gap-1">
+                    <div className="flex justify-between text-[9px] text-slate-400">
+                      <span>{lang === 'hu' ? `${idx+1}. Hullámmódus (f${idx+1})` : `Harmonic Mode f${idx+1}`}</span>
+                      <span className="text-rose-300 font-bold">{amp.toFixed(4)}</span>
+                    </div>
+                    <div className="w-full bg-slate-900 h-2 rounded overflow-hidden border border-slate-800/60">
+                      <div 
+                        className="bg-gradient-to-r from-rose-600 to-pink-500 h-full rounded"
+                        style={{ width: `${Math.min(100, amp * 500)}%` }} // Scaled for gorgeous visibility
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Soliton 2 Spectrum */}
+            <div className="p-4 bg-slate-950/80 rounded-xl border border-emerald-500/10 flex flex-col gap-3">
+              <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                Soliton 2 Internal Vibrational Modes
+              </span>
+              <div className="flex flex-col gap-2.5">
+                {solitons[1].fourierAmplitudes.map((amp, idx) => (
+                  <div key={idx} className="flex flex-col gap-1">
+                    <div className="flex justify-between text-[9px] text-slate-400">
+                      <span>{lang === 'hu' ? `${idx+1}. Hullámmódus (f${idx+1})` : `Harmonic Mode f${idx+1}`}</span>
+                      <span className="text-emerald-300 font-bold">{amp.toFixed(4)}</span>
+                    </div>
+                    <div className="w-full bg-slate-900 h-2 rounded overflow-hidden border border-slate-800/60">
+                      <div 
+                        className="bg-gradient-to-r from-emerald-600 to-teal-500 h-full rounded"
+                        style={{ width: `${Math.min(100, amp * 500)}%` }} // Scaled for gorgeous visibility
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        ) : (
+          <div className="p-4 bg-slate-950/40 border border-slate-900/60 rounded-xl flex items-center justify-center text-xs text-slate-500 font-mono">
+            {lang === 'hu' ? 'A szolitonok betöltése szükséges a Fourier spektrumok elemzéséhez.' : 'Solitons must be loaded to analyze spectra.'}
+          </div>
+        )}
+      </section>
 
       {/* Explanatory callout for physics */}
       <section className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-5 flex gap-3 text-xs leading-relaxed text-amber-300/95 mt-4">
@@ -1148,4 +1649,5 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
     </div>
   );
 };
+
 export default EffectiveSolitonLab;
