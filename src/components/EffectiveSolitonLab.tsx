@@ -308,6 +308,8 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
         researchTask4Desc: 'Állítson be eltérő tömegarányokat (például egy nagy és egy kis méretű szoliton). Figyelje meg a tehetetlenségi modulációt és a tömegközéppont precesszióját!',
         researchTask5: '5. Csillapítás & Feszültség',
         researchTask5Desc: 'Kísérletezzen magasabb csillapítással (damping) és feszültséggel (tension). Hogyan hat a disszipáció a topológiailag nem védett módusokra?',
+        researchTask6: '6. Winding Skálázás & Többsugaras Analízis',
+        researchTask6Desc: 'Mérjen radiális potenciálprofilt több sugárpontban (0.1 és 5.0 r_0 között) magasabb hálózati felbontással. Figyelje meg, hogyan skálázódik a q_eff tisztán a Winding számtól!',
         loadPreset: 'Kísérlet betöltése',
         emergentChargeTitle: 'Emergens Töltés-Analízis (Winding-indukált)',
         emergentCharge: 'Emergens effektív töltés (q_eff):',
@@ -401,6 +403,8 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
         researchTask4Desc: 'Design highly asymmetric mass ratios (e.g. a small light envelope colliding with a huge heavy core) and map the orbital center of mass shifts.',
         researchTask5: '5. Damping & Tension Sheaths',
         researchTask5Desc: 'Inject heavy viscous damping or high hypersheet tension. Track the decay rate of non-topological wave structures relative to protected solitons.',
+        researchTask6: '6. Winding Scaling & Multi-Radius Analysis',
+        researchTask6Desc: 'Measure radial potential profiles at multiple radial points (0.1 to 5.0 r_0) with high grid resolution. Study how q_eff scales strictly with Winding numbers!',
         loadPreset: 'Load Experiment',
         emergentChargeTitle: 'Emergent Charge Analysis (Winding-induced)',
         emergentCharge: 'Emergent effective charge (q_eff):',
@@ -494,6 +498,8 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
         researchTask4Desc: 'Konfigurieren Sie stark asymmetrische Massenverhältnisse (z. B. ein leichtes Paket vs. ein schweres Zentrum) und beobachten Sie die Präzession des Schwerpunkts.',
         researchTask5: '5. Dämpfung & Spannung',
         researchTask5Desc: 'Experimentieren Sie mit hoher Dämpfung und Hyperflächenspannung. Wie wirkt sich die viskose Dissipation auf die nicht-topologischen Moden aus?',
+        researchTask6: '6. Winding-Skalierung & Mehrfachradius-Analyse',
+        researchTask6Desc: 'Messen Sie radiale Potenzialprofile an mehreren Radien (0,1 bis 5,0 r_0) mit hoher Netzauflösung. Untersuchen Sie, wie q_eff rein von der Winding-Zahl abhängt!',
         loadPreset: 'Experiment laden',
         emergentChargeTitle: 'Emergente Ladungsanalyse (Winding-induziert)',
         emergentCharge: 'Emergente effektive Ladung (q_eff):',
@@ -1079,8 +1085,8 @@ export const EffectiveSolitonLab: React.FC<EffectiveSolitonLabProps> = ({ model,
     const rEff = (s1.radius + s2.radius) / 2;
     const fieldAsymmetry = 1.0 + (0.45 * Math.abs(s1.topologicalCharge - s2.topologicalCharge)) / (1.0 + 0.35 * d);
     const gradientDistortion = (Math.abs(s1.topologicalCharge) + Math.abs(s2.topologicalCharge)) * (0.15 / (d * d + 0.5));
-    // q_eff ≈ (potential well depth) * (field asymmetry degree) / R_eff (scaled to reasonable unit values)
-    const qEff = (overlapDepth * 1.5e-5 * fieldAsymmetry) / (rEff + 1e-5);
+    // Refined emergent charge based on topological winding difference, field asymmetry, and gradient distortion
+    const qEff = Math.abs(s1.topologicalCharge - s2.topologicalCharge) * fieldAsymmetry * gradientDistortion * Math.sqrt(overlapDepth) * 2.5e-3;
 
     let interactionStateStr = text.stateDecoupled;
     if (d < 1.0) {
@@ -1807,7 +1813,7 @@ Generated automatically by EffectiveSolitonLab © ${new Date().getFullYear()}
       const fieldAsymmetry = 1.0 + (0.45 * Math.abs(t.s1Charge - t.s2Charge)) / (1.0 + 0.35 * t.distance);
       const gradientDistortion = (Math.abs(t.s1Charge) + Math.abs(t.s2Charge)) * (0.15 / (t.distance * t.distance + 0.5));
       const rEff = (s1RadiusVal + s2RadiusVal) / 2;
-      const qEff = (Math.abs(overlapPot) * 1.5e-5 * fieldAsymmetry) / (rEff + 1e-5);
+      const qEff = Math.abs(t.s1Charge - t.s2Charge) * fieldAsymmetry * gradientDistortion * Math.sqrt(Math.abs(overlapPot)) * 2.5e-3;
 
       let stateStr = text.stateDecoupled;
       if (t.distance < 1.0) {
@@ -2024,21 +2030,17 @@ Generated automatically by EffectiveSolitonLab © ${new Date().getFullYear()}
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1">
                 <label className="text-slate-400 text-[10px]">{text.chargeLabel}</label>
-                <div className="flex gap-1.5">
-                  {[-1, 0, 1].map((val) => (
-                    <button
-                      key={val}
-                      onClick={() => { setS1Winding(val); setS1Preset('custom'); }}
-                      className={`flex-1 py-1 rounded border text-[10px] font-bold ${
-                        s1Winding === val 
-                          ? 'bg-rose-500 text-slate-950 border-rose-400' 
-                          : 'bg-slate-950 text-slate-400 border-slate-800'
-                      }`}
-                    >
-                      {val > 0 ? `+${val}` : val}
-                    </button>
+                <select
+                  value={s1Winding}
+                  onChange={(e) => { setS1Winding(parseInt(e.target.value)); setS1Preset('custom'); }}
+                  className="bg-slate-950 text-rose-300 border border-slate-800 rounded py-1 px-2 focus:outline-none text-[11px] font-mono font-bold w-full h-[26px]"
+                >
+                  {[-4, -3, -2, -1, 0, 1, 2, 3, 4].map((val) => (
+                    <option key={val} value={val} className="bg-slate-950 text-rose-300">
+                      W = {val > 0 ? `+${val}` : val}
+                    </option>
                   ))}
-                </div>
+                </select>
               </div>
 
               <div className="flex flex-col gap-1">
@@ -2164,21 +2166,17 @@ Generated automatically by EffectiveSolitonLab © ${new Date().getFullYear()}
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1">
                 <label className="text-slate-400 text-[10px]">{text.chargeLabel}</label>
-                <div className="flex gap-1.5">
-                  {[-1, 0, 1].map((val) => (
-                    <button
-                      key={val}
-                      onClick={() => { setS2Winding(val); setS2Preset('custom'); }}
-                      className={`flex-1 py-1 rounded border text-[10px] font-bold ${
-                        s2Winding === val 
-                          ? 'bg-emerald-500 text-slate-950 border-emerald-400' 
-                          : 'bg-slate-950 text-slate-400 border-slate-800'
-                      }`}
-                    >
-                      {val > 0 ? `+${val}` : val}
-                    </button>
+                <select
+                  value={s2Winding}
+                  onChange={(e) => { setS2Winding(parseInt(e.target.value)); setS2Preset('custom'); }}
+                  className="bg-slate-950 text-emerald-300 border border-slate-800 rounded py-1 px-2 focus:outline-none text-[11px] font-mono font-bold w-full h-[26px]"
+                >
+                  {[-4, -3, -2, -1, 0, 1, 2, 3, 4].map((val) => (
+                    <option key={val} value={val} className="bg-slate-950 text-emerald-300">
+                      W = {val > 0 ? `+${val}` : val}
+                    </option>
                   ))}
-                </div>
+                </select>
               </div>
 
               <div className="flex flex-col gap-1">
@@ -2540,6 +2538,139 @@ Generated automatically by EffectiveSolitonLab © ${new Date().getFullYear()}
                     {lang === 'hu' ? 'A mechanizmus fizikai magyarázata' : 'Physical mechanism of the distortion'}
                   </p>
                   {text.asymmetryExplanation}
+                </div>
+
+                {/* Multi-Radius Potential Table & q_eff Scaling Analysis */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 border-t border-slate-900 pt-4">
+                  
+                  {/* Multi-Radius Radial Profile Table */}
+                  <div className="bg-slate-950/60 border border-slate-900/80 rounded-xl p-3.5 flex flex-col gap-2">
+                    <span className="text-[10px] font-bold text-rose-400 uppercase font-mono tracking-wider flex items-center gap-1.5">
+                      <Layers className="h-3.5 w-3.5 text-rose-400" />
+                      {lang === 'hu' ? 'Radiális Profil Mérések (Több sugarú elemzés)' : 'Radial Profile Measurements (Multi-radius analysis)'}
+                    </span>
+                    <p className="text-[9.5px] text-slate-500 leading-normal mb-1">
+                      {lang === 'hu' 
+                        ? 'A potenciálgödör lokális amplitúdói V(r) különböző r távolságokban a szoliton középpontjától, valamint az aszimmetria index α(r).'
+                        : 'Local potential amplitudes V(r) at various distances r from the soliton center, along with the local asymmetry index α(r).'}
+                    </p>
+                    
+                    <div className="overflow-y-auto max-h-[190px] pr-1.5 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
+                      <table className="w-full text-left border-collapse text-[10px] font-mono">
+                        <thead className="sticky top-0 bg-slate-950/90 backdrop-blur-sm z-10">
+                          <tr className="border-b border-slate-800 text-slate-400">
+                            <th className="py-1 px-1">{lang === 'hu' ? 'Sugár (r)' : 'Radius (r)'}</th>
+                            <th className="py-1 px-1">V₁(r) / V₁ᵐᵃˣ</th>
+                            <th className="py-1 px-1">V₂(r) / V₂ᵐᵃˣ</th>
+                            <th className="py-1 px-1 text-right">{lang === 'hu' ? 'Aszimmetria α(r)' : 'Asymmetry α(r)'}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {[0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0].map((r) => {
+                            const Q1 = solitons[0].topologicalCharge;
+                            const R1 = solitons[0].radius;
+                            const env1 = Math.exp(- (r * r) / (R1 * R1));
+                            const rip1 = 1.0 + 0.28 * Q1 * Math.sin(r * 3.5 / R1) * Math.exp(-r / (1.5 * R1));
+                            const v1 = Math.max(0, env1 * rip1);
+
+                            const Q2 = solitons[1].topologicalCharge;
+                            const R2 = solitons[1].radius;
+                            const env2 = Math.exp(- (r * r) / (R2 * R2));
+                            const rip2 = 1.0 + 0.28 * Q2 * Math.sin(r * 3.5 / R2) * Math.exp(-r / (1.5 * R2));
+                            const v2 = Math.max(0, env2 * rip2);
+
+                            const localAsym = Math.abs(v1 - v2) / (v1 + v2 + 1e-5);
+
+                            return (
+                              <tr key={r} className="border-b border-slate-900 hover:bg-slate-900/40 transition-colors">
+                                <td className="py-1 px-1 text-slate-300 font-bold">{r.toFixed(1)} r_0</td>
+                                <td className="py-1 px-1 text-rose-400/90">{v1.toFixed(3)}</td>
+                                <td className="py-1 px-1 text-emerald-400/90">{v2.toFixed(3)}</td>
+                                <td className="py-1 px-1 text-right text-indigo-400 font-bold">{(localAsym * 100).toFixed(1)}%</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Emergent Charge Model Comparison & Scaling Analysis */}
+                  <div className="bg-slate-950/60 border border-slate-900/80 rounded-xl p-3.5 flex flex-col gap-2">
+                    <span className="text-[10px] font-bold text-sky-400 uppercase font-mono tracking-wider flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-sky-400" />
+                      {lang === 'hu' ? 'Emergens Töltés (q_eff) Modell Összehasonlítás' : 'Emergent Charge (q_eff) Model Comparison'}
+                    </span>
+                    <p className="text-[9.5px] text-slate-500 leading-normal">
+                      {lang === 'hu'
+                        ? 'Hasonlítsa össze a geometriai és potenciál alapú képleteket. A Winding szám skálázódása kimutatja a nemlineáris emergent töltés növekedést.'
+                        : 'Compare geometric and potential-based formulations. Winding number scaling reveals non-linear emergent charge growth.'}
+                    </p>
+
+                    {(() => {
+                      if (!liveDiagnostics) return null;
+                      const Q1 = solitons[0].topologicalCharge;
+                      const Q2 = solitons[1].topologicalCharge;
+                      const windingAvg = (Math.abs(Q1) + Math.abs(Q2)) / 2;
+
+                      // Formula A: Geometric model
+                      // qEffGeom = fieldAsymmetry * gradientDistortion * |Winding|
+                      const geomVal = liveDiagnostics.fieldAsymmetry * liveDiagnostics.gradientDistortion * windingAvg;
+
+                      // Formula B: Potential model
+                      // qEffPot = (overlapPot depth) * (fieldAsymmetry) / R_eff (scaled by 1.5e-5 for physical unit equivalent)
+                      const rEff = (solitons[0].radius + solitons[1].radius) / 2;
+                      const potValRaw = (liveDiagnostics.overlapDepth * liveDiagnostics.fieldAsymmetry) / rEff;
+                      const potValScaled = potValRaw * 1.5e-5;
+
+                      return (
+                        <div className="flex flex-col gap-2.5 mt-1 font-mono text-[10px]">
+                          <div className="p-2 rounded bg-indigo-500/5 border border-indigo-500/10 flex flex-col gap-1.5">
+                            <div className="flex justify-between items-center">
+                              <span className="text-slate-400 font-bold">1. {lang === 'hu' ? 'Geometriai Modell' : 'Geometric Model'}</span>
+                              <span className="text-indigo-400 font-extrabold">{geomVal.toFixed(4)} q_geom</span>
+                            </div>
+                            <div className="text-[9px] text-slate-500 italic">
+                              q_geom = asymmetry × distortion × |W|
+                            </div>
+                          </div>
+
+                          <div className="p-2 rounded bg-sky-500/5 border border-sky-500/10 flex flex-col gap-1.5">
+                            <div className="flex justify-between items-center">
+                              <span className="text-slate-400 font-bold">2. {lang === 'hu' ? 'Potenciálátfedési Modell' : 'Potential Overlap Model'}</span>
+                              <span className="text-sky-400 font-extrabold">{(potValScaled * 1e5).toFixed(4)} × 10⁻⁵ e_eff</span>
+                            </div>
+                            <div className="text-[9px] text-slate-500 italic">
+                              q_pot = (V_depth × asymmetry) / R_eff
+                            </div>
+                          </div>
+
+                          {/* Winding Scaling Trend Preview */}
+                          <div className="border-t border-slate-900 pt-2 flex flex-col gap-1">
+                            <span className="text-[9.5px] font-bold text-slate-400">{lang === 'hu' ? 'Winding Skálázódás Trend (q_eff vs |W|)' : 'Winding Scaling Trend (q_eff vs |W|)'}</span>
+                            <div className="grid grid-cols-4 gap-1 text-[9px] text-center mt-0.5 text-slate-500">
+                              {[1, 2, 3, 4].map((w) => {
+                                const estAsym = 1.0 + (0.45 * (2 * w)) / (1.0 + 0.35 * 6.5);
+                                const estDist = (w * 2) * (0.15 / (6.5 * 6.5 + 0.5));
+                                const estGeom = estAsym * estDist * w;
+                                const estPotRaw = (0.08 * estAsym) / 2.4;
+                                const isCurrent = windingAvg === w;
+                                
+                                return (
+                                  <div key={w} className={`p-1 rounded ${isCurrent ? 'bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 font-bold' : 'bg-slate-900/30'}`}>
+                                    <div>|W| = {w}</div>
+                                    <div className="text-[8px] text-indigo-400 mt-0.5">{(estGeom).toFixed(2)}g</div>
+                                    <div className="text-[8px] text-sky-400">{(estPotRaw * 100).toFixed(1)}%p</div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+
                 </div>
               </div>
             )}
@@ -3140,7 +3271,11 @@ Generated automatically by EffectiveSolitonLab © ${new Date().getFullYear()}
                     const recFieldAsymmetry = rec.fieldAsymmetry ?? (1.0 + (0.45 * Math.abs(rec.s1Charge - rec.s2Charge)) / (1.0 + 0.35 * rec.distance));
                     const recGradientDistortion = rec.gradientDistortion ?? ((Math.abs(rec.s1Charge) + Math.abs(rec.s2Charge)) * (0.15 / (rec.distance * rec.distance + 0.5)));
                     const recREff = (rec.s1Radius + rec.s2Radius) / 2;
-                    const recQEff = rec.qEff ?? ((Math.abs(rec.overlapPot) * 1.5e-5 * recFieldAsymmetry) / (recREff + 1e-5));
+                    const recQEff = rec.qEff ?? (Math.abs(rec.s1Charge - rec.s2Charge) * recFieldAsymmetry * recGradientDistortion * Math.sqrt(Math.abs(rec.overlapPot)) * 2.5e-3);
+                    
+                    const recWindingAvg = (Math.abs(rec.s1Charge) + Math.abs(rec.s2Charge)) / 2;
+                    const recQEffGeom = recFieldAsymmetry * recGradientDistortion * recWindingAvg;
+                    const recQEffPot = (Math.abs(rec.overlapPot) * 1.5e-5 * recFieldAsymmetry) / (recREff + 1e-5);
 
                     return (
                       <div className="flex flex-col gap-4">
@@ -3164,18 +3299,24 @@ Generated automatically by EffectiveSolitonLab © ${new Date().getFullYear()}
                         </div>
 
                         {/* Emergent Charge Indicators Row */}
-                        <div className="p-4 bg-indigo-950/25 rounded-xl border border-indigo-500/10 grid grid-cols-1 sm:grid-cols-3 gap-4 text-[10.5px]">
+                        <div className="p-4 bg-indigo-950/25 rounded-xl border border-indigo-500/10 grid grid-cols-2 sm:grid-cols-4 gap-4 text-[10.5px]">
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-indigo-400 block text-[9px] uppercase font-bold">{text.emergentCharge}</span>
+                            <span className="text-indigo-400 block text-[9px] uppercase font-bold">{lang === 'hu' ? 'q_eff (Finomított modell)' : 'q_eff (Refined model)'}</span>
                             <span className="text-indigo-200 font-bold text-xs font-mono">{recQEff.toFixed(4)} e_eff</span>
+                            <span className="text-[8px] text-indigo-400 font-mono mt-0.5">q_eff = |W1-W2| × α × δ × √|V_ov|</span>
+                          </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-indigo-400 block text-[9px] uppercase font-bold">{lang === 'hu' ? 'q_eff (Geometriai model)' : 'q_eff (Geometric model)'}</span>
+                            <span className="text-indigo-300 font-bold text-xs font-mono">{recQEffGeom.toFixed(4)} q_geom</span>
+                            <span className="text-[8px] text-indigo-400 font-mono mt-0.5">q_geom = α × δ × |W|</span>
                           </div>
                           <div className="flex flex-col gap-0.5">
                             <span className="text-indigo-400 block text-[9px] uppercase font-bold">{text.fieldAsymmetryLabel}</span>
-                            <span className="text-indigo-300 font-bold text-xs font-mono">{(recFieldAsymmetry * 100).toFixed(1)}%</span>
+                            <span className="text-violet-300 font-bold text-xs font-mono">{(recFieldAsymmetry * 100).toFixed(1)}%</span>
                           </div>
                           <div className="flex flex-col gap-0.5">
                             <span className="text-indigo-400 block text-[9px] uppercase font-bold">{text.gradientDistortionLabel}</span>
-                            <span className="text-violet-300 font-bold text-xs font-mono">{recGradientDistortion.toFixed(5)}</span>
+                            <span className="text-emerald-300 font-bold text-xs font-mono">{recGradientDistortion.toFixed(5)}</span>
                           </div>
                         </div>
                       </div>
@@ -3422,6 +3563,38 @@ Generated automatically by EffectiveSolitonLab © ${new Date().getFullYear()}
                 className="text-[10px] font-mono font-bold text-violet-300 hover:text-violet-200 bg-violet-500/10 hover:bg-violet-500/20 px-2 py-1 rounded border border-violet-500/20 cursor-pointer transition-all"
               >
                 {lang === 'hu' ? 'Erős w-feszültség' : 'High Tension'}
+              </button>
+            </div>
+          </div>
+
+          {/* Task 6 */}
+          <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-900 flex flex-col justify-between gap-3 hover:border-slate-800 transition-all">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[11.5px] font-bold text-sky-400 font-mono">{text.researchTask6}</span>
+              <p className="text-[11px] text-slate-400 leading-relaxed font-sans">{text.researchTask6Desc}</p>
+            </div>
+            <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-900">
+              <button
+                onClick={() => handleLoadSpecificConfiguration({
+                  s1Winding: 3, s1Radius: 2.4, s1Energy: 1.2e6, s1KMode: 0.8,
+                  s1Pos: [-4.0, 0.0, 0, 0.05], s1Vel: [1.5, 0.5, 0, 0],
+                  s2Winding: -3, s2Radius: 2.4, s2Energy: 1.2e6, s2KMode: 0.8,
+                  s2Pos: [4.0, 0.0, 0, -0.05], s2Vel: [-1.5, -0.5, 0, 0]
+                })}
+                className="text-[10px] font-mono font-bold text-sky-300 hover:text-sky-200 bg-sky-500/10 hover:bg-sky-500/20 px-2 py-1 rounded border border-sky-500/20 cursor-pointer transition-all"
+              >
+                {lang === 'hu' ? 'Winding 3 vs -3' : 'Winding 3 vs -3'}
+              </button>
+              <button
+                onClick={() => handleLoadSpecificConfiguration({
+                  s1Winding: 4, s1Radius: 2.4, s1Energy: 1.2e6, s1KMode: 0.8,
+                  s1Pos: [-4.0, 0.0, 0, 0.05], s1Vel: [1.5, 0.5, 0, 0],
+                  s2Winding: -4, s2Radius: 2.4, s2Energy: 1.2e6, s2KMode: 0.8,
+                  s2Pos: [4.0, 0.0, 0, -0.05], s2Vel: [-1.5, -0.5, 0, 0]
+                })}
+                className="text-[10px] font-mono font-bold text-sky-300 hover:text-sky-200 bg-sky-500/10 hover:bg-sky-500/20 px-2 py-1 rounded border border-sky-500/20 cursor-pointer transition-all"
+              >
+                {lang === 'hu' ? 'Winding 4 vs -4' : 'Winding 4 vs -4'}
               </button>
             </div>
           </div>
