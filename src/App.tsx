@@ -25,6 +25,7 @@ import EffectiveSolitonLab from './components/EffectiveSolitonLab';
 import SolitonComparisonLab from './components/SolitonComparisonLab';
 import GlobalLocalHologramLab from './components/GlobalLocalHologramLab';
 import MeasurementProtocolLab from './components/MeasurementProtocolLab';
+import IndependentAtomicLab from './components/IndependentAtomicLab';
 import { i18n, Language } from './i18n';
 import {
   Play,
@@ -48,7 +49,8 @@ import {
   Sparkles,
   Scale,
   Boxes,
-  FileText
+  FileText,
+  Atom
 } from 'lucide-react';
 
 export default function App() {
@@ -93,7 +95,7 @@ export default function App() {
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
   // UI Tabs
-  const [activeTab, setActiveTab] = useState<'visualization' | 'slice' | 'fourier' | 'lab' | 'comparison' | 'hologram' | 'protocol' | 'quantization' | 'effectivelab' | 'charts' | 'manuscript'>('visualization');
+  const [activeTab, setActiveTab] = useState<'visualization' | 'slice' | 'fourier' | 'lab' | 'comparison' | 'hologram' | 'protocol' | 'quantization' | 'effectivelab' | 'atomiclab' | 'charts' | 'manuscript'>('visualization');
 
   // Initialize simulation with specific parameters
   const initializeSimulation = useCallback(
@@ -492,6 +494,7 @@ export default function App() {
             { id: 'comparison', label: lang === 'hu' ? 'Összehasonlítás' : lang === 'de' ? 'Soliton-Vergleich' : 'Soliton Comparison', icon: <Scale className="h-4 w-4 text-sky-400" /> },
             { id: 'hologram', label: lang === 'hu' ? 'Holografikus Csatolás' : lang === 'de' ? 'Holographische Kopplung' : 'Holographic Coupling', icon: <Database className="h-4 w-4 text-purple-400" /> },
             { id: 'protocol', label: lang === 'hu' ? 'Mérések & kísérlet' : lang === 'de' ? 'Messungen & Experiment' : 'Measurements & experiment', icon: <FileText className="h-4 w-4 text-emerald-400" /> },
+            { id: 'atomiclab', label: lang === 'hu' ? 'Független Atomi Labor' : lang === 'de' ? 'Atomi Labor' : 'Atomic Lab', icon: <Atom className="h-4 w-4 text-emerald-400 animate-pulse" /> },
             { id: 'quantization', label: lang === 'hu' ? 'Kvantálás & Tömeg' : lang === 'de' ? 'Quantisierung & Masse' : 'Quantization & Mass', icon: <Scale className="h-4 w-4 text-emerald-400" /> },
             { id: 'charts', label: t.tabCharts, icon: <TrendingUp className="h-4 w-4" /> },
             { id: 'manuscript', label: t.tabManuscript, icon: <BookOpen className="h-4 w-4" /> },
@@ -1052,6 +1055,10 @@ export default function App() {
 
               {activeTab === 'protocol' && (
                 <MeasurementProtocolLab lang={lang} />
+              )}
+
+              {activeTab === 'atomiclab' && (
+                <IndependentAtomicLab lang={lang} />
               )}
 
               {activeTab === 'manuscript' && (
